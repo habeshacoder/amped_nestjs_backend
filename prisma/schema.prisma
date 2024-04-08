@@ -1,0 +1,422 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  username        String           @unique @db.VarChar(255)
+  email           String           @unique @db.VarChar(255)
+  phone           String?          @unique @db.VarChar(255)
+  password        String           @db.VarChar(255)
+  provider        String           @default("local") @db.VarChar(255)
+  is_verified     Boolean          @default(false)
+  is_active       Boolean          @default(true)
+  refresh_token   String?          @db.VarChar(255)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  favorite        Favorite[]
+  material_user   MaterialUser[]
+  password_resets PasswordReset[]
+  profiles        Profile?
+  rate            Rate[]
+  report          Report[]
+  seller_profile  SellerProfile[]
+  SubscribedUser  SubscribedUser[]
+
+  @@map("users")
+}
+
+model PasswordReset {
+  id          Int      @id @default(autoincrement())
+  user_id     String   @db.VarChar(255)
+  reset_token String   @db.VarChar(500)
+  otp         String   @db.VarChar(255)
+  expiries_at DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+model Profile {
+  id            Int      @id @default(autoincrement())
+  user_id       String   @unique @db.VarChar(255)
+  first_name    String   @db.VarChar(255)
+  last_name     String   @db.VarChar(255)
+  sex           Sex      @default(Unspecified)
+  date_of_birth String   @db.VarChar(255)
+  profile_image String?  @db.VarChar(255)
+  cover_image   String?  @db.VarChar(255)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  User          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model SellerProfile {
+  id                   Int                  @id @default(autoincrement())
+  user_id              String               @db.VarChar(255)
+  name                 String               @db.VarChar(255)
+  sex                  Sex                  @default(Unspecified)
+  date_of_birth        String?              @db.VarChar(255)
+  description          String?
+  image                String?              @db.VarChar(255)
+  cover_image          String?              @db.VarChar(255)
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  channel_material     ChannelMaterial[]
+  channel              Channel[]
+  material             Material[]
+  User                 User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  social_links_profile SocialLinksProfile[]
+
+  @@map("seller_profiles")
+}
+
+model SocialLinksProfile {
+  id               Int           @id @default(autoincrement())
+  link             String        @db.VarChar(255)
+  sellerProfile_id Int
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  SellerProfile    SellerProfile @relation(fields: [sellerProfile_id], references: [id], onDelete: Cascade)
+
+  @@map("social_links_profile")
+}
+
+model Material {
+  id                 Int               @id @default(autoincrement())
+  sellerProfile_id   Int
+  parent             Parent            @default(Unspecified)
+  type               Type              @default(Unspecified)
+  genere             Genere            @default(Unspecified)
+  catagory           Catagory          @default(Unspecified)
+  author             String?           @db.VarChar(255)
+  reader             String?           @db.VarChar(255)
+  translator         String?           @db.VarChar(255)
+  length_minute      Float?
+  length_page        Float?
+  first_published_at String?
+  language           String?           @db.VarChar(255)
+  publisher          String?           @db.VarChar(255)
+  episode            Int?
+  continues_from     Int?
+  material           String            @db.VarChar(255)
+  title              String            @db.VarChar(255)
+  description        String?
+  price              Float?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime          @updatedAt
+  favorite           Favorite[]
+  material_image     MaterialImage[]
+  material_preview   PreviewMaterial[]
+  material_user      MaterialUser[]
+  SellerProfile      SellerProfile     @relation(fields: [sellerProfile_id], references: [id], onDelete: Cascade)
+  rate               Rate[]
+  report             Report[]
+
+  @@map("materials")
+}
+
+model MaterialImage {
+  id          Int      @id @default(autoincrement())
+  image       String   @db.VarChar(255)
+  primary     Boolean  @default(false)
+  cover       Boolean  @default(false)
+  material_id Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Material    Material @relation(fields: [material_id], references: [id], onDelete: Cascade)
+
+  @@map("material_images")
+}
+
+model PreviewMaterial {
+  id          Int      @id @default(autoincrement())
+  preview     String   @db.VarChar(255)
+  material_id Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Material    Material @relation(fields: [material_id], references: [id], onDelete: Cascade)
+
+  @@map("material_previews")
+}
+
+model Channel {
+  id                   Int                  @id @default(autoincrement())
+  name                 String               @db.VarChar(255)
+  description          String?
+  draft                Boolean              @default(true)
+  sellerProfile_id     Int
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
+  channel_image        ChannelImage[]
+  channel_preview      PreviewChannel[]
+  SellerProfile        SellerProfile        @relation(fields: [sellerProfile_id], references: [id], onDelete: Cascade)
+  favorite             Favorite[]
+  rate                 Rate[]
+  report               Report[]
+  social_links_channel SocialLinksChannel[]
+  subscription_plan    SubscriptionPlan[]
+
+  @@map("channels")
+}
+
+model ChannelImage {
+  id         Int      @id @default(autoincrement())
+  image      String   @db.VarChar(255)
+  primary    Boolean  @default(false)
+  cover      Boolean  @default(false)
+  channel_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Channel    Channel  @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+
+  @@map("channel_images")
+}
+
+model PreviewChannel {
+  id         Int      @id @default(autoincrement())
+  preview    String   @db.VarChar(255)
+  channel_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Channel    Channel  @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+
+  @@map("channel_previews")
+}
+
+model SocialLinksChannel {
+  id         Int      @id @default(autoincrement())
+  link       String   @db.VarChar(255)
+  channel_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Channel    Channel  @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+
+  @@map("social_links_channel")
+}
+
+model SubscriptionPlan {
+  id                            Int                          @id @default(autoincrement())
+  name                          String                       @db.VarChar(255)
+  description                   String?
+  price                         Float
+  channel_id                    Int
+  created_at                    DateTime                     @default(now())
+  updated_at                    DateTime                     @updatedAt
+  material_in_subscription_plan MaterialInSubscriptionPlan[]
+  subscription_plan             SubscribedUser[]
+  Channel                       Channel                      @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+
+  @@map("subscription_plan")
+}
+
+model ChannelMaterial {
+  id                            Int                          @id @default(autoincrement())
+  sellerProfile_id              Int
+  parent                        Parent                       @default(Unspecified)
+  type                          Type                         @default(Unspecified)
+  genere                        Genere                       @default(Unspecified)
+  catagory                      Catagory                     @default(Unspecified)
+  author                        String?                      @db.VarChar(255)
+  reader                        String?                      @db.VarChar(255)
+  translator                    String?                      @db.VarChar(255)
+  length_minute                 Float?
+  length_page                   Float?
+  first_published_at            String?
+  language                      String?                      @db.VarChar(255)
+  publisher                     String?                      @db.VarChar(255)
+  episode                       Int?
+  continues_from                Int?
+  material                      String                       @db.VarChar(255)
+  title                         String                       @db.VarChar(255)
+  description                   String?
+  created_at                    DateTime                     @default(now())
+  updated_at                    DateTime                     @updatedAt
+  channel_material_image        ChannelMaterialImage[]
+  channel_material_preview      ChannelPreviewMaterial[]
+  SellerProfile                 SellerProfile                @relation(fields: [sellerProfile_id], references: [id], onDelete: Cascade)
+  favorite                      Favorite[]
+  material_in_subscription_plan MaterialInSubscriptionPlan[]
+  rate                          Rate[]
+  report                        Report[]
+
+  @@map("channel_materials")
+}
+
+model ChannelMaterialImage {
+  id                  Int             @id @default(autoincrement())
+  image               String          @db.VarChar(255)
+  primary             Boolean         @default(false)
+  cover               Boolean         @default(false)
+  channel_material_id Int
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+  ChannelMaterial     ChannelMaterial @relation(fields: [channel_material_id], references: [id], onDelete: Cascade)
+
+  @@map("channel_material_images")
+}
+
+model ChannelPreviewMaterial {
+  id                  Int             @id @default(autoincrement())
+  preview             String          @db.VarChar(255)
+  channel_material_id Int
+  created_at          DateTime        @default(now())
+  updated_at          DateTime        @updatedAt
+  ChannelMaterial     ChannelMaterial @relation(fields: [channel_material_id], references: [id], onDelete: Cascade)
+
+  @@map("channel_material_previews")
+}
+
+model MaterialInSubscriptionPlan {
+  id                  Int              @id @default(autoincrement())
+  subscriptionPlan_id Int
+  channelMaterial_id  Int
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  ChannelMaterial     ChannelMaterial  @relation(fields: [channelMaterial_id], references: [id], onDelete: Cascade)
+  SubscriptionPlan    SubscriptionPlan @relation(fields: [subscriptionPlan_id], references: [id], onDelete: Cascade)
+
+  @@map("material_in_subscription_plan")
+}
+
+model MaterialUser {
+  id          Int      @id @default(autoincrement())
+  user_id     String   @db.VarChar(255)
+  material_id Int
+  is_paied    Boolean
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  Material    Material @relation(fields: [material_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("material_user")
+}
+
+model Rate {
+  id                  Int              @id @default(autoincrement())
+  user_id             String           @db.VarChar(255)
+  rating              Float
+  remark              String
+  material_id         Int?
+  channel_id          Int?
+  channel_material_id Int?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  Channel             Channel?         @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  ChannelMaterial     ChannelMaterial? @relation(fields: [channel_material_id], references: [id], onDelete: Cascade)
+  Material            Material?        @relation(fields: [material_id], references: [id], onDelete: Cascade)
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  replay              Replay[]
+
+  @@map("ratings")
+}
+
+model Replay {
+  id         Int      @id @default(autoincrement())
+  replay     String
+  remark_id  Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  rate       Rate     @relation(fields: [remark_id], references: [id], onDelete: Cascade)
+
+  @@map("replays")
+}
+
+model Report {
+  id                  Int              @id @default(autoincrement())
+  report_type         ReportType       @default(Unspecified)
+  report_desc         String
+  user_id             String           @db.VarChar(255)
+  material_id         Int?
+  channel_id          Int?
+  channel_material_id Int?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  Channel             Channel?         @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  ChannelMaterial     ChannelMaterial? @relation(fields: [channel_material_id], references: [id], onDelete: Cascade)
+  Material            Material?        @relation(fields: [material_id], references: [id], onDelete: Cascade)
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model SubscribedUser {
+  id                Int               @id @default(autoincrement())
+  user_id           String            @db.VarChar(255)
+  subscription_id   Int?
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+  subscription_plan SubscriptionPlan? @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+  user              User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("subscribed_users")
+}
+
+model Favorite {
+  id                  Int              @id @default(autoincrement())
+  user_id             String           @db.VarChar(255)
+  material_id         Int?
+  channel_id          Int?
+  channel_material_id Int?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  channel             Channel?         @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  ChannelMaterial     ChannelMaterial? @relation(fields: [channel_material_id], references: [id], onDelete: Cascade)
+  material            Material?        @relation(fields: [material_id], references: [id], onDelete: Cascade)
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("favorite")
+}
+
+enum Sex {
+  Male
+  Female
+  Unspecified
+}
+
+enum Parent {
+  Publication
+  Audio
+  Unspecified
+}
+
+enum Type {
+  Book
+  Magazine
+  Newspaper
+  Audiobook
+  Podcast
+  Drama
+  Unspecified
+}
+
+enum Genere {
+  Psycology
+  Commedy
+  Unspecified
+}
+
+enum Catagory {
+  Fiction
+  Story
+  Documentary
+  Unspecified
+}
+
+enum ReportType {
+  HateSpeach
+  GenderViolation
+  InappropriateAgeRange
+  Stereotype
+  Descrimination
+  Unspecified
+}
