@@ -1,0 +1,5606 @@
+{
+	"info": {
+		"_postman_id": "1b9acb94-fbda-419c-9ef1-6d7f7755deec",
+		"name": "amped_og",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28023423",
+		"_collection_link": "https://red-robot-463210.postman.co/workspace/amped_media~adde850e-3f7d-45ea-9c49-ff0fd9e5de79/collection/28023423-1b9acb94-fbda-419c-9ef1-6d7f7755deec?action=share&source=collection_link&creator=28023423"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "SignUp",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"adoni\",\r\n    \"email\": \"adoni@gmail.com\",\r\n    \"phoneNo\": \"0989858377\",\r\n    \"password\": \"Pass@123\",\r\n    \"passwordConfirm\": \"Pass@123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/auth/signup",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SignIn",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "adoni@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "Pass@123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/auth/signin/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"auth",
+								"signin",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Me",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/users/me",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNjM1ZWEyYi1kYmZkLTQwOTItOWMyYi05OWQ0M2YyMTM3ZWEiLCJ1c2VybmFtZSI6InNhbXVlbCIsInVzZXJFbWFpbCI6InNhbXVlbGFiZXJhODdAZ21haWwuY29tIiwiaWF0IjoxNjgwMjQyNzQzLCJleHAiOjE2ODAyNDM2NDN9.RJFGW25l5BjZh7LCpvFsbKY5BquvtcXvz5udK3nTilI",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{LocalUrl}}/auth/logout",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{refreshToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNjM1ZWEyYi1kYmZkLTQwOTItOWMyYi05OWQ0M2YyMTM3ZWEiLCJ1c2VybmFtZSI6InNhbXVlbCIsInVzZXJFbWFpbCI6InNhbXVlbGFiZXJhODdAZ21haWwuY29tIiwiaWF0IjoxNjgwMjQzNjI4LCJleHAiOjE2ODA0MTY0Mjh9.drgCA74IVzsxcy1cFWywfy_iN1oqWGHq_7hZTv1lHAw",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/auth/refresh",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NTFlOTllZC01YzRkLTRhNzgtOGNiMC00NTk4OGM1YTJkYzciLCJ1c2VybmFtZSI6InNhbWkiLCJ1c2VyRW1haWwiOiJzYW11ZWxhYmVyYTg3QGdtYWlsLmNvbSIsImlhdCI6MTY4MzAxMjU1NSwiZXhwIjoxNjgzMDE2MTU1fQ.vxAxuBSs4jBBT-NOERC42G-d-ubbutTqfNPuh90kgDs",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "sammytg66@gmail.com",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/auth/forget_password",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"auth",
+								"forget_password"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "sis",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "abera",
+									"type": "text"
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text"
+								},
+								{
+									"key": "date_of_birth",
+									"value": "02/21/1997",
+									"type": "text"
+								},
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/  /testImages/profile.png"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/  /testImages/profile.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile GetMe",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/me",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Profile By UserId",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/user_profile/:user_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"user_profile",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile FindOne",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/?id=141",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "141"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile FindAll",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Picture",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/sevenlogo.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/profile_image/141",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"profile_image",
+								"141"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cover Picture",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/channel_cover-1.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/cover_imege/141",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"cover_imege",
+								"141"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile Picture",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/profile-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"profile-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1688717645792-845276419.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cover Image",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\":\"Samuel\",\r\n    \"last_name\": \"Abera\",\r\n    \"sex\": \"Male\",\r\n    \"date_of_birth\":\"21/02/1997\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/cover-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"cover-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1690281896021-652980314.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "samuel",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Abera",
+									"type": "text"
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text"
+								},
+								{
+									"key": "date_of_birth",
+									"value": "21/02/2000",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/141",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"141"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"S4a4@tg\",\r\n    \"newPassword\": \"S4a4@123\",\r\n    \"newPasswordConfirm\": \"S4a4@123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/update_password",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								"update_password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/profiles/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"profiles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "73"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "sellerProfile",
+			"item": [
+				{
+					"name": "Create Seller Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "sis",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "sdsds",
+									"type": "text"
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text"
+								},
+								{
+									"key": "date_of_birth",
+									"value": "02/21/1995",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Documents/lewet.png"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Documents/kulfoch.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "See All Seller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Seller profile image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/profile-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"profile-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Seller Profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/me",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindOne Seller",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindMe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/me",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetSeller Profile Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/profile-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"profile-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1690282098655-471241553.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Seller Cover Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/profile.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/cover-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"cover-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1690282098661-749604579.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Seller Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller_profile_cover_1920x1080.jpeg"
+								},
+								{
+									"key": "name",
+									"value": "adoniseller",
+									"type": "text"
+								},
+								{
+									"key": "date_of_birth",
+									"value": "03/03/2000",
+									"type": "text"
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "adoni seller profile description",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_seller_profile_image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg",
+									"disabled": true
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller_profile_cover_1920x1080.jpeg",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "adoniseller",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "date_of_birth",
+									"value": "03/03/2000",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "adoni seller profile description",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/update_profile-image/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								"update_profile-image",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Seller Profile cover",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg",
+									"disabled": true
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller_profile_cover_1920x1080.jpeg"
+								},
+								{
+									"key": "name",
+									"value": "adoniseller",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "date_of_birth",
+									"value": "03/03/2000",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "sex",
+									"value": "Male",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "adoni seller profile description",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller_profiles/update_cover-image/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller_profiles",
+								"update_cover-image",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Seller Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/seller-profiles/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"seller-profiles",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Channel",
+			"item": [
+				{
+					"name": "Create Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "media channel",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "amped media",
+									"type": "text"
+								},
+								{
+									"key": "sellerProfile_id",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/channel/channel profile image.png"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/channel/channel cover image.jpeg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "See All Channels",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FinOne Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"ABC\",\r\n    \"description\": \"ajhjhjd sjdhjhj\",\r\n    \"price\": 41,\r\n    \"sellerProfile_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/channel/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"channel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find My Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"ABC\",\r\n    \"description\": \"ajhjhjd sjdhjhj\",\r\n    \"price\": 41,\r\n    \"sellerProfile_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/my_channel/:seller_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"my_channel",
+								":seller_id"
+							],
+							"variable": [
+								{
+									"key": "seller_id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Profile By Channel Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_profile/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_profile",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "92"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Cover By Channel Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_cover/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_cover",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "92"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Profile Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_profile_image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_profile_image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1689942689136-685308747.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Cover",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Pictures/checkout and verify.png"
+								},
+								{
+									"key": "id",
+									"value": "9",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_cover/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_cover",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Pictures/checkout and verify.png"
+								},
+								{
+									"key": "id",
+									"value": "9",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_image/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_image",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Channel Preview",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "/* eslint-disable @typescript-eslint/no-var-requires */\r\n/* eslint-disable prettier/prettier */\r\nimport { ForbiddenException, Injectable, Res } from '@nestjs/common';\r\nimport { PrismaClientKnownRequestError } from '@prisma/client/runtime';\r\nimport { join } from 'path';\r\nimport { PrismaService } from '../prisma/prisma.service';\r\nimport { ChannelDto } from './dto';\r\nconst fs = require('fs');\r\n\r\n@Injectable()\r\nexport class ChannelService {\r\n    constructor(\r\n        private prisma: PrismaService,\r\n    ) {}\r\n\r\n    async create(images, channelDto: ChannelDto) {\r\n        const p_name = images[\"profile\"][0].path.split('\\\\');\r\n        const c_name = images[\"cover\"][0].path.split('\\\\');\r\n        const seller = parseInt(channelDto.sellerProfile_id)\r\n\r\n        try {\r\n            const channel = await this.prisma.channel.create({\r\n                data: {\r\n                    name: channelDto.name,\r\n                    description: channelDto.description,\r\n                    sellerProfile_id: seller,\r\n                },\r\n            });\r\n\r\n            if (channel) {\r\n\r\n                const newChannelPImage = await this.prisma.channelImage.create({\r\n                    data: {\r\n                        image: p_name[2],\r\n                        primary: true,\r\n                        channel_id: channel.id,\r\n                    },\r\n                });\r\n\r\n                const newChannelCImage = await this.prisma.channelImage.create({\r\n                    data: {\r\n                        image: c_name[2],\r\n                        cover: true,\r\n                        channel_id: channel.id,\r\n                    },\r\n                });\r\n                \r\n                return channel;\r\n            }\r\n        } catch(error) {\r\n            if (error instanceof PrismaClientKnownRequestError) {\r\n                if (error.code === 'P2002') {\r\n                    throw new ForbiddenException (\r\n                        'Credentials Taken'\r\n                    )\r\n                }\r\n            }\r\n            throw new ForbiddenException (\r\n                'There has been an error. Please check the inputs and try again.'\r\n            )\r\n        }\r\n    }\r\n\r\n    async findAll() {\r\n        return await this.prisma.channel.findMany({\r\n            include: {\r\n                channel_image: true,\r\n                channel_preview: true,\r\n                social_links_channel: true,\r\n                subscription_plan: true,\r\n                rate: true,\r\n                report: true,\r\n            }\r\n        });\r\n    }\r\n\r\n    async findOne(id: number) {\r\n        //also add all associated data like images and preview\r\n        return await this.prisma.channel.findUnique({\r\n            where: {\r\n                id,\r\n            }\r\n        });\r\n    }\r\n\r\n    async newChannels() {\r\n        const newChannels = await this.prisma.channel.findMany({\r\n            orderBy: {\r\n                id: 'desc',\r\n            },\r\n        })\r\n    }\r\n\r\n    async findForSeller(id: number) {\r\n        return await this.prisma.channel.findMany({\r\n            where: {\r\n                sellerProfile_id: id,\r\n            }\r\n        });\r\n    } \r\n\r\n    async update(id: number, channelDto: ChannelDto) {\r\n        const channel = await this.prisma.channel.findUnique({\r\n            where: {\r\n                id: id,\r\n            }\r\n        })\r\n\r\n        const seller = parseInt(channelDto.sellerProfile_id)\r\n        if (channel) {\r\n            try {\r\n                const newChannel = await this.prisma.channel.update({\r\n                    where: {\r\n                        id: id,\r\n                    },\r\n                    data: {\r\n                        name: channelDto.name,\r\n                        description: channelDto.description,\r\n                        sellerProfile_id: seller,\r\n                    },\r\n                });\r\n\r\n                if (newChannel) {\r\n                    return newChannel;\r\n                } else {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } catch(error) {\r\n                if (error instanceof PrismaClientKnownRequestError) {\r\n                    if (error.code === 'P2002') {\r\n                        throw new ForbiddenException (\r\n                            'Credentials Taken'\r\n                        )\r\n                    }\r\n                }\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        } else {\r\n            throw new ForbiddenException (\r\n                'Can\\'t update while there is no material. Please create a material first.'\r\n            )\r\n        }\r\n    }\r\n\r\n    async remove(id: number) {\r\n        const channel = await this.prisma.channel.findFirst({\r\n            where: {\r\n                id: id,\r\n            }\r\n        })\r\n\r\n        if (channel) {\r\n            //remove all related data like file, images and preview\r\n            try {\r\n                const channel = await this.prisma.channel.delete({\r\n                    where: {\r\n                        id: id,\r\n                    }\r\n                });\r\n\r\n                if (channel) {\r\n                    return {'message': \"Channel deleted successfully\"};\r\n                }\r\n            } catch(error) {\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        } else {\r\n            throw new ForbiddenException (\r\n                'Can\\'t delete while there is no material. Please create a material first.'\r\n            )\r\n        }\r\n    }\r\n\r\n    async uploadChannelProfile(file: Express.Multer.File, id: number) {\r\n        const channelImage = await this.prisma.channelImage.findFirst({\r\n            where: {\r\n                channel_id: id, \r\n                primary: true,\r\n            }\r\n        })\r\n\r\n        const name = file.path.split('\\\\');\r\n\r\n        if (!channelImage) {\r\n            try {\r\n                const newChannelProfile = await this.prisma.channelImage.create({\r\n                    data: {\r\n                        image: name[3],\r\n                        primary: true,\r\n                        channel_id: id,\r\n                    },\r\n                });\r\n                \r\n                if (newChannelProfile) {\r\n                    return newChannelProfile;\r\n                } else {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } catch(error) {\r\n                if (error instanceof PrismaClientKnownRequestError) {\r\n                    if (error.code === 'P2002') {\r\n                        throw new ForbiddenException (\r\n                            'Credentials Taken'\r\n                        )\r\n                    }\r\n                }\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        } else {\r\n            //delete existing and upload new\r\n            const oldImage = channelImage.image;\r\n\r\n            try {\r\n                const newChannelImage = await this.prisma.channelImage.update({\r\n                    where: {\r\n                        id: channelImage.id,\r\n                    },\r\n                    data: {\r\n                        image: name[3]\r\n                    },\r\n                });\r\n                \r\n                if (newChannelImage) {\r\n                    fs.unlink(\"./uploads/channel/profile/\" + oldImage, (err) => {\r\n                        if (err) {\r\n                            console.error(err)\r\n                            return\r\n                        }\r\n                    })\r\n                    return newChannelImage;\r\n                } else {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } catch(error) {\r\n                if (error instanceof PrismaClientKnownRequestError) {\r\n                    if (error.code === 'P2002') {\r\n                        throw new ForbiddenException (\r\n                            'Credentials Taken'\r\n                        )\r\n                    }\r\n                }\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        }\r\n    }\r\n\r\n    async showChannelProfile(channelId: number, @Res() res) {\r\n        const channelImage = await this.prisma.channelImage.findFirst({\r\n            where: {\r\n                channel_id: channelId,\r\n                primary: true\r\n            }\r\n        });\r\n\r\n        if(channelImage){\r\n            return (res.sendFile(join(process.cwd(), 'uploads/channel/' + channelImage.image)));\r\n        }else{\r\n            throw new ForbiddenException (\r\n                'There has been an error. Please check the inputs and try again.'\r\n            )\r\n        }\r\n    }\r\n\r\n    async uploadChannelCover(file: Express.Multer.File, id: number) {\r\n        const channelImage = await this.prisma.channelImage.findFirst({\r\n            where: {\r\n                channel_id: id,\r\n                cover: true,\r\n            }\r\n        })\r\n\r\n        const name = file.path.split('\\\\');\r\n\r\n        if (!channelImage) { \r\n            try {\r\n                const newChannelCover = await this.prisma.channelImage.create({\r\n                    data: {\r\n                        image: name[3],\r\n                        cover: true,\r\n                        channel_id: id,\r\n                    },\r\n                });\r\n                \r\n                if (newChannelCover) {\r\n                    return newChannelCover;\r\n                } else {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } catch(error) {\r\n                if (error instanceof PrismaClientKnownRequestError) {\r\n                    if (error.code === 'P2002') {\r\n                        throw new ForbiddenException (\r\n                            'Credentials Taken'\r\n                        )\r\n                    }\r\n                }\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        } else {\r\n            //delete existing and upload new\r\n            const oldImage = channelImage.image;\r\n\r\n            try {\r\n                const newChannelImage = await this.prisma.channelImage.update({\r\n                    where: {\r\n                        id: channelImage.id,\r\n                    },\r\n                    data: {\r\n                        image: name[3]\r\n                    },\r\n                });\r\n                \r\n                if (newChannelImage) {\r\n                    fs.unlink(\"./uploads/channel/cover/\" + oldImage, (err) => {\r\n                        if (err) {\r\n                            console.error(err)\r\n                            return\r\n                        }\r\n                    })\r\n                    return newChannelImage;\r\n                } else {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } catch(error) {\r\n                if (error instanceof PrismaClientKnownRequestError) {\r\n                    if (error.code === 'P2002') {\r\n                        throw new ForbiddenException (\r\n                            'Credentials Taken'\r\n                        )\r\n                    }\r\n                }\r\n                throw new ForbiddenException (\r\n                    'There has been an error. Please check the inputs and try again.'\r\n                )\r\n            }\r\n        }\r\n    }\r\n\r\n    async showChannelCover(id: number, @Res() res) {\r\n        const channelImage = await this.prisma.channelImage.findFirst({\r\n            where: {\r\n                channel_id: id,\r\n                cover: true\r\n            }\r\n        });\r\n\r\n        return (res.sendFile(join(process.cwd(), 'uploads/channel/' + channelImage.image))); \r\n    }\r\n\r\n    async uploadChannelImage(files: Array<Express.Multer.File>, id: number) {\r\n        try {\r\n            files.forEach(async file => {\r\n                const name = file.path.split('\\\\');\r\n                \r\n                const newChannelImage = await this.prisma.channelImage.create({\r\n                    data: {\r\n                        image: name[3],\r\n                        channel_id: id,\r\n                    },\r\n                });\r\n                \r\n                if (!newChannelImage) {\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            });\r\n\r\n            return {'message': \"upload was successful.\"}\r\n        } catch(error) {\r\n            if (error instanceof PrismaClientKnownRequestError) {\r\n                if (error.code === 'P2002') {\r\n                    throw new ForbiddenException (\r\n                        'Credentials Taken'\r\n                    )\r\n                }\r\n            }\r\n            throw new ForbiddenException (\r\n                'There has been an error. Please check the inputs and try again.'\r\n            )\r\n        }\r\n    }\r\n\r\n    async showChannelImage(id: number, @Res() res) {\r\n        const channelImage = await this.prisma.channelImage.findUnique({\r\n            where: {\r\n                id,\r\n            }\r\n        });\r\n\r\n        return (res.sendFile(join(process.cwd(), 'uploads/channel/images/' + channelImage.image))); \r\n    }\r\n\r\n    async uploadChannelPreview(file: Express.Multer.File, id: number) {\r\n        const preview = await this.prisma.previewChannel.findFirst({\r\n            where: {\r\n                channel_id: id,\r\n            }\r\n        })\r\n\r\n        const name = file.path.split('\\\\');\r\n\r\n        if (preview) {\r\n            if (preview.preview == null || preview.preview == 'null') {            \r\n                try {\r\n                    const newPreview = await this.prisma.previewChannel.update({\r\n                        where: {\r\n                            id: preview.id,\r\n                        },\r\n                        data: {\r\n                            preview: name[3]\r\n                        },\r\n                    });\r\n                    \r\n                    if (newPreview) {\r\n                        return newPreview;\r\n                    } else {\r\n                        throw new ForbiddenException (\r\n                            'There has been an error. Please check the inputs and try again.'\r\n                        )\r\n                    }\r\n                } catch(error) {\r\n                    if (error instanceof PrismaClientKnownRequestError) {\r\n                        if (error.code === 'P2002') {\r\n                            throw new ForbiddenException (\r\n                                'Credentials Taken'\r\n                            )\r\n                        }\r\n                    }\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            } else {\r\n                const oldFile = preview.preview;\r\n\r\n                try {\r\n                    const newPreview = await this.prisma.previewChannel.update({\r\n                        where: {\r\n                            id: preview.id,\r\n                        },\r\n                        data: {\r\n                            preview: name[3]\r\n                        },\r\n                    });\r\n                    \r\n                    if (newPreview) {\r\n                        fs.unlink(\"./uploads/channel/preview/\" + oldFile, (err) => {\r\n                            if (err) {\r\n                                console.error(err)\r\n                                return\r\n                            }\r\n                        })\r\n                        return newPreview;\r\n                    } else {\r\n                        throw new ForbiddenException (\r\n                            'There has been an error. Please check the inputs and try again.'\r\n                        )\r\n                    }\r\n                } catch(error) {\r\n                    if (error instanceof PrismaClientKnownRequestError) {\r\n                        if (error.code === 'P2002') {\r\n                            throw new ForbiddenException (\r\n                                'Credentials Taken'\r\n                            )\r\n                        }\r\n                    }\r\n                    throw new ForbiddenException (\r\n                        'There has been an error. Please check the inputs and try again.'\r\n                    )\r\n                }\r\n            }\r\n        } else {\r\n            //create new preview channel\r\n            return await this.prisma.previewChannel.create({\r\n                data: {\r\n                    channel_id: id,\r\n                    preview: name[3]\r\n                }\r\n            });\r\n        }\r\n    }\r\n\r\n    async showChannelPreview(id: number, @Res() res) {\r\n        const preview = await this.prisma.previewChannel.findUnique({\r\n            where: {\r\n                id,\r\n            }\r\n        });\r\n\r\n        return (res.sendFile(join(process.cwd(), 'uploads/channel/preview/' + preview.preview))); \r\n    }\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_preview/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_preview",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"አለማየሁ ገላጋይ \",\r\n    \"description\": \"Abcd\",\r\n    \"price\": 400,\r\n    \"sellerProfile_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Profile Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/sevencover.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_profile/129",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_profile",
+								"129"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Cover Image",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/sevencover.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/channel_profile/129",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								"channel_profile",
+								"129"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "74"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Material",
+			"item": [
+				{
+					"name": "Material Create Text",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent\": \"Audio\",\r\n    \"type\": \"Podcast\",\r\n    \"genere\": \"Unspecified\",\r\n    \"catagory\": \"Fiction\",\r\n    \"title\": \"amped podcast\",\r\n    \"description\": \"ሰው\",\r\n    \"price\": 199,\r\n    \"sellerProfile_id\": 1,\r\n    \"author\": \"James Clear\",\r\n    \"reader\": \"abdu\",\r\n    \"translator\": \"abdu\",\r\n    \"length_minute\":238,\r\n    \"length_page\": 0,\r\n    \"language\": \"Amharic\",\r\n    \"publisher\": \"Ambasel\",\r\n    \"episode\": 0,\r\n    \"continues_from\": 1,\r\n    \"first_published_at\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Material Upload",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "material",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile cover.jpeg"
+								},
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/IMG_20240408_112831_492.jpg"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/IMG_20240408_112831_492.jpg"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile cover.jpeg"
+								},
+								{
+									"key": "preview",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller_profile_cover_1920x1080.jpeg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/files/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"files",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material By Type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/get_by/:type",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"get_by",
+								":type"
+							],
+							"variable": [
+								{
+									"key": "type",
+									"value": "Book"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material By Parent",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/materials_by/:parent",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"materials_by",
+								":parent"
+							],
+							"variable": [
+								{
+									"key": "parent",
+									"value": "Audio"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindOne Material",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent\": \"Publication\",\r\n    \"type\": \"Book\",\r\n    \"genere\": \"Psycology\",\r\n    \"catagory\": \"Fiction\",\r\n    \"title\": \"ABC\",\r\n    \"description\": \"Unexpected token\",\r\n    \"price\": 540,\r\n    \"sellerProfile_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "92"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Material",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_profile/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_profile",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "25"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material By Name",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material/:fileName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material",
+								":fileName"
+							],
+							"variable": [
+								{
+									"key": "fileName",
+									"value": "1692363475702-132745333.pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Profile By ImageName",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/profile.gif"
+								},
+								{
+									"key": "id",
+									"value": "76",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_profile-image/:imageName",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_profile-image",
+								":imageName"
+							],
+							"variable": [
+								{
+									"key": "imageName",
+									"value": "1687431264365-667344997.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Cover",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/profile.gif"
+								},
+								{
+									"key": "id",
+									"value": "76",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_cover/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_cover",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "44"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Image",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/profile.jpg"
+								},
+								{
+									"key": "id",
+									"value": "76",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_image/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_image",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "44"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Preview",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "preview",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/audio/fileWAV.wav"
+								},
+								{
+									"key": "id",
+									"value": "76",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_preview/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_preview",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Preview Images",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "preview",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/testImages/audio/fileWAV.wav"
+								},
+								{
+									"key": "id",
+									"value": "76",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/material_preview-images?material_id=205",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"material_preview-images"
+							],
+							"query": [
+								{
+									"key": "material_id",
+									"value": "205"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Material Edit",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent\": \"Publication\",\r\n    \"type\": \"Book\",\r\n    \"genere\": \"Unspecified\",\r\n    \"catagory\": \"Fiction\",\r\n    \"title\": \"ሃሰተኛው\",\r\n    \"description\": \"ey\",\r\n    \"price\": 300,\r\n    \"sellerProfile_id\": 2,\r\n    \"author\": \"አለማየሁ ገላጋይ\",\r\n    \"reader\": \"pg\",\r\n    \"translator\": \"\",\r\n    \"length_minute\": 0,\r\n    \"length_page\": 346,\r\n    \"language\": \"Amharic\",\r\n    \"publisher\": \"Birhan\",\r\n    \"episode\": 0,\r\n    \"continues_from\": 0,\r\n    \"first_published_at\": \"17-04-1987\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "16"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/books/download.jpeg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/updateMaterialProfile/4",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"updateMaterialProfile",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material Cover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/book/weled.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/updateMaterialCover/1",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"updateMaterialCover",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material Preview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "preview",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/updateMaterialPreview/1",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"updateMaterialPreview",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material PreviewImages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "images",
+									"type": "file",
+									"src": [
+										"/C:/Users/sami ewenet/Desktop/test/book/lewet.png",
+										"/C:/Users/sami ewenet/Desktop/test/book/million.png",
+										"/C:/Users/sami ewenet/Desktop/test/book/minilik II.jpg"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/updateMaterialImage/1",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								"updateMaterialImage",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent\": \"Publication\",\r\n    \"type\": \"Book\",\r\n    \"genere\": \"Psycology\",\r\n    \"catagory\": \"Fiction\",\r\n    \"title\": \"ABC\",\r\n    \"description\": \"Unexpected token\",\r\n    \"price\": 540,\r\n    \"sellerProfile_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rating",
+			"item": [
+				{
+					"name": "Rate Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"rating\": 4,\r\n    \"remark\": \"good\",\r\n    \"material_id\": 127\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rate Channel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"rating\": 5,\r\n    \"remark\": \"very good channel\",\r\n    \"channel_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Rating",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/rate",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Review",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate/my_review",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								"my_review"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NoOfRating",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate/rating/material_rating?rating=3&material_id=151",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								"rating",
+								"material_rating"
+							],
+							"query": [
+								{
+									"key": "rating",
+									"value": "3"
+								},
+								{
+									"key": "material_id",
+									"value": "151"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Material Review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/rate/my_material_review/:material_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								"my_material_review",
+								":material_id"
+							],
+							"variable": [
+								{
+									"key": "material_id",
+									"value": "131"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Material Rating",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate/material/:material_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								"material",
+								":material_id"
+							],
+							"variable": [
+								{
+									"key": "material_id",
+									"value": "26"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Channel Rating",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "/* eslint-disable prettier/prettier */\r\nimport { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from \"@nestjs/common\";\r\nimport { RatingService } from \"./rating.service\";\r\nimport { RatingDto } from \"./dto\";\r\nimport { User } from \"@prisma/client\";\r\nimport { JwtGuard } from \"src/auth/guard\";\r\nimport { UpdateRatingDto } from \"./dto/update-rating.dto\";\r\nimport { GetUser } from \"src/auth/decorator\";\r\n\r\n@UseGuards(JwtGuard)\r\n@Controller('rate') \r\nexport class RatingController {\r\n    constructor(private readonly ratingService: RatingService){}\r\n\r\n    @Post() \r\n    @HttpCode(HttpStatus.CREATED)\r\n    create(@Body() ratingDto: RatingDto, @GetUser() user: User) {\r\n        return this.ratingService.create(ratingDto, user);\r\n    }\r\n\r\n    @Get()\r\n    findAll() {\r\n        return this.ratingService.findAll();\r\n    }\r\n\r\n    @Get(':id')\r\n    findOne(@Param('id') id: string) {\r\n        return this.ratingService.findOne(+id);\r\n    } \r\n\r\n    @Get('material/:material_id')\r\n    materialRating(@Param('material_id') material_id: string) {\r\n        return this.ratingService.materialRating(+material_id);\r\n    }\r\n    \r\n    @Get('channel/:channel_id')\r\n    channelRating(@Param('channel_id') channel_id: string) {\r\n        return this.ratingService.channelRating(+channel_id);\r\n    }\r\n\r\n    @Patch(':id')\r\n    update(@Param('id') id: string, @Body() updateRatingDto: UpdateRatingDto) {\r\n        return this.ratingService.update(+id, updateRatingDto);\r\n    }\r\n\r\n    @Delete(':id')\r\n    remove(@Param('id') id: string) {\r\n        return this.ratingService.remove(+id);\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate/channel/:channel_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								"channel",
+								":channel_id"
+							],
+							"variable": [
+								{
+									"key": "channel_id",
+									"value": "6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"rating\": 2,\r\n    \"remark\": \"Nice book\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/rate/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Rate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/rate/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"rate",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "25"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Replays",
+			"item": [
+				{
+					"name": "Replay",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"remark_id\": 3,\r\n    \"replay\": \"thank you\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindOne Replay",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"comment\": \"Nice book i read it multiple times\",\r\n    \"material_id\": 4,\r\n    \"channel_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find By Remark Id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"comment\": \"Nice book i read it multiple times\",\r\n    \"material_id\": 4,\r\n    \"channel_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays/remark/:remark_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays",
+								"remark",
+								":remark_id"
+							],
+							"variable": [
+								{
+									"key": "remark_id",
+									"value": "25"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Replay For Remark",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"comment\": \"Nice book i read it multiple times\",\r\n    \"material_id\": 4,\r\n    \"channel_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays/replay_for_remark/:remark_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays",
+								"replay_for_remark",
+								":remark_id"
+							],
+							"variable": [
+								{
+									"key": "remark_id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindAll Replays",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"comment\": \"Nice book i read it multiple times\",\r\n    \"material_id\": 4,\r\n    \"channel_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Replay",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"replay\": \"Nice thankyou\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Replay",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"comment\": \"Nice book i read it 3 times\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/replays/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"replays",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Report",
+			"item": [
+				{
+					"name": "Report Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"Stereotype\",\r\n    \"report_desc\": \"stereotype\",\r\n    \"material_id\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Report Channel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"Stereotype\",\r\n    \"report_desc\": \"stereotype\",\r\n    \"channel_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindAll Report",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindOne Report",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "11"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find By Report Type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports/report/:report_type",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports",
+								"report",
+								":report_type"
+							],
+							"variable": [
+								{
+									"key": "report_type",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Material Reports",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports/reports_on_material/:material_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports",
+								"reports_on_material",
+								":material_id"
+							],
+							"variable": [
+								{
+									"key": "material_id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Channel Reports",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports/reports_on_channel/:channel_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports",
+								"reports_on_channel",
+								":channel_id"
+							],
+							"variable": [
+								{
+									"key": "channel_id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Reports",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"report_type\": \"GenderViolation\",\r\n    \"report_desc\": \"gender violation\",\r\n    \"material_id\": 4\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/reports/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"reports",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "11"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subscribed User",
+			"item": [
+				{
+					"name": "Subscribed User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subscription_id\": 1,\r\n    \"name\": \"samuel\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscribed-users/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscribed-users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindOne Subscribed User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"special_end_date\": \"2023-04-22\",\r\n    \"discount_percent\": 10,\r\n    \"subscription_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscribed-users/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscribed-users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindAll Subscribed User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"special_end_date\": \"2023-04-22\",\r\n    \"discount_percent\": 10,\r\n    \"subscription_id\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscribed-users/",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscribed-users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscribed User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"sammy\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscribed-users/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscribed-users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscribed User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"sammy\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscribed-users/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscribed-users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Material Perchase",
+			"item": [
+				{
+					"name": "Material Purchase",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"first_name\": \"abc\",\r\n    \"last_name\": \"def\",\r\n    \"email\": \"abcdef@gmail.com\",\r\n    \"phone_no\": \"0912345678\",\r\n    \"currency\": \"ETB\",\r\n    \"material\": [],\r\n    \"price\": 260,\r\n    \"tax\": 20,\r\n    \"total\": 280\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material-purchase/request_checkout",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material-purchase",
+								"request_checkout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Material Purchased",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/material-purchase/verify/:tx_ref",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"material-purchase",
+								"verify",
+								":tx_ref"
+							],
+							"variable": [
+								{
+									"key": "tx_ref",
+									"value": "TX-Q6Z2LJ21DHUO4FN"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subscription Plan",
+			"item": [
+				{
+					"name": "Create Subscription Plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find For Channel",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 300,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/channel/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								"channel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "12"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription Plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 400,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find All Subscription Plan",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 300,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find One Subscription Plan By Id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 300,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find One Subscription Plan By Sub Type",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 300,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/get_by/:type",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								"get_by",
+								":type"
+							],
+							"variable": [
+								{
+									"key": "type",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription Plan Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Golden\",\r\n    \"description\": \"silver\",\r\n    \"price\": 300,\r\n    \"channel_id\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Channel Subscription Plan",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"silver\",\r\n    \"description\": \"silver\",\r\n    \"price\": 100,\r\n    \"channel_id\": 7\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/subscription-plan/channel/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"subscription-plan",
+								"channel",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Favorites",
+			"item": [
+				{
+					"name": "FavoriteMaterial",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\":\"c5962a7b-2fb8-4a72-9543-c65d45a40a8a\",\n    \"channel_id\":2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/favorite",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Favorite Materials",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/favorite",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"favorite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Favorite",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/favorite/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"favorite",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MyFavorites",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/favorite/user/:user_id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"favorite",
+								"user",
+								":user_id"
+							],
+							"variable": [
+								{
+									"key": "user_id",
+									"value": "c5962a7b-2fb8-4a72-9543-c65d45a40a8a"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "search material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"key\": \"hj\",\r\n    \"parent\": \"Publication\",\r\n    \"type\": \"Magazine\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/search",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "imageuplo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/upload",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "imageuplos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg"
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/IMG_20240408_112831_492.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/upload/multiple",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"upload",
+								"multiple"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "imageuplos Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg"
+								},
+								{
+									"key": "background",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/IMG_20240408_112831_492.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/upload/multiple",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"upload",
+								"multiple"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Channel Materials",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent\": \"Publication\",\r\n    \"type\": \"Audiobook\",\r\n    \"genere\": \"Unspecified\",\r\n    \"catagory\": \"Fiction\",\r\n    \"title\": \"Atomic Habits\",\r\n    \"description\": \"ሰው\",\r\n    \"price\": 199,\r\n    \"sellerProfile_id\": 1,\r\n    \"author\": \"James Clear\",\r\n    \"reader\": \"ዋለልኝ ሰውነት\",\r\n    \"translator\": \"ገረመው አደፍርስ\",\r\n    \"length_minute\":238,\r\n    \"length_page\": 0,\r\n    \"language\": \"Amharic\",\r\n    \"subscription_id\":[1],\r\n    \"publisher\": \"Ambasel\",\r\n    \"episode\": 0,\r\n    \"continues_from\": 1,\r\n    \"first_published_at\": \"07/06/1998\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Material Upload",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "material",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/channel/channel cover image.jpeg"
+								},
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/reader profile pic.jpg"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/reader profile pic.jpg"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/reader profile pic.jpg"
+								},
+								{
+									"key": "preview",
+									"type": "file",
+									"src": "/home/adoni/Documents/amped media/seller profile pic1920x1080.jpg"
+								},
+								{
+									"key": "",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/files/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"files",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material By Id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/:id",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Main Channel Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "material",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/book/book/accessible_epub_3.epub"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/updateMaterial/21",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"updateMaterial",
+								"21"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Material Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "profile",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/book/lelasew.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/updateMaterialProfile/21",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"updateMaterialProfile",
+								"21"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Material Cover",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cover",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/updateMaterialCover/21",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"updateMaterialCover",
+								"21"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Material Images",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "images",
+									"type": "file",
+									"src": [
+										"/C:/Users/sami ewenet/Desktop/test/book/lewet.png",
+										"/C:/Users/sami ewenet/Desktop/test/book/million.png"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/updateMaterialImage/21",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"updateMaterialImage",
+								"21"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Channel Material Preview",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "preview",
+									"type": "file",
+									"src": "/C:/Users/sami ewenet/Desktop/test/book/book/accessible_epub_3.epub"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{LocalUrl}}/channel-material/updateMaterialPreview/21",
+							"host": [
+								"{{LocalUrl}}"
+							],
+							"path": [
+								"channel-material",
+								"updateMaterialPreview",
+								"21"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "LocalUrl",
+			"value": "http://localhost:3007"
+		},
+		{
+			"key": "accessToken",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNTk2MmE3Yi0yZmI4LTRhNzItOTU0My1jNjVkNDVhNDBhOGEiLCJ1c2VybmFtZSI6ImFkb25pIiwidXNlckVtYWlsIjoiYWRvbmlAZ21haWwuY29tIiwiaWF0IjoxNzEyODIzNzIwLCJleHAiOjE3MTI5OTY1MjB9.heNfboWZxyPqb3UdgjVGC9TGQgETDEprH65cWIy0RVk",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
