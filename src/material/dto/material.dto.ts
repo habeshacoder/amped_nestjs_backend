@@ -1,70 +1,83 @@
 /* eslint-disable prettier/prettier */
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
-import { Parent, Type, Genere, Catagory } from "@prisma/client"
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Parent, Type, Genere, Catagory } from '@prisma/client';
 
 export class MaterialDto {
-    @IsString({message: 'Parent must be a string'})
-    @IsNotEmpty({message: 'Parent can\'t be empty'})
-    @IsIn(['Publication', 'Audio', 'Unspecified'])
-    parent:                 Parent
+  @IsString({ message: 'Parent must be a string' })
+  @IsNotEmpty({ message: "Parent can't be empty" })
+  @IsIn(['Publication', 'Audio', 'Unspecified'])
+  parent: Parent;
 
-    @IsString({message: 'Type must be a string'})
-    @IsNotEmpty({message: 'Type can\'t be empty'})
-    @IsIn(["Audiobook", "Book", "Magazine", "Newspaper", "Podcast", "Drama", "Unspecified"])
-    type:                   Type  
-    
-    @IsString({message: 'Genere must be a string'})
-    @IsNotEmpty({message: 'Genere can\'t be empty'})
-    @IsIn(["Psycology", "Commedy", "Unspecified"])
-    genere:                 Genere
+  @IsString({ message: 'Type must be a string' })
+  @IsNotEmpty({ message: "Type can't be empty" })
+  @IsIn([
+    'Audiobook',
+    'Book',
+    'Magazine',
+    'Newspaper',
+    'Podcast',
+    'Drama',
+    'Unspecified',
+  ])
+  type: Type;
 
-    @IsString({message: 'Catagory must be a string'})
-    @IsNotEmpty({message: 'Catagory can\'t be empty'})
-    @IsIn(["Fiction", "Story", "Documentary", "Unspecified"])
-    catagory:               Catagory
+  @IsString({ message: 'Genere must be a string' })
+  @IsNotEmpty({ message: "Genere can't be empty" })
+  @IsIn(['Psycology', 'Commedy', 'Unspecified'])
+  genere: Genere;
 
-    @IsNotEmpty({message: 'Title cannot be empty'})
-    @IsString({message: 'Title must be a string'})
-    title:                  string
+  @IsString({ message: 'Catagory must be a string' })
+  @IsNotEmpty({ message: "Catagory can't be empty" })
+  @IsIn(['Fiction', 'Story', 'Documentary', 'Unspecified'])
+  catagory: Catagory;
 
-    @IsString({message: 'Description must be a string'})
-    description:            string
+  @IsNotEmpty({ message: 'Title cannot be empty' })
+  @IsString({ message: 'Title must be a string' })
+  title: string;
 
-    @IsNumber()
-    price:                  number
+  @IsString({ message: 'Description must be a string' })
+  description: string;
 
-    @IsNotEmpty({message: 'Seller cannot be empty'})
-    @IsNumber()
-    sellerProfile_id:       number
+  @IsNumber()
+  price: number;
 
-    @IsString({message: 'Author must be a string'})
-    author:                 string
+  @IsNotEmpty({ message: 'Seller cannot be empty' })
+  @IsNumber()
+  sellerProfile_id: number;
 
-    @IsString({message: 'Reader must be a string'})
-    reader:                 string
+  @IsString({ message: 'Author must be a string' })
+  author: string;
 
-    @IsString({message: 'Translator must be a string'})
-    translator:             string
+  @IsString({ message: 'Reader must be a string' })
+  reader: string;
 
-    @IsNumber()
-    length_minute:          number
+  @IsString({ message: 'Translator must be a string' })
+  translator: string;
 
-    @IsNumber()
-    length_page:            number
+  @IsNumber()
+  length_minute: number;
 
-    @IsString({message: 'Language must be a string'})
-    language:               string
+  @IsNumber()
+  length_page: number;
 
-    @IsString({message: 'Publisher must be a string'})
-    publisher:              string
+  @IsString({ message: 'Language must be a string' })
+  language: string;
 
-    @IsNumber()
-    episode:                number
+  @IsString({ message: 'Publisher must be a string' })
+  publisher: string;
 
-    @IsNumber()
-    continues_from:         number
+  @IsNumber()
+  episode: number;
 
-    @IsNumber()
-    first_published_at:     number
+  @IsNumber()
+  continues_from: number;
 
+  @IsNumber()
+  first_published_at: number;
 }

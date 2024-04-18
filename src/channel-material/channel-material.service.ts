@@ -13,7 +13,7 @@ const fs = require('fs');
 
 @Injectable()
 export class ChannelMaterialService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(materialDto: ChannelMaterialDto) {
     try {
@@ -43,15 +43,16 @@ export class ChannelMaterialService {
       if (material && materialDto.subscription_id != null) {
         for await (let sub of materialDto.subscription_id) {
           // check if sub id is owned by user
-          const addToSubPlan = await this.prisma.materialInSubscriptionPlan.create({
-            data: {
-              channelMaterial_id: material.id,
-              subscriptionPlan_id: sub
-            }
-          })
+          const addToSubPlan =
+            await this.prisma.materialInSubscriptionPlan.create({
+              data: {
+                channelMaterial_id: material.id,
+                subscriptionPlan_id: sub,
+              },
+            });
         }
       }
-      return material
+      return material;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -65,65 +66,78 @@ export class ChannelMaterialService {
   }
 
   async createFile(images, id: number) {
-    const m_name = images["material"][0].path.split('\\');
-    const p_name = images["profile"][0].path.split('\\');
-    const c_name = images["cover"][0].path.split('\\');
-    // const i_name = images["images"][0].path.split('\\');
-    const pr_name = images["preview"][0].path.split('\\');
+    const m_name =
+      images['material'][0].path.split('/')[
+        images['material'][0].path.split('/').length - 1
+      ];
+
+    const p_name =
+      images['profile'][0].path.split('/')[
+        images['profile'][0].path.split('/').length - 1
+      ];
+
+    const c_name =
+      images['cover'][0].path.split('/')[
+        images['cover'][0].path.split('/').length - 1
+      ];
+
+    const pr_name =
+      images['preview'][0].path.split('/')[
+        images['preview'][0].path.split('/').length - 1
+      ];
 
     const material = await this.prisma.channelMaterial.findFirst({
       where: {
-        id: id
+        id: id,
       },
       include: {
         channel_material_image: true,
-        channel_material_preview: true
-      }
+        channel_material_preview: true,
+      },
     });
     if (material) {
-
       try {
         const matUpdate = await this.prisma.channelMaterial.update({
           data: {
-            material: m_name[3]
+            material: m_name,
           },
           where: {
-            id: id
-          }
-        })
+            id: id,
+          },
+        });
 
         const addProfileImage = await this.prisma.channelMaterialImage.create({
           data: {
-            image: p_name[3],
+            image: p_name,
             primary: true,
-            channel_material_id: material.id
-          }
-        })
+            channel_material_id: material.id,
+          },
+        });
 
         const addCoverImage = await this.prisma.channelMaterialImage.create({
           data: {
-            image: c_name[3],
+            image: c_name,
             cover: true,
-            channel_material_id: material.id
-          }
-        })
+            channel_material_id: material.id,
+          },
+        });
 
         const addPreview = await this.prisma.channelPreviewMaterial.create({
           data: {
-            preview: pr_name[3],
-            channel_material_id: material.id
-          }
-        })
+            preview: pr_name,
+            channel_material_id: material.id,
+          },
+        });
 
-        for await (let img of images["images"]) {
-          let name = img.path.split('\\');
-          let add = await this.prisma.channelMaterialImage.create({
-            data: {
-              image: name[3],
-              channel_material_id: material.id
-            }
-          })
-        }
+        // for await (let img of images['images']) {
+        //   let name = img.path.split('\\');
+        //   let add = await this.prisma.channelMaterialImage.create({
+        //     data: {
+        //       image: name[3],
+        //       channel_material_id: material.id,
+        //     },
+        //   });
+        // }
 
         return material;
       } catch (error) {
@@ -144,24 +158,24 @@ export class ChannelMaterialService {
   }
 
   async findAll() {
-    return ((await this.prisma.channelMaterial.findMany({
+    return await this.prisma.channelMaterial.findMany({
       include: {
         channel_material_image: true,
         channel_material_preview: true,
         material_in_subscription_plan: true,
         rate: true,
         report: true,
-      }
-    })));
+      },
+    });
   }
 
   async getMaterialByType(materialType: Type) {
     return await this.prisma.channelMaterial.findMany({
       where: {
-        type: materialType
+        type: materialType,
       },
       orderBy: {
-        first_published_at: 'desc'
+        first_published_at: 'desc',
       },
       include: {
         channel_material_image: true,
@@ -169,14 +183,12 @@ export class ChannelMaterialService {
         material_in_subscription_plan: true,
         rate: true,
         report: true,
-      }
-    })
+      },
+    });
   }
 
   async findOne(id: number) {
-
     try {
-
       //also add all associated data like images and preview
       const material = await this.prisma.channelMaterial.findUnique({
         where: {
@@ -188,25 +200,23 @@ export class ChannelMaterialService {
           material_in_subscription_plan: true,
           rate: true,
           report: true,
-        }
+        },
       });
 
-      if(material) {
+      if (material) {
         return material;
       } else {
-        return {message: 'Material Not Found'}
+        return { message: 'Material Not Found' };
       }
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(
-            'Wrong link'
-          )
+          throw new ForbiddenException('Wrong link');
         }
       }
       throw new ForbiddenException(
-        'There has been an error. Please check the link and try again.'
-      )
+        'There has been an error. Please check the link and try again.',
+      );
     }
   }
 
@@ -221,7 +231,7 @@ export class ChannelMaterialService {
         material_in_subscription_plan: true,
         rate: true,
         report: true,
-      }
+      },
     });
   }
 
@@ -291,49 +301,46 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      const m_name = materialFile["material"][0].path.split('\\');
+      const m_name = materialFile['material'][0].path.split('\\');
 
       if (m_name != null) {
         try {
-            const oldMaterial = material.material;
+          const oldMaterial = material.material;
 
-            const newMaterial = await this.prisma.channelMaterial.update({
-                where: {
-                    id: material.id,
-                },
-                data: {
-                    material: m_name[3]
-                },
+          const newMaterial = await this.prisma.channelMaterial.update({
+            where: {
+              id: material.id,
+            },
+            data: {
+              material: m_name[3],
+            },
+          });
+
+          if (newMaterial) {
+            fs.unlink('./uploads/material/' + oldMaterial, (err) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
             });
-
-            if (newMaterial) {
-                fs.unlink("./uploads/material/" + oldMaterial, (err) => {
-                    if (err) {
-                        console.error(err)
-                        return
-                    }
-                })
-
-            } else {
-                throw new ForbiddenException(
-                    'There has been an error. Please check the inputs and try again.'
-                )
-            }
-
-            return {
-                "message": "Material Updated Successfully"
-            }
-        } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-                if (error.code === 'P2002') {
-                    throw new ForbiddenException(
-                        'Credentials Taken'
-                    )
-                }
-            }
+          } else {
             throw new ForbiddenException(
-                'There has been an error. Please check the inputs and try again.'
-            )
+              'There has been an error. Please check the inputs and try again.',
+            );
+          }
+
+          return {
+            message: 'Material Updated Successfully',
+          };
+        } catch (error) {
+          if (error instanceof PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+              throw new ForbiddenException('Credentials Taken');
+            }
+          }
+          throw new ForbiddenException(
+            'There has been an error. Please check the inputs and try again.',
+          );
         }
       }
     } else {
@@ -351,72 +358,68 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      const m_name = materialProfile["material"][0].path.split('\\');
+      const m_name = materialProfile['material'][0].path.split('\\');
 
       if (m_name != null) {
         const matImg = await this.prisma.channelMaterialImage.findFirst({
           where: {
             channel_material_id: material.id,
-            primary: true
-          }
-        })
+            primary: true,
+          },
+        });
 
         if (matImg) {
           try {
-              const oldMaterial = matImg.image;
+            const oldMaterial = matImg.image;
 
-              const newMaterial = await this.prisma.channelMaterialImage.update({
-                  where: {
-                      id: matImg.id,
-                  },
-                  data: {
-                      image: m_name[3]
-                  },
+            const newMaterial = await this.prisma.channelMaterialImage.update({
+              where: {
+                id: matImg.id,
+              },
+              data: {
+                image: m_name[3],
+              },
+            });
+
+            if (newMaterial) {
+              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
               });
-
-              if (newMaterial) {
-                  fs.unlink("./uploads/material/" + oldMaterial, (err) => {
-                      if (err) {
-                          console.error(err)
-                          return
-                      }
-                  })
-
-              } else {
-                  throw new ForbiddenException(
-                      'There has been an error. Please check the inputs and try again.'
-                  )
-              }
-
-              return {
-                  "message": "Material Profile Updated Successfully"
-              }
-          } catch (error) {
-              if (error instanceof PrismaClientKnownRequestError) {
-                  if (error.code === 'P2002') {
-                      throw new ForbiddenException(
-                          'Credentials Taken'
-                      )
-                  }
-              }
+            } else {
               throw new ForbiddenException(
-                  'There has been an error. Please check the inputs and try again.'
-              )
+                'There has been an error. Please check the inputs and try again.',
+              );
+            }
+
+            return {
+              message: 'Material Profile Updated Successfully',
+            };
+          } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+              if (error.code === 'P2002') {
+                throw new ForbiddenException('Credentials Taken');
+              }
+            }
+            throw new ForbiddenException(
+              'There has been an error. Please check the inputs and try again.',
+            );
           }
         } else {
           const newMaterial = await this.prisma.channelMaterialImage.create({
             data: {
               image: m_name[3],
               primary: true,
-              channel_material_id: material.id
+              channel_material_id: material.id,
             },
           });
-        
 
           if (newMaterial) {
             return {
-              "message": "Material Profile Updated Successfully"
-            }
+              message: 'Material Profile Updated Successfully',
+            };
           }
         }
       }
@@ -435,72 +438,68 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      const m_name = materialCover["material"][0].path.split('\\');
+      const m_name = materialCover['material'][0].path.split('\\');
 
       if (m_name != null) {
         const matImg = await this.prisma.channelMaterialImage.findFirst({
           where: {
             channel_material_id: material.id,
-            cover: true
-          }
-        })
+            cover: true,
+          },
+        });
 
         if (matImg) {
           try {
-              const oldMaterial = matImg.image;
+            const oldMaterial = matImg.image;
 
-              const newMaterial = await this.prisma.channelMaterialImage.update({
-                  where: {
-                      id: matImg.id,
-                  },
-                  data: {
-                      image: m_name[3]
-                  },
+            const newMaterial = await this.prisma.channelMaterialImage.update({
+              where: {
+                id: matImg.id,
+              },
+              data: {
+                image: m_name[3],
+              },
+            });
+
+            if (newMaterial) {
+              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
               });
-
-              if (newMaterial) {
-                  fs.unlink("./uploads/material/" + oldMaterial, (err) => {
-                      if (err) {
-                          console.error(err)
-                          return
-                      }
-                  })
-
-              } else {
-                  throw new ForbiddenException(
-                      'There has been an error. Please check the inputs and try again.'
-                  )
-              }
-
-              return {
-                  "message": "Material Profile Updated Successfully"
-              }
-          } catch (error) {
-              if (error instanceof PrismaClientKnownRequestError) {
-                  if (error.code === 'P2002') {
-                      throw new ForbiddenException(
-                          'Credentials Taken'
-                      )
-                  }
-              }
+            } else {
               throw new ForbiddenException(
-                  'There has been an error. Please check the inputs and try again.'
-              )
+                'There has been an error. Please check the inputs and try again.',
+              );
+            }
+
+            return {
+              message: 'Material Profile Updated Successfully',
+            };
+          } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+              if (error.code === 'P2002') {
+                throw new ForbiddenException('Credentials Taken');
+              }
+            }
+            throw new ForbiddenException(
+              'There has been an error. Please check the inputs and try again.',
+            );
           }
         } else {
           const newMaterial = await this.prisma.channelMaterialImage.create({
             data: {
               image: m_name[3],
               cover: true,
-              channel_material_id: material.id
+              channel_material_id: material.id,
             },
           });
-        
 
           if (newMaterial) {
             return {
-              "message": "Material Cover Updated Successfully"
-            }
+              message: 'Material Cover Updated Successfully',
+            };
           }
         }
       }
@@ -519,70 +518,68 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      const m_name = materialPreview["material"][0].path.split('\\');
+      const m_name = materialPreview['material'][0].path.split('\\');
 
       if (m_name != null) {
         const matPrv = await this.prisma.channelPreviewMaterial.findFirst({
           where: {
-            channel_material_id: material.id
-          }
-        })
+            channel_material_id: material.id,
+          },
+        });
 
         if (matPrv) {
           try {
-              const oldMaterial = matPrv.preview;
+            const oldMaterial = matPrv.preview;
 
-              const newMaterial = await this.prisma.channelPreviewMaterial.update({
-                  where: {
-                      id: matPrv.id,
-                  },
-                  data: {
-                      preview: m_name[3]
-                  },
+            const newMaterial = await this.prisma.channelPreviewMaterial.update(
+              {
+                where: {
+                  id: matPrv.id,
+                },
+                data: {
+                  preview: m_name[3],
+                },
+              },
+            );
+
+            if (newMaterial) {
+              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
+                if (err) {
+                  console.error(err);
+                  return;
+                }
               });
-
-              if (newMaterial) {
-                  fs.unlink("./uploads/material/" + oldMaterial, (err) => {
-                      if (err) {
-                          console.error(err)
-                          return
-                      }
-                  })
-
-              } else {
-                  throw new ForbiddenException(
-                      'There has been an error. Please check the inputs and try again.'
-                  )
-              }
-
-              return {
-                  "message": "Material Preview Updated Successfully"
-              }
-          } catch (error) {
-              if (error instanceof PrismaClientKnownRequestError) {
-                  if (error.code === 'P2002') {
-                      throw new ForbiddenException(
-                          'Credentials Taken'
-                      )
-                  }
-              }
+            } else {
               throw new ForbiddenException(
-                  'There has been an error. Please check the inputs and try again.'
-              )
+                'There has been an error. Please check the inputs and try again.',
+              );
+            }
+
+            return {
+              message: 'Material Preview Updated Successfully',
+            };
+          } catch (error) {
+            if (error instanceof PrismaClientKnownRequestError) {
+              if (error.code === 'P2002') {
+                throw new ForbiddenException('Credentials Taken');
+              }
+            }
+            throw new ForbiddenException(
+              'There has been an error. Please check the inputs and try again.',
+            );
           }
         } else {
           const newMaterial = await this.prisma.channelPreviewMaterial.create({
             data: {
               preview: m_name[3],
-              channel_material_id: material.id
+              channel_material_id: material.id,
             },
           });
-        
 
           if (newMaterial) {
             return {
-              "message": "Material Preview Updated Successfully"
-            }
+              message: 'Material Preview Updated Successfully',
+            };
           }
         }
       }
@@ -605,18 +602,18 @@ export class ChannelMaterialService {
         where: {
           channel_material_id: material.id,
           primary: false,
-          cover: false
-        }
-      })
+          cover: false,
+        },
+      });
 
-      for await (let img of material["images"]) {
+      for await (let img of material['images']) {
         let name = img.path.split('\\');
         let add = await this.prisma.channelMaterialImage.create({
           data: {
             image: name[3],
-            channel_material_id: material.id
-          }
-        })
+            channel_material_id: material.id,
+          },
+        });
       }
 
       if (matI) {
@@ -625,22 +622,22 @@ export class ChannelMaterialService {
           const d = await this.prisma.channelMaterialImage.delete({
             where: {
               id: img.id,
-            }
-          })
+            },
+          });
           if (d) {
-            fs.unlink("./uploads/material/" + i, (err) => {
+            fs.unlink('./uploads/material/' + i, (err) => {
               if (err) {
-                  console.error(err)
-                  return
+                console.error(err);
+                return;
               }
-            })
+            });
           }
         }
       }
 
       return {
-        "message": "Material Images Updated Successfully"
-      }
+        message: 'Material Images Updated Successfully',
+      };
     } else {
       throw new ForbiddenException(
         "Can't update while there is no material. Please create a material first.",
@@ -783,13 +780,14 @@ export class ChannelMaterialService {
 
     if (!materialImage) {
       try {
-        const newMaterialProfile = await this.prisma.channelMaterialImage.create({
-          data: {
-            image: name[3],
-            primary: true,
-            channel_material_id: id,
-          },
-        });
+        const newMaterialProfile =
+          await this.prisma.channelMaterialImage.create({
+            data: {
+              image: name[3],
+              primary: true,
+              channel_material_id: id,
+            },
+          });
 
         if (newMaterialProfile) {
           return newMaterialProfile;
@@ -855,8 +853,9 @@ export class ChannelMaterialService {
       },
     });
 
-    return (res.sendFile(join(process.cwd(), './uploads/material/' + materialImage.image)));
-
+    return res.sendFile(
+      join(process.cwd(), './uploads/material/' + materialImage.image),
+    );
   }
 
   async getMaterialCoverName(id: number) {
@@ -866,7 +865,7 @@ export class ChannelMaterialService {
       },
     });
 
-    return materialImage.image
+    return materialImage.image;
   }
 
   async uploadMaterialCover(file: Express.Multer.File, id: number) {
@@ -953,7 +952,9 @@ export class ChannelMaterialService {
       },
     });
 
-    return (res.sendFile(join(process.cwd(), 'uploads/material/' + materialImage.image)));
+    return res.sendFile(
+      join(process.cwd(), 'uploads/material/' + materialImage.image),
+    );
   }
 
   async uploadMaterialImage(files: Array<Express.Multer.File>, id: number) {
@@ -995,7 +996,9 @@ export class ChannelMaterialService {
       },
     });
 
-    return (res.sendFile(join(process.cwd(), 'uploads/material/' + materialImage.image)));
+    return res.sendFile(
+      join(process.cwd(), 'uploads/material/' + materialImage.image),
+    );
   }
 
   async uploadMaterialPreview(file: Express.Multer.File, id: number) {
@@ -1074,12 +1077,11 @@ export class ChannelMaterialService {
         }
       }
     } else {
-
       return await this.prisma.channelPreviewMaterial.create({
         data: {
           channel_material_id: id,
-          preview: name[3]
-        }
+          preview: name[3],
+        },
       });
     }
   }
@@ -1091,6 +1093,8 @@ export class ChannelMaterialService {
       },
     });
 
-    return (res.sendFile(join(process.cwd(), 'uploads/material/' + preview.preview)));
+    return res.sendFile(
+      join(process.cwd(), 'uploads/material/' + preview.preview),
+    );
   }
 }

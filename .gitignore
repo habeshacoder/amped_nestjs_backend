@@ -4,6 +4,7 @@
 /build
 
 # Logs
+.git
 logs
 *.log
 npm-debug.log*

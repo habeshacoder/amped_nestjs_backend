@@ -1,7 +1,6 @@
 // import { Injectable, NestMiddleware } from "@nestjs/common";
 // import { Request, Response } from "express";
 // import * as firebase from "firebase-admin";
-// import * as serviceAccount from '../firebase/aratkillo-1bd43-firebase-adminsdk-40tom-392938f2a7.json';
 
 // const firebase_params = {
 //     type: serviceAccount.type,
@@ -23,7 +22,6 @@
 //     constructor () {
 //         this.defaultApp = firebase.initializeApp({
 //             credential: firebase.credential.cert(firebase_params),
-//             databaseURL: 'https://aratkillo-1bd43-firebase-admin'
 //         });
 //     }
 

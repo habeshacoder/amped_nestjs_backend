@@ -1,10 +1,13 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
-// import { MailModule } from './mail/mail.module';
-// import { PreauthMiddleware } from './auth/middleware/preauth.middleware';
 import { ProfilesModule } from './profiles/profiles.module';
 import { MulterModule } from '@nestjs/platform-express/multer';
 import { SellerProfilesModule } from './seller-profiles/seller-profiles.module';
@@ -24,37 +27,36 @@ import { SearchModule } from './search/search.module';
 import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.module';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true
-        }),
-        AuthModule, 
-        UserModule, 
-        PrismaModule, 
-        // MailModule, 
-        ProfilesModule,
-        MulterModule.register({dest: './uploads'}),
-        SellerProfilesModule,
-        MaterialModule,
-        ChannelMaterialModule,
-        SocialLinksProfileModule,
-        ChannelModule,
-        SocialLinksChannelModule,
-        SubscriptionPlanModule,
-        MaterialPurchaseModule,
-        RatingModule,
-        ReplayModule,
-        ReportModule,
-        SubscibedUserModule,
-        FavoriteModule,
-        SearchModule,
-        ChannelPurchaseModule
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
+    UserModule,
+    PrismaModule,
+    ProfilesModule,
+    MulterModule.register({ dest: './uploads' }),
+    SellerProfilesModule,
+    MaterialModule,
+    ChannelMaterialModule,
+    SocialLinksProfileModule,
+    ChannelModule,
+    SocialLinksChannelModule,
+    SubscriptionPlanModule,
+    MaterialPurchaseModule,
+    RatingModule,
+    ReplayModule,
+    ReportModule,
+    SubscibedUserModule,
+    FavoriteModule,
+    SearchModule,
+    ChannelPurchaseModule,
+  ],
 })
-export class AppModule  {
-    // configure(consumer: MiddlewareConsumer) {
-    //     // consumer.apply(PreauthMiddleware).forRoutes({
-    //     //     path: '/auth/firebase', method: RequestMethod.GET,
-    //     // });
-    // }
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //     // consumer.apply(PreauthMiddleware).forRoutes({
+  //     //     path: '/auth/firebase', method: RequestMethod.GET,
+  //     // });
+  // }
 }
