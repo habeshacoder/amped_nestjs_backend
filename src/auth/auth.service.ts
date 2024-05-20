@@ -1,13 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  RegisterDto,
-  LoginDto,
-  ForgetDto,
-  ResetDto,
-  ResetPhoneDto,
-} from './dto';
+import { RegisterDto, LoginDto, ResetDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { JwtService } from '@nestjs/jwt';
@@ -111,136 +105,6 @@ export class AuthService {
     return updatedUser;
   }
 
-  async verify(token: string) {
-    const secret = this.config.get('JWT_SECRET');
-    try {
-      const decoded = this.jwt.verify(token, { secret: secret });
-
-      //fetch user by id
-      const user = await this.prisma.user.findUnique({
-        where: {
-          id: decoded.sub,
-        },
-      });
-      //verify the user
-      if (user.email !== decoded.email && user.username !== decoded.name) {
-        throw new ForbiddenException('Invalid Token');
-      } else {
-        const updatedUser = await this.prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            is_verified: true,
-          },
-        });
-
-        return this.signToken(
-          updatedUser.id,
-          updatedUser.email,
-          updatedUser.is_verified,
-        );
-      }
-    } catch (error) {
-      throw new ForbiddenException(
-        'Invalide link. Please request a new link to verify your account.',
-      );
-    }
-  }
-
-  async reset(dto: ResetDto) {
-    //verify the token
-    const secret = this.config.get('JWT_SECRET');
-    try {
-      const decoded = this.jwt.verify(dto.token, { secret: secret });
-
-      const resetData = await this.prisma.passwordReset.findFirst({
-        where: {
-          user_id: decoded.sub,
-        },
-        orderBy: {
-          id: 'desc',
-        },
-      });
-
-      if (resetData.reset_token !== dto.token) {
-        throw new ForbiddenException('Invalid Token');
-      }
-
-      //fetch user by id
-      const user = await this.prisma.user.findUnique({
-        where: {
-          id: decoded.sub,
-        },
-      });
-      //verify the user
-      if (user.email !== decoded.email && user.username !== decoded.name) {
-        throw new ForbiddenException('Invalid Token');
-      } else {
-        //update the database
-        const hash = await this.hashData(dto.password);
-
-        const updatedUser = await this.prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            password: hash,
-          },
-        });
-
-        //return success
-        return { message: 'Password updated successfully.' };
-      }
-    } catch (error) {
-      throw new ForbiddenException(
-        'Expired link. Please request a new link to verify your account.',
-      );
-    }
-  }
-
-  async resetPhone(dto: ResetPhoneDto) {
-    //verify the token
-    try {
-      const resetData = await this.prisma.passwordReset.findFirst({
-        where: {
-          otp: dto.otp,
-        },
-      });
-
-      const now = new Date(new Date().getTime());
-      if (resetData.expiries_at < now) {
-        throw new ForbiddenException('Expired Token');
-      }
-
-      //fetch user by id
-      const user = await this.prisma.user.findUnique({
-        where: {
-          id: resetData.user_id,
-        },
-      });
-
-      //update the database
-      const hash = await this.hashData(dto.password);
-
-      const updatedUser = await this.prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          password: hash,
-        },
-      });
-
-      //return success
-      return { message: 'Password updated successfully.' };
-    } catch (error) {
-      throw new ForbiddenException(
-        'Expired link. Please request a new link to verify your account.',
-      );
-    }
-  }
-
   async signToken(
     userId: string,
     email: string,
@@ -255,7 +119,7 @@ export class AuthService {
     const secret = this.config.get('JWT_SECRET');
 
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '2d',
+      expiresIn: '7d',
       secret: secret,
     });
 
@@ -339,5 +203,19 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.username, user.email);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;
+  }
+  async findAll() {
+    const profiles = await this.prisma.user.findMany({
+      include: {
+        seller_profile: true,
+        profiles: true,
+      },
+    });
+
+    if (profiles) {
+      return profiles;
+    } else {
+      return { message: 'No profile found.' };
+    }
   }
 }

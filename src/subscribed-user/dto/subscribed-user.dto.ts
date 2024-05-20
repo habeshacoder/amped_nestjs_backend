@@ -1,11 +1,11 @@
-import {  IsInt, IsNotEmpty, IsString } from "class-validator"
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class SubscribedUserDto {
-    @IsInt()
-    @IsNotEmpty()
-    subscription_id:              number
+  @IsInt()
+  @IsNotEmpty()
+  subscription_id: number;
 
-    @IsString()
-    @IsNotEmpty()
-    name:                         string
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }

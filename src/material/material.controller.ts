@@ -318,7 +318,7 @@ export class MaterialController {
     return this.materialService.updateMaterialPreview(files, +id);
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.materialService.remove(+id);

@@ -11,19 +11,8 @@ import {
 import { Request } from 'express';
 import { Query, Req, UseGuards } from '@nestjs/common/decorators';
 import { AuthService } from './auth.service';
-import {
-  RegisterDto,
-  LoginDto,
-  ForgetDto,
-  ResetDto,
-  ResetPhoneDto,
-} from './dto';
-import {
-  GoogleGuard,
-  FacebookGuard,
-  JwtGuard,
-  RefreshTokenGuard,
-} from './guard';
+import { RegisterDto, LoginDto, ResetDto } from './dto';
+import { JwtGuard, RefreshTokenGuard } from './guard';
 
 @Controller('auth')
 export class AuthController {
@@ -46,23 +35,17 @@ export class AuthController {
     return this.authService.logout(req.user['id']);
   }
 
-  @HttpCode(HttpStatus.OK)
-  @Get('confirm')
-  verify(@Query() token: any) {
-    return this.authService.verify(token.t);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Patch('reset_password')
-  reset(@Body() dto: ResetDto) {
-    return this.authService.reset(dto);
-  }
-
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
   refreshTokens(@Req() req: Request) {
     const userId = req.user['sub'];
     const refreshToken = req.user['refreshToken'];
     return this.authService.refreshTokens(userId, refreshToken);
+  }
+
+  // @UseGuards(RefreshTokenGuard)
+  @Get('users')
+  findAll() {
+    return this.authService.findAll();
   }
 }

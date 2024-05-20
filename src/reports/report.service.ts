@@ -1,27 +1,29 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { PrismaService } from "src/prisma/prisma.service";
-import { ReportDto } from "./dto";
-import { ReportType, User } from "@prisma/client";
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ReportDto } from './dto';
+import { ReportType, User } from '@prisma/client';
 
 @Injectable()
 export class ReportService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(reportDto: ReportDto, user: User) {
     const findReport = await this.prisma.report.findFirst({
       where: {
         user_id: user.id,
         material_id: reportDto.material_id,
-        channel_id: reportDto.channel_id
+        channel_id: reportDto.channel_id,
       },
     });
 
     if (!findReport) {
-        if (!reportDto.channel_id && reportDto.material_id || reportDto.channel_id && !reportDto.material_id ) {
+      if (
+        (!reportDto.channel_id && reportDto.material_id) ||
+        (reportDto.channel_id && !reportDto.material_id)
+      ) {
         try {
-
-          let reportType: ReportType = reportDto.report_type;//parse to enum type
+          let reportType: ReportType = reportDto.report_type; //parse to enum type
 
           const report = await this.prisma.report.create({
             data: {
@@ -29,7 +31,7 @@ export class ReportService {
               report_type: reportType,
               report_desc: reportDto.report_desc,
               material_id: reportDto.material_id,
-              channel_id: reportDto.channel_id
+              channel_id: reportDto.channel_id,
             },
           });
 
@@ -46,7 +48,7 @@ export class ReportService {
             'There has been an error. Please check the inputs and try again.',
           );
         }
-    } else {
+      } else {
         throw new ForbiddenException(
           "Can't report on the same material or channel multiple times.",
         );
@@ -59,7 +61,17 @@ export class ReportService {
   }
 
   async findAll() {
-    const reports = await this.prisma.report.findMany();
+    const reports = await this.prisma.report.findMany({
+      include: {
+        user: true,
+        Material: {
+          include: {
+            SellerProfile: true,
+          },
+        },
+        Channel: true,
+      },
+    });
 
     if (reports) {
       return reports;
@@ -148,10 +160,7 @@ export class ReportService {
         );
       }
     } else {
-      throw new ForbiddenException(
-        "Can't delete while there is no report.",
-      );
+      throw new ForbiddenException("Can't delete while there is no report.");
     }
   }
-  
 }

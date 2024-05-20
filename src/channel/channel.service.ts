@@ -65,9 +65,6 @@ export class ChannelService {
 
   async findAll() {
     const chann = await this.prisma.channel.findMany({
-      // where: {
-      //   draft: false,
-      // },
       include: {
         channel_image: true,
         channel_preview: true,
@@ -75,11 +72,15 @@ export class ChannelService {
         subscription_plan: true,
         rate: true,
         report: true,
+        SellerProfile: true,
+      },
+      orderBy: {
+        created_at: 'asc',
       },
     });
-    console.log('chann:--------', chann);
-    const shuffledElements = chann.sort(() => 0.5 - Math.random());
-    return shuffledElements.slice(0, 3);
+    // console.log('chann:--------', chann);
+    // const shuffledElements = chann.sort(() => 0.5 - Math.random());
+    return chann;
   }
 
   async paginateChannels(params: { take?: number; page?: number }) {

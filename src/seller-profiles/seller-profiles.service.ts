@@ -49,7 +49,11 @@ export class SellerProfilesService {
   }
 
   async findAll() {
-    return await this.prisma.sellerProfile.findMany();
+    return await this.prisma.sellerProfile.findMany({
+      include: {
+        User: true,
+      },
+    });
   }
 
   async findOne(id: number) {

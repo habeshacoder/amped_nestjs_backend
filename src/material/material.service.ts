@@ -165,8 +165,10 @@ export class MaterialService {
         material_user: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
+        SellerProfile: true,
+      },
+      orderBy: {
+        id: 'asc',
       },
     });
   }
@@ -184,8 +186,6 @@ export class MaterialService {
         // wish_list: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
       },
     });
 
@@ -203,8 +203,6 @@ export class MaterialService {
         // wish_list: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
       },
     });
 
@@ -223,11 +221,8 @@ export class MaterialService {
         material_preview: true,
         // wish_list: true,
         material_user: true,
-        // unfinishedOrderDetails: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
       },
     });
 
@@ -244,11 +239,8 @@ export class MaterialService {
         material_preview: true,
         // wish_list: true,
         material_user: true,
-        // unfinishedOrderDetails: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
       },
     });
 
@@ -350,11 +342,8 @@ export class MaterialService {
         material_preview: true,
         // wish_list: true,
         material_user: true,
-        // unfinishedOrderDetails: true,
         rate: true,
         report: true,
-        // special_price: true,
-        // ewenet_special_price: true
       },
     });
 

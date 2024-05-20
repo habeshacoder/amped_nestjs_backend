@@ -151,7 +151,10 @@ export class ChannelController {
   remove(@Param('id') id: string) {
     return this.channelService.remove(+id);
   }
-
+  @Delete('admin/:id')
+  removeAdmin(@Param('id') id: string) {
+    return this.channelService.remove(+id);
+  }
   //channel image upload
   // @Post('upload/channel_profile')
   // @UseInterceptors(FileInterceptor('profile', {

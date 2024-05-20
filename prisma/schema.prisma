@@ -413,10 +413,10 @@ enum Catagory {
 }
 
 enum ReportType {
-  HateSpeach
+  HateSpeech
   GenderViolation
   InappropriateAgeRange
   Stereotype
-  Descrimination
+  Discrimination
   Unspecified
 }

@@ -6,12 +6,17 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+     "deploy": "vercel",
     "prisma:dev:deploy": "prisma migrate deploy",
     "prisma:test:deploye": "dotenv -e .env.test -- prisma migrate deploy",
     "db:dev:restart": "prisma migrate reset -s -f -v",
     "db:test:restart": "dotenv -e .env.test -- prisma migrate reset -f",
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "copy-package": "cp package.json dist/package.json",
+    "copy-prisma-schema": "cp ./prisma/schema.prisma dist/schema.prisma",
+    "copy-env": "cp .env dist/.env",
+    "build-with-package": "npm run build && npm run copy-package && npm run copy-prisma-schema && npm run copy-env",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -54,7 +59,8 @@
     "request": "^2.88.2",
     "request-promise": "^0.0.1",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "vercel": "^34.1.10"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

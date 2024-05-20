@@ -63,7 +63,11 @@ export class ProfilesService {
   }
 
   async findAll() {
-    const profiles = await this.prisma.profile.findMany();
+    const profiles = await this.prisma.profile.findMany({
+      include: {
+        User: true, // Include the related user data
+      },
+    });
 
     if (profiles) {
       return profiles;

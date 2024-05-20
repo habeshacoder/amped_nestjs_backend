@@ -29,7 +29,7 @@ export class MaterialDto {
 
   @IsString({ message: 'Genere must be a string' })
   @IsNotEmpty({ message: "Genere can't be empty" })
-  @IsIn(['Psycology', 'Commedy', 'Unspecified'])
+  @IsIn(['Psychology', 'Comedy', 'Unspecified'])
   genere: Genere;
 
   @IsString({ message: 'Catagory must be a string' })
