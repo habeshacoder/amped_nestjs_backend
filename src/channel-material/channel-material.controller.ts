@@ -146,11 +146,11 @@ export class ChannelMaterialController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        // {name: 'material', maxCount: 1},
+        { name: 'material', maxCount: 1 },
         { name: 'profile', maxCount: 1 },
-        // {name: 'cover', maxCount: 1},
-        // {name: 'images', maxCount: 10},
-        // {name: 'preview', maxCount: 1}
+        { name: 'cover', maxCount: 1 },
+        { name: 'images', maxCount: 10 },
+        { name: 'preview', maxCount: 1 },
       ],
       {
         storage: diskStorage({
@@ -174,11 +174,11 @@ export class ChannelMaterialController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        // {name: 'material', maxCount: 1},
-        // {name: 'profile', maxCount: 1},
+        { name: 'material', maxCount: 1 },
+        { name: 'profile', maxCount: 1 },
         { name: 'cover', maxCount: 1 },
-        // {name: 'images', maxCount: 10},
-        // {name: 'preview', maxCount: 1}
+        { name: 'images', maxCount: 10 },
+        { name: 'preview', maxCount: 1 },
       ],
       {
         storage: diskStorage({
@@ -192,7 +192,7 @@ export class ChannelMaterialController {
     @Param('id') id: string,
     @UploadedFiles() files: { cover: Express.Multer.File },
   ) {
-    //, profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
+    // , profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
     return this.channelMaterialService.updateMaterialCover(files, +id);
   }
 

@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SearchDto, SearchChannelDto } from './dto';
-import { SearchUserDto } from './dto/searchUser.dto';
+import { SearchDto } from './dto';
 
 @Injectable()
 export class SearchService {
@@ -41,12 +40,12 @@ export class SearchService {
     };
   }
 
-  async suggestChannel(searchChannelDto: SearchChannelDto) {
+  async suggestChannel(searchDto: SearchDto) {
     const where = new Map<string, unknown>();
 
-    if (searchChannelDto.key != null) {
+    if (searchDto.key != null) {
       where.set('name', {
-        contains: searchChannelDto.key,
+        contains: searchDto.key,
         mode: 'insensitive',
       });
     }
@@ -69,23 +68,72 @@ export class SearchService {
       success: true,
     };
   }
-  async suggestUser(searchUserDto: SearchUserDto) {
+  async suggestUser(searchDto: SearchDto) {
     const where = new Map<string, unknown>();
 
-    if (searchUserDto.key != null) {
+    if (searchDto.key != null) {
       where.set('username', {
-        contains: searchUserDto.key,
+        contains: searchDto.key,
         mode: 'insensitive',
       });
     }
 
     var whe = Object.fromEntries(where);
 
-    const foundChannel = await this.prisma.user.findMany({
+    const foundUser = await this.prisma.user.findMany({
       where: whe,
     });
 
-    var mainMatches = foundChannel;
+    var mainMatches = foundUser;
+
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
+
+  async suggestSellerProfile(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('name', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundSellerProfile = await this.prisma.sellerProfile.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundSellerProfile;
+
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
+  async suggestProfile(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('first_name', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundProfile = await this.prisma.profile.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundProfile;
 
     return {
       mainMatches,

@@ -122,7 +122,7 @@ export class SellerProfilesController {
     return this.sellerProfilesService.updateCoverImage(files, +id);
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.sellerProfilesService.remove(+id);

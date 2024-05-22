@@ -8,8 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guard';
 import { SearchService } from './search.service';
-import { SearchDto, SearchChannelDto } from './dto';
-import { SearchUserDto } from './dto/searchUser.dto';
+import { SearchDto } from './dto';
 
 // @UseGuards(JwtGuard)
 @Controller('search')
@@ -24,12 +23,24 @@ export class SearchController {
 
   @Post('/channel')
   @HttpCode(HttpStatus.OK)
-  suggestChannel(@Body() searchChannelDto: SearchChannelDto) {
+  suggestChannel(@Body() searchChannelDto: SearchDto) {
     return this.searchService.suggestChannel(searchChannelDto);
   }
   @Post('/user')
   @HttpCode(HttpStatus.OK)
-  suggestUser(@Body() searchUserDto: SearchUserDto) {
+  suggestUser(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestUser(searchUserDto);
+  }
+
+  @Post('/sellerProfile')
+  @HttpCode(HttpStatus.OK)
+  suggestSellerProfile(@Body() searchUserDto: SearchDto) {
+    return this.searchService.suggestSellerProfile(searchUserDto);
+  }
+
+  @Post('/profile')
+  @HttpCode(HttpStatus.OK)
+  suggestProfile(@Body() searchUserDto: SearchDto) {
+    return this.searchService.suggestProfile(searchUserDto);
   }
 }

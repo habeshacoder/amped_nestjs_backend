@@ -128,7 +128,7 @@ export class ProfilesController {
     return this.profilesService.updateCoverImage(files, +id);
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.profilesService.remove(+id);

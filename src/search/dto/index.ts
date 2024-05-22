@@ -1,2 +1,1 @@
-export * from './search.dto'
-export * from './searchChannel.dto'
+export * from './search.dto';

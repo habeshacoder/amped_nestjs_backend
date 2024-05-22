@@ -67,6 +67,9 @@ export class ProfilesService {
       include: {
         User: true, // Include the related user data
       },
+      orderBy: {
+        id: 'asc',
+      },
     });
 
     if (profiles) {

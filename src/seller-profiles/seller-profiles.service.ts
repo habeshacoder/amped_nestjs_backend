@@ -52,6 +52,9 @@ export class SellerProfilesService {
     return await this.prisma.sellerProfile.findMany({
       include: {
         User: true,
+        channel: true,
+        channel_material: true,
+        material: true,
       },
     });
   }
