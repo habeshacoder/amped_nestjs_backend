@@ -48,7 +48,7 @@ export class SearchController {
   suggestChanneMaterial(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestChannelMaterial(searchUserDto);
   }
-  @Post('/channel-material')
+  @Post('/subscription-plan')
   @HttpCode(HttpStatus.OK)
   suggestSubscriptionPlan(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestSubscriptionPlan(searchUserDto);
