@@ -252,7 +252,7 @@ export class ChannelMaterialController {
     return this.channelMaterialService.updateMaterialPreview(files, +id);
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.channelMaterialService.remove(+id);

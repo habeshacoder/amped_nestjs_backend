@@ -141,4 +141,51 @@ export class SearchService {
       success: true,
     };
   }
+
+  async suggestChannelMaterial(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('title', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundProfile = await this.prisma.channelMaterial.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundProfile;
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
+  async suggestSubscriptionPlan(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('name', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundProfile = await this.prisma.subscriptionPlan.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundProfile;
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
 }
