@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -68,7 +69,7 @@ export class SearchController {
   suggestReport(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestReport(searchUserDto);
   }
-  @Post('/vercel')
+  @Get('/vercel')
   @HttpCode(HttpStatus.OK)
   checkVercel() {
     return 'congra! connected to vercel';
