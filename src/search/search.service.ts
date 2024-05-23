@@ -154,11 +154,11 @@ export class SearchService {
 
     var whe = Object.fromEntries(where);
 
-    const foundProfile = await this.prisma.channelMaterial.findMany({
+    const foundChannelMaterial = await this.prisma.channelMaterial.findMany({
       where: whe,
     });
 
-    var mainMatches = foundProfile;
+    var mainMatches = foundChannelMaterial;
     return {
       mainMatches,
       message: 'Matches returned successfully.',
@@ -177,11 +177,58 @@ export class SearchService {
 
     var whe = Object.fromEntries(where);
 
-    const foundProfile = await this.prisma.subscriptionPlan.findMany({
+    const foundSubscriptionPlan = await this.prisma.subscriptionPlan.findMany({
       where: whe,
     });
 
-    var mainMatches = foundProfile;
+    var mainMatches = foundSubscriptionPlan;
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
+
+  async suggestReplays(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('replay', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundReplays = await this.prisma.replay.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundReplays;
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
+  async suggestRate(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('remark', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundReplays = await this.prisma.rate.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundReplays;
     return {
       mainMatches,
       message: 'Matches returned successfully.',

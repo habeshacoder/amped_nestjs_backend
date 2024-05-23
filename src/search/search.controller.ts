@@ -53,4 +53,14 @@ export class SearchController {
   suggestSubscriptionPlan(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestSubscriptionPlan(searchUserDto);
   }
+  @Post('/replays')
+  @HttpCode(HttpStatus.OK)
+  suggestReplays(@Body() searchUserDto: SearchDto) {
+    return this.searchService.suggestReplays(searchUserDto);
+  }
+  @Post('/rate')
+  @HttpCode(HttpStatus.OK)
+  suggestRate(@Body() searchUserDto: SearchDto) {
+    return this.searchService.suggestRate(searchUserDto);
+  }
 }
