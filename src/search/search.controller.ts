@@ -63,4 +63,9 @@ export class SearchController {
   suggestRate(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestRate(searchUserDto);
   }
+  @Post('/reports')
+  @HttpCode(HttpStatus.OK)
+  suggestReport(@Body() searchUserDto: SearchDto) {
+    return this.searchService.suggestReport(searchUserDto);
+  }
 }

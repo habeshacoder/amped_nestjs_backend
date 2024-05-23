@@ -235,4 +235,27 @@ export class SearchService {
       success: true,
     };
   }
+  async suggestReport(searchDto: SearchDto) {
+    const where = new Map<string, unknown>();
+
+    if (searchDto.key != null) {
+      where.set('report_desc', {
+        contains: searchDto.key,
+        mode: 'insensitive',
+      });
+    }
+
+    var whe = Object.fromEntries(where);
+
+    const foundReplays = await this.prisma.report.findMany({
+      where: whe,
+    });
+
+    var mainMatches = foundReplays;
+    return {
+      mainMatches,
+      message: 'Matches returned successfully.',
+      success: true,
+    };
+  }
 }
