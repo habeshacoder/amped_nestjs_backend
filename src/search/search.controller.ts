@@ -68,4 +68,9 @@ export class SearchController {
   suggestReport(@Body() searchUserDto: SearchDto) {
     return this.searchService.suggestReport(searchUserDto);
   }
+  @Post('/vercel')
+  @HttpCode(HttpStatus.OK)
+  checkVercel() {
+    return 'congra! connected to vercel';
+  }
 }
