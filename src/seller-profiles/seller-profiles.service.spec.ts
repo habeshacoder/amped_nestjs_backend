@@ -100,4 +100,29 @@ describe('SellerProfilesService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
   });
+
+  describe('remove', () => {
+    it('should delete seller profile successfully', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue({
+        ...mockSellerProfile,
+        image: 'null',
+        cover_image: 'null',
+      });
+      prisma.sellerProfile.delete.mockResolvedValue(mockSellerProfile);
+
+      const result = await service.remove(1);
+      expect(result).toEqual({
+        message: 'Seller Profile deleted successfully',
+      });
+      expect(prisma.sellerProfile.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+    });
+
+    it('should throw ForbiddenException if profile to delete is not found', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(null);
+
+      await expect(service.remove(999)).rejects.toThrow(ForbiddenException);
+    });
+  });
 });
