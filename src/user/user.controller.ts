@@ -34,18 +34,27 @@ export class UserController {
         rate: true,
       },
     });
+    if (u) {
+      delete (u as any).password;
+      delete (u as any).refresh_token;
+    }
     return u;
   }
 
   @Get('all')
   async getAllUsers() {
-    const u = await this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       include: {
         profiles: true,
         seller_profile: true,
       },
     });
-    return u;
+    return users.map((user) => {
+      const sanitized = { ...user };
+      delete (sanitized as any).password;
+      delete (sanitized as any).refresh_token;
+      return sanitized;
+    });
   }
 
   @Delete('delete')

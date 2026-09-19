@@ -68,15 +68,35 @@ describe('UserController', () => {
       expect(result).toBeDefined();
       expect(result.profiles).toBeDefined();
     });
+
+    it('should exclude password and refresh_token from response', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        password: 'super_secret_argon2_hash',
+        refresh_token: 'secret_jwt_refresh_token',
+      });
+
+      const result = await controller.getMe(mockUser);
+      expect((result as any).password).toBeUndefined();
+      expect((result as any).refresh_token).toBeUndefined();
+    });
   });
 
   describe('getAllUsers', () => {
-    it('should return all users', async () => {
-      prisma.user.findMany.mockResolvedValue([mockUser]);
+    it('should return all users with sensitive fields excluded', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        {
+          ...mockUser,
+          password: 'hashed_password_123',
+          refresh_token: 'refresh_token_123',
+        },
+      ]);
 
       const result = await controller.getAllUsers();
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
       expect(result).toHaveLength(1);
+      expect((result[0] as any).password).toBeUndefined();
+      expect((result[0] as any).refresh_token).toBeUndefined();
     });
   });
 
