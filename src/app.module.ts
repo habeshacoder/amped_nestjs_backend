@@ -21,6 +21,9 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { SearchModule } from './search/search.module';
 import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.module';
 
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { HealthModule } from './health/health.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -60,6 +63,13 @@ import * as Joi from 'joi';
     FavoriteModule,
     SearchModule,
     ChannelPurchaseModule,
+    HealthModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
   ],
 })
 export class AppModule {}

@@ -27,6 +27,7 @@ describe('App End-to-End Tests', () => {
       deleteMany: jest.fn(),
     },
     $transaction: jest.fn().mockResolvedValue([]),
+    $queryRaw: jest.fn().mockResolvedValue([{ 1: 1 }]),
   };
 
   beforeAll(async () => {
@@ -50,6 +51,16 @@ describe('App End-to-End Tests', () => {
     if (app) {
       await app.close();
     }
+  });
+
+  it('GET /health should return 200 with status ok and database up', () => {
+    return request(app.getHttpServer())
+      .get('/health')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.status).toBe('ok');
+        expect(res.body.info.database.status).toBe('up');
+      });
   });
 
   it('GET /users/me should reject unauthenticated requests with 401', () => {
