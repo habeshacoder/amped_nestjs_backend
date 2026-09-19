@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionPlanDto, UpdateDto } from './dto';
 
 @Injectable()
@@ -170,17 +170,16 @@ export class SubscriptionPlanService {
       },
     });
 
-    if (subscriptionPlan.material_in_subscription_plan != null) {
-      if (subscriptionPlan) {
-        //remove all related data like relation with material
+    if (subscriptionPlan) {
+      if (subscriptionPlan.material_in_subscription_plan != null) {
         try {
-          const subscriptionPlan = await this.prisma.subscriptionPlan.delete({
+          const deletedPlan = await this.prisma.subscriptionPlan.delete({
             where: {
               id: id,
             },
           });
 
-          if (subscriptionPlan) {
+          if (deletedPlan) {
             return { message: 'Subscription Plan deleted successfully' };
           }
         } catch (error) {
@@ -189,15 +188,15 @@ export class SubscriptionPlanService {
           );
         }
       } else {
-        throw new ForbiddenException(
-          "Can't delete while there is no Subscription Plan. Please create a Subscription Plan first.",
-        );
+        return {
+          message:
+            'Subscription Plan has files inside. please remove them first to delete the plan.',
+        };
       }
     } else {
-      return {
-        message:
-          'Subscription Plan has files inside. please remove them first to delete the plan.',
-      };
+      throw new ForbiddenException(
+        "Can't delete while there is no Subscription Plan. Please create a Subscription Plan first.",
+      );
     }
   }
 }
