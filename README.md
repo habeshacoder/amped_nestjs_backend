@@ -1,73 +1,168 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# AMPED NestJS Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+[![CI](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/ci.yml/badge.svg)](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/ci.yml)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+AMPED is a robust backend REST API built with [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/), powering digital publishing, media streaming, channel subscriptions, and content monetization. It supports publications, audiobooks, podcasts, user profiles, creator channels, subscription plans, and secure payment processing via the Chapa payment gateway.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Architecture Overview
 
-## Installation
+- **Framework**: NestJS (TypeScript, modular service-oriented architecture)
+- **Database & ORM**: PostgreSQL via Prisma ORM
+- **Authentication**: JWT access tokens + refresh tokens with Passport & Argon2 password hashing
+- **Payment Processing**: Chapa Payment Gateway integration with secure webhook verification
+- **File Storage**: Local Multer file storage pipeline for materials, covers, and previews
+- **Code Quality**: ESLint, Prettier, TypeScript strict type checking, Jest unit & E2E integration test suites
 
+---
+
+## Prerequisites Matrix
+
+| Requirement | Supported Version | Notes |
+| :--- | :--- | :--- |
+| **Node.js** | `>= 20.0.0` (Active LTS / v20 or v22) | Recommended: use `.nvmrc` (`nvm use`) |
+| **npm** | `>= 10.0.0` | Included with Node LTS |
+| **PostgreSQL** | `>= 14.0` | Required for migrations and relational persistence |
+| **Git** | `>= 2.30.0` | For version control and branch management |
+
+---
+
+## Quick Start & Setup
+
+### 1. Clone the repository
 ```bash
-$ npm install
+git clone git@github.com:habeshacoder/amped_nestjs_backend.git
+cd amped_nestjs_backend
 ```
 
-## Running the app
-
+### 2. Configure Node version
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+nvm use
 ```
 
-## Test
-
+### 3. Install dependencies
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm ci
 ```
 
-## Support
+### 4. Configure Environment Variables
+Copy the template configuration and fill in the required credentials:
+```bash
+cp .env.example .env
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 5. Generate Prisma Client & Run Migrations
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
 
-## Stay in touch
+### 6. Run the Application
+```bash
+# Development mode with hot-reload
+npm run start:dev
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Production build and run
+npm run build
+npm run start:prod
+```
+
+---
+
+## Environment Variables Reference
+
+| Variable | Type | Required | Default / Example | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `NODE_ENV` | `string` | No | `development` | Application environment (`development`, `test`, `production`) |
+| `PORT` | `number` | No | `3007` | HTTP server port |
+| `DATABASE_URL` | `string` | **Yes** | `postgresql://user:pass@localhost:5432/amped?schema=public` | PostgreSQL connection string |
+| `JWT_SECRET` | `string` | **Yes** | `min-16-char-secret-key` | Secret key used to sign access JWTs |
+| `JWT_REFRESH_SECRET` | `string` | **Yes** | `min-16-char-refresh-secret-key` | Secret key used to sign refresh JWTs |
+| `CHAPA_SECRET_KEY` | `string` | No | `CHASECK_TEST-...` | Chapa Payment Gateway API secret key |
+| `CHAPA_WEBHOOK_HASH_KEY` | `string` | No | `webhook-secret-hash` | Secret hash for Chapa webhook verification |
+| `CHAPA_WEBHOOK_URL` | `string` | No | `https://api.example.com/payment/webhook` | Webhook callback URL registered with Chapa |
+
+---
+
+## Available Scripts & Quality Gates
+
+### Code Quality
+```bash
+# Check code formatting with Prettier
+npm run format:check
+
+# Format files automatically
+npm run format
+
+# Run ESLint analysis
+npm run lint
+
+# Run TypeScript typecheck without emitting files
+npm run typecheck
+```
+
+### Testing
+```bash
+# Run all unit tests
+npm run test
+
+# Run unit tests in watch mode
+npm run test:watch
+
+# Run unit tests with coverage report and threshold gate
+npm run test:cov
+
+# Run end-to-end integration tests
+npm run test:e2e
+```
+
+---
+
+## Project Structure
+
+```
+amped_nestjs_backend/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # Automated CI pipeline (lint, format, typecheck, test, build)
+├── prisma/
+│   ├── schema.prisma            # Relational database schema
+│   └── migrations/              # Database migration history
+├── src/
+│   ├── auth/                    # Authentication, JWT strategies, guards, decorators
+│   ├── channel/                 # Channel management & creator channels
+│   ├── channel-material/        # Channel digital materials (books, audio, podcasts)
+│   ├── channel-purchase/        # Channel monetization & Chapa webhooks
+│   ├── common/                  # Shared utilities, filters, and middleware
+│   ├── favorite/                # User favorites management
+│   ├── material/                # Direct digital materials
+│   ├── material-purchase/       # Material purchases & Chapa webhooks
+│   ├── prisma/                  # Prisma service provider
+│   ├── profiles/                # User profile management
+│   ├── rating/                  # Material & content ratings
+│   ├── replays/                 # Video/audio replay sessions
+│   ├── reports/                 # Content violation reports
+│   ├── search/                  # Full-text / catalog search
+│   ├── seller-profiles/         # Creator/seller store profiles
+│   ├── subscribed-user/         # Active channel subscribers
+│   ├── subscription-plan/       # Subscription tier management
+│   ├── user/                    # User accounts & identity
+│   ├── app.module.ts            # Root module & config validation schema
+│   └── main.ts                  # Application bootstrap
+├── test/
+│   ├── app.e2e-spec.ts          # End-to-end integration suite
+│   └── jest-e2e.json            # Jest E2E configuration
+├── .editorconfig                # Consistent editor configuration
+├── .env.example                 # Environment variables template
+├── .nvmrc                       # Node version lockfile
+└── package.json                 # Dependencies, scripts, and coverage thresholds
+```
+
+---
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
