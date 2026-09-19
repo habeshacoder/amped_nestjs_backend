@@ -26,10 +26,24 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { SearchModule } from './search/search.module';
 import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.module';
 
+import * as Joi from 'joi';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid('development', 'test', 'production')
+          .default('development'),
+        PORT: Joi.number().default(3007),
+        DATABASE_URL: Joi.string().required(),
+        JWT_SECRET: Joi.string().min(16).required(),
+        JWT_REFRESH_SECRET: Joi.string().min(16).required(),
+        CHAPA_SECRET_KEY: Joi.string().allow('').optional().default(''),
+        CHAPA_WEBHOOK_HASH_KEY: Joi.string().allow('').optional().default(''),
+        CHAPA_WEBHOOK_URL: Joi.string().allow('').optional().default(''),
+      }),
     }),
     AuthModule,
     UserModule,
