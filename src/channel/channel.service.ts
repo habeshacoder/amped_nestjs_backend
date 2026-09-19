@@ -7,7 +7,7 @@ import {
   Logger,
   Res,
 } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChannelDto } from './dto';

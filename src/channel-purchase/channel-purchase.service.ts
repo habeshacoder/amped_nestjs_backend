@@ -4,7 +4,7 @@
 // import { User } from '@prisma/client';
 // import { PrismaService } from 'src/prisma/prisma.service';
 // import { ConfigService } from '@nestjs/config/dist/config.service';
-// import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+// import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 // import { Channel_PurchaseDto } from './dto';
 // import { ChapaService } from 'chapa-nestjs';
 // // import { VerifyPayment } from 'verify-payment.chapa';

@@ -2,7 +2,7 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ProfileDto, UpdateDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { User } from '@prisma/client';
 import * as argon from 'argon2';
 import * as fs from 'fs';

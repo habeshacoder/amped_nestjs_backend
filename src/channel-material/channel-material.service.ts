@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChannelMaterialDto } from './dto';
 import { Type } from '@prisma/client';
