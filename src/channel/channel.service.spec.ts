@@ -87,4 +87,45 @@ describe('ChannelService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
   });
+
+  describe('findForSeller', () => {
+    it('should return published channels for a seller', async () => {
+      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+
+      const result = await service.findForSeller(1);
+      expect(result).toEqual([mockChannel]);
+      expect(prisma.channel.findMany).toHaveBeenCalledWith({
+        where: {
+          sellerProfile_id: 1,
+          draft: false,
+        },
+        include: expect.any(Object),
+      });
+    });
+  });
+
+  describe('findDraftForSeller', () => {
+    it('should return draft channels for a seller', async () => {
+      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+
+      const result = await service.findDraftForSeller(1);
+      expect(result).toEqual([mockChannel]);
+      expect(prisma.channel.findMany).toHaveBeenCalledWith({
+        where: {
+          sellerProfile_id: 1,
+          draft: true,
+        },
+        include: expect.any(Object),
+      });
+    });
+  });
+
+  describe('getMyChannels', () => {
+    it('should return seller channels', async () => {
+      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+
+      const result = await service.getMyChannels(1);
+      expect(result).toEqual([mockChannel]);
+    });
+  });
 });
