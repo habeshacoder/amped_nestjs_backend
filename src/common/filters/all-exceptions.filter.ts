@@ -33,6 +33,44 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = resObj.message || exception.message;
         error = resObj.error || exception.name;
       }
+    } else if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'code' in exception &&
+      typeof (exception as any).code === 'string' &&
+      (exception as any).code.startsWith('P')
+    ) {
+      // Prisma database errors
+      const prismaError = exception as { code: string; message: string };
+      switch (prismaError.code) {
+        case 'P2002':
+          statusCode = HttpStatus.CONFLICT;
+          error = 'Conflict';
+          message = 'A record with this unique constraint already exists.';
+          break;
+        case 'P2003':
+          statusCode = HttpStatus.BAD_REQUEST;
+          error = 'Bad Request';
+          message =
+            'Foreign key constraint violated: referenced entity does not exist.';
+          break;
+        case 'P2025':
+        case 'P2001':
+          statusCode = HttpStatus.NOT_FOUND;
+          error = 'Not Found';
+          message = 'The requested database record was not found.';
+          break;
+        case 'P2000':
+          statusCode = HttpStatus.BAD_REQUEST;
+          error = 'Bad Request';
+          message = 'Provided value exceeds maximum database field length.';
+          break;
+        default:
+          statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+          error = 'Internal Server Error';
+          message = 'A database error occurred.';
+          break;
+      }
     } else if (exception instanceof Error) {
       const isProduction = process.env.NODE_ENV === 'production';
       message = isProduction ? 'Internal server error' : exception.message;

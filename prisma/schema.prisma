@@ -286,6 +286,7 @@ model MaterialInSubscriptionPlan {
   ChannelMaterial     ChannelMaterial  @relation(fields: [channelMaterial_id], references: [id], onDelete: Cascade)
   SubscriptionPlan    SubscriptionPlan @relation(fields: [subscriptionPlan_id], references: [id], onDelete: Cascade)
 
+  @@unique([subscriptionPlan_id, channelMaterial_id])
   @@map("material_in_subscription_plan")
 }
 
@@ -299,6 +300,7 @@ model MaterialUser {
   Material    Material @relation(fields: [material_id], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, material_id])
   @@map("material_user")
 }
 
@@ -318,6 +320,9 @@ model Rate {
   user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   replay              Replay[]
 
+  @@index([material_id])
+  @@index([channel_id])
+  @@index([user_id])
   @@map("ratings")
 }
 
@@ -329,6 +334,7 @@ model Replay {
   updated_at DateTime @updatedAt
   rate       Rate     @relation(fields: [remark_id], references: [id], onDelete: Cascade)
 
+  @@index([remark_id])
   @@map("replays")
 }
 
@@ -347,6 +353,9 @@ model Report {
   Material            Material?        @relation(fields: [material_id], references: [id], onDelete: Cascade)
   user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([material_id])
+  @@index([channel_id])
   @@map("reports")
 }
 
@@ -359,6 +368,8 @@ model SubscribedUser {
   subscription_plan SubscriptionPlan? @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
   user              User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([subscription_id])
   @@map("subscribed_users")
 }
 
@@ -375,6 +386,9 @@ model Favorite {
   material            Material?        @relation(fields: [material_id], references: [id], onDelete: Cascade)
   user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([material_id])
+  @@index([channel_id])
   @@map("favorite")
 }
 
