@@ -10,7 +10,7 @@ import {
 import { GetUser } from '../auth/decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { DeleteUserDto } from './dto/delete_user.dto';
 
 @Controller('users')
