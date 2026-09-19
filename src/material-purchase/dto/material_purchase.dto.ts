@@ -1,7 +1,13 @@
-import { IsArray, IsEmail, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class Material_PurchaseDto {
-    
   @IsString({ message: 'FirstName must be a string' })
   @IsNotEmpty({ message: "FirstName can't be empty" })
   first_name: string;

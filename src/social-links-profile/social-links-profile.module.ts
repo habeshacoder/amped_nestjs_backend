@@ -4,6 +4,6 @@ import { SocialLinksProfileController } from './social-links-profile.controller'
 
 @Module({
   controllers: [SocialLinksProfileController],
-  providers: [SocialLinksProfileService]
+  providers: [SocialLinksProfileService],
 })
 export class SocialLinksProfileModule {}

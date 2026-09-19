@@ -29,7 +29,7 @@
 //         const tx_ref = await this.chapaService.generateTransactionReference();
 //         const secret = this.config.get('CHAPA_SECRET_KEY');
 //         // console.log("TX: ", tx_ref);
-        
+
 //         try {
 //             const unfinishedOrders = await this.prisma.unfinishedOrders.create({
 //                 data: {
@@ -59,7 +59,7 @@
 //                         //prepare a function to dellet all related unfinished orders with details
 //                     }
 //                 });
-                
+
 //                 var options = {
 //                     method: 'POST',
 //                     url: 'https://api.chapa.co/v1/transaction/initialize',

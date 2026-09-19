@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { SubscribedUserService } from "./subscribed-user.service";
-import { SebscribedUserController } from "./subscribed-user.controller";
+import { Module } from '@nestjs/common';
+import { SubscribedUserService } from './subscribed-user.service';
+import { SebscribedUserController } from './subscribed-user.controller';
 
 @Module({
-    controllers: [SebscribedUserController],
-    providers: [SubscribedUserService],
+  controllers: [SebscribedUserController],
+  providers: [SubscribedUserService],
 })
 export class SubscibedUserModule {}

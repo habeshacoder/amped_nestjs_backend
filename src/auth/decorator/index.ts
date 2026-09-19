@@ -1,2 +1,2 @@
-export * from './get-user.decortor'
-export * from './match.decorator'
+export * from './get-user.decortor';
+export * from './match.decorator';

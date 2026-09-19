@@ -1,1 +1,1 @@
-export * from './social-links-profile.dto'
+export * from './social-links-profile.dto';

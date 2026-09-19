@@ -1,1 +1,1 @@
-export * from './seller-profile.dto'
+export * from './seller-profile.dto';

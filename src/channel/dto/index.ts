@@ -1,1 +1,1 @@
-export * from './channel.dto'
+export * from './channel.dto';

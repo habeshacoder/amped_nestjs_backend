@@ -4,6 +4,6 @@ import { SellerProfilesController } from './seller-profiles.controller';
 
 @Module({
   controllers: [SellerProfilesController],
-  providers: [SellerProfilesService]
+  providers: [SellerProfilesService],
 })
 export class SellerProfilesModule {}

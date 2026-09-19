@@ -18,27 +18,27 @@ export class ReplayService {
     });
 
     if (!foundReplay) {
-        try {
-          const repaly = await this.prisma.replay.create({
-            data: {
-              remark_id: replayDto.remark_id,
-              replay: replayDto.replay,
-            },
-          });
+      try {
+        const repaly = await this.prisma.replay.create({
+          data: {
+            remark_id: replayDto.remark_id,
+            replay: replayDto.replay,
+          },
+        });
 
-          if (repaly) {
-            return repaly;
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
+        if (repaly) {
+          return repaly;
         }
+      } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError) {
+          if (error.code === 'P2002') {
+            throw new ForbiddenException('Credentials Taken');
+          }
+        }
+        throw new ForbiddenException(
+          'There has been an error. Please check the inputs and try again.',
+        );
+      }
     } else {
       throw new ForbiddenException(
         "Can't replay on the same remark multiple times. Please try edit the remark.",
@@ -70,20 +70,20 @@ export class ReplayService {
     }
   }
 
-  async checkReplays (remark_id: number) {
+  async checkReplays(remark_id: number) {
     const foundReplay = await this.prisma.replay.findFirst({
       where: {
         remark_id,
       },
     });
 
-    if(foundReplay) {
+    if (foundReplay) {
       return true;
-    } else { 
+    } else {
       return false;
     }
   }
-  async findByRemarkId (remark_id: number) {
+  async findByRemarkId(remark_id: number) {
     const foundReplay = await this.prisma.replay.findFirst({
       where: {
         remark_id,
@@ -97,7 +97,7 @@ export class ReplayService {
     }
   }
 
-  async replayForRemark (remark_id: number) {
+  async replayForRemark(remark_id: number) {
     const foundRemark = await this.prisma.rate.findFirst({
       where: {
         id: remark_id,
@@ -112,7 +112,7 @@ export class ReplayService {
     if (foundRemark && foundReplay) {
       return {
         remark: foundRemark['remark'],
-        replay: foundReplay['replay']
+        replay: foundReplay['replay'],
       };
     } else {
       return { message: 'No replay for this remark.' };

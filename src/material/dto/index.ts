@@ -1,1 +1,1 @@
-export * from './material.dto'
+export * from './material.dto';

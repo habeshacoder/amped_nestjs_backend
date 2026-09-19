@@ -1,1 +1,1 @@
-export * from './socialLinksChannel.dto'
+export * from './socialLinksChannel.dto';

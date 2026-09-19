@@ -19,31 +19,30 @@ export class ChapaWebHook {
     //send the link top the payment
 
     const secret = this.config.get('CHAPA_WEBHOOK_HASH_KEY');
-    const webhook_URL = this.config.get('CHAPA_WEBHOOK_URL')
+    const webhook_URL = this.config.get('CHAPA_WEBHOOK_URL');
 
     var options = {
-        method: 'POST',
-        url: webhook_URL,
-        body: JSON.stringify({
-          amount: dto.total.toString(),
-          currency: dto.currency,
-          email: dto.email,
-          first_name: dto.first_name,
-          last_name: dto.last_name,
-          phone_number: dto.phone_no,
-          tx_ref: secret,
-          callback_url: 'http://localhost:3000/material-purchase/verify',
-          return_url: 'http://localhost:3000/material-purchase/cart',
-          'customization[title]': 'Payment from AratKillo',
-          'customization[description]': 'add the list of bought items here',
-        }),
-      };
+      method: 'POST',
+      url: webhook_URL,
+      body: JSON.stringify({
+        amount: dto.total.toString(),
+        currency: dto.currency,
+        email: dto.email,
+        first_name: dto.first_name,
+        last_name: dto.last_name,
+        phone_number: dto.phone_no,
+        tx_ref: secret,
+        callback_url: 'http://localhost:3000/material-purchase/verify',
+        return_url: 'http://localhost:3000/material-purchase/cart',
+        'customization[title]': 'Payment from AratKillo',
+        'customization[description]': 'add the list of bought items here',
+      }),
+    };
 
-      request(options, function (error, response) {
-        if (error) throw new Error(error);
-        console.log(response.body);
-      });
-
+    request(options, function (error, response) {
+      if (error) throw new Error(error);
+      console.log(response.body);
+    });
   }
 
   async verify(user: User) {
@@ -53,23 +52,21 @@ export class ChapaWebHook {
 
     var crypto = require('crypto');
     const secret = this.config.get('CHAPA_WEBHOOK_HASH_KEY');
-    
+
     // Using Express
-    (this.config.get('CHAPA_WEBHOOK_URL'), function (req, res) {
-      //validate event
-    const hash = crypto.createHmac('sha256', secret)
-    .digest('hex');
+    this.config.get('CHAPA_WEBHOOK_URL'),
+      function (req, res) {
+        //validate event
+        const hash = crypto.createHmac('sha256', secret).digest('hex');
 
-    console.log("Hash", hash);
-    
-    if (hash == req.headers['Chapa-Signature']) {
-    // Retrieve the request's body
-    const event = req.body;
-    // Do something with event  
-    }
-    res.send(200);
-      
-    })
+        console.log('Hash', hash);
+
+        if (hash == req.headers['Chapa-Signature']) {
+          // Retrieve the request's body
+          const event = req.body;
+          // Do something with event
+        }
+        res.send(200);
+      };
   }
-
 }

@@ -8,19 +8,22 @@ import { UpdateRatingDto } from './dto/update-rating.dto';
 
 @Injectable()
 export class RatingService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(ratingDto: RatingDto, user: User) {
     const rating = await this.prisma.rate.findFirst({
       where: {
         user_id: user.id,
         material_id: ratingDto.material_id,
-        channel_id: ratingDto.channel_id
+        channel_id: ratingDto.channel_id,
       },
     });
 
     if (!rating) {
-      if (!ratingDto.channel_id && ratingDto.material_id || ratingDto.channel_id && !ratingDto.material_id) {
+      if (
+        (!ratingDto.channel_id && ratingDto.material_id) ||
+        (ratingDto.channel_id && !ratingDto.material_id)
+      ) {
         try {
           const rate = await this.prisma.rate.create({
             data: {
@@ -82,7 +85,7 @@ export class RatingService {
   async getMyReview(user: User) {
     const rating = await this.prisma.rate.findMany({
       where: {
-        user_id: user.id
+        user_id: user.id,
       },
     });
 
@@ -96,7 +99,7 @@ export class RatingService {
   async getByRatingNo(user: User, rating: number) {
     const myReviews = await this.prisma.rate.findMany({
       where: {
-        rating: rating
+        rating: rating,
       },
     });
 
@@ -111,7 +114,7 @@ export class RatingService {
     const rating = await this.prisma.rate.findFirst({
       where: {
         material_id: material_id,
-        user_id: user.id
+        user_id: user.id,
       },
     });
 
@@ -127,7 +130,7 @@ export class RatingService {
       const rating = await this.prisma.rate.findFirst({
         where: {
           channel_id: channel_id,
-          user_id: user.id
+          user_id: user.id,
         },
       });
 
@@ -156,8 +159,8 @@ export class RatingService {
           material_id: material_id,
         },
         orderBy: {
-          created_at: 'desc'
-        }
+          created_at: 'desc',
+        },
       });
 
       if (rate) {
@@ -167,7 +170,7 @@ export class RatingService {
         }
         return {
           rating: rating / num_of_rate,
-          rate
+          rate,
         };
       } else {
         return default_rating;
@@ -209,7 +212,7 @@ export class RatingService {
 
           return {
             rating: rating / num_of_rate,
-            rate
+            rate,
           };
         } else {
           return default_rating;
@@ -230,16 +233,15 @@ export class RatingService {
   }
 
   async noOfMaterialRating(params: { rating?: number; material_id?: number }) {
-
     const { rating, material_id } = params;
 
     //HOW MANY PEOPLE RATE 5,4,3,2,1
     const rateNo = await this.prisma.rate.findMany({
       where: {
         material_id: material_id,
-        rating: rating
-      }
-    })
+        rating: rating,
+      },
+    });
 
     if (rateNo) {
       return rateNo.length;
@@ -249,16 +251,15 @@ export class RatingService {
   }
 
   async noOfChannelRating(params: { rating?: number; channel_id?: number }) {
-
     const { rating, channel_id } = params;
 
     //HOW MANY PEOPLE RATE 5,4,3,2,1
     const rateNo = await this.prisma.rate.findMany({
       where: {
         channel_id: channel_id,
-        rating: rating
-      }
-    })
+        rating: rating,
+      },
+    });
 
     if (rateNo) {
       return rateNo.length;

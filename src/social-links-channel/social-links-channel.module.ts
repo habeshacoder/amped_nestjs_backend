@@ -4,6 +4,6 @@ import { SocialLinksChannelController } from './social-links-channel.controller'
 
 @Module({
   controllers: [SocialLinksChannelController],
-  providers: [SocialLinksChannelService]
+  providers: [SocialLinksChannelService],
 })
 export class SocialLinksChannelModule {}

@@ -4,6 +4,6 @@ import { ChannelMaterialController } from './channel-material.controller';
 
 @Module({
   controllers: [ChannelMaterialController],
-  providers: [ChannelMaterialService]
+  providers: [ChannelMaterialService],
 })
 export class ChannelMaterialModule {}

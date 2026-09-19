@@ -1,1 +1,1 @@
-export * from './channel-material.dto'
+export * from './channel-material.dto';
