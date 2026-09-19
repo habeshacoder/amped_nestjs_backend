@@ -161,7 +161,7 @@ export class MaterialController {
 
   @Get('/paginate_by_type/:type')
   paginateMaterialByType(
-    @Param('type') materialType: string,
+    @Param('type') materialType: Type,
     @Query('take') take: string,
     @Query('page') page: string,
   ) {
