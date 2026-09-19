@@ -41,6 +41,7 @@ import * as Joi from 'joi';
         CHAPA_SECRET_KEY: Joi.string().allow('').optional().default(''),
         CHAPA_WEBHOOK_HASH_KEY: Joi.string().allow('').optional().default(''),
         CHAPA_WEBHOOK_URL: Joi.string().allow('').optional().default(''),
+        SHADOW_DATABASE_URL: Joi.string().allow('').optional().default(''),
       }),
     }),
     AuthModule,
