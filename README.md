@@ -54,13 +54,18 @@ Copy the template configuration and fill in the required credentials:
 cp .env.example .env
 ```
 
-### 5. Generate Prisma Client & Run Migrations
+### 5. Start Local PostgreSQL via Docker Compose
 ```bash
-npx prisma generate
-npx prisma migrate dev
+docker compose up -d
 ```
 
-### 6. Run the Application
+### 6. Generate Prisma Client & Run Migrations
+```bash
+npx prisma generate
+npm run migration:run
+```
+
+### 7. Run the Application
 ```bash
 # Development mode with hot-reload
 npm run start:dev
@@ -69,6 +74,20 @@ npm run start:dev
 npm run build
 npm run start:prod
 ```
+
+---
+
+## Database Architecture & Migration Workflow
+
+See [docs/data-model.md](docs/data-model.md) for the complete Mermaid Entity-Relationship Diagram (ERD), Data Dictionary, and Data Flow architecture.
+
+### Migration Commands
+- **Run migrations**: `npm run migration:run` (`prisma migrate deploy`)
+- **Inspect migration status**: `npm run migration:status` (`prisma migrate status`)
+- **Generate a new migration**: `npm run migration:generate` (`prisma migrate dev --create-only`)
+- **Schema drift check**: `npm run migration:check` (diffs committed migrations against the Prisma schema datamodel)
+
+> **Important**: Never run migrations or data-changing commands against a shared, staging, or production database without prior review. Applied migrations are immutable once merged—always author a new timestamped migration file.
 
 ---
 

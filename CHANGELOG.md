@@ -8,22 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Security & Dependabot Automation**:
-  - Added `.github/dependabot.yml` configured for weekly npm and github-actions dependency audits.
-  - Added `audit` step in CI workflow checking for high-severity advisories via `npm audit --audit-level=high --omit=dev`.
-- **Release and PR Title Enforcement**:
-  - Added `.github/workflows/pr-title.yml` to enforce Conventional Commits on pull request titles.
-  - Added `.github/workflows/release.yml` automating GitHub Releases on semantic version tags (`v*.*.*`).
-- **Architectural Refactoring & God-File Deconstruction**:
-  - Split monolith `MaterialService` into dedicated domain query (`MaterialQueryService`), disk/storage (`MaterialStorageService`), and facade orchestrator services with 100% route contract preservation.
-  - Split monolith `ChannelMaterialService` into dedicated query (`ChannelMaterialQueryService`), disk/storage (`ChannelMaterialStorageService`), and facade orchestrator services.
-- **Error Handling, Logging, and Health Observability**:
-  - Implemented `AllExceptionsFilter` (`src/common/filters/all-exceptions.filter.ts`) providing standard sanitized JSON error envelopes (`statusCode`, `timestamp`, `path`, `message`, and sanitized `error`).
-  - Added `@nestjs/terminus` health checks with `PrismaHealthIndicator` at `/health` verifying database connectivity.
-  - Enabled application graceful shutdown hooks (`app.enableShutdownHooks()`).
-  - Replaced all raw `console.*` invocations with NestJS `Logger` across all services, controllers, and filters.
-  - Enforced `'no-console': 'error'` in `.eslintrc.js`.
-  - Added class-validator decorators to all request DTOs (`RatingDto`, `ChannelMaterialDto`, `ReplayDto`, `ChannelDto`, `ReportDto`, etc.).
+- **Data Engineering & Schema Integrity**:
+  - Authored timestamped migration `20260920020000_add_data_integrity_and_indexes` adding composite unique constraints on `favorite`, `ratings`, `material_user`, `material_in_subscription_plan`, and `subscribed_users`.
+  - Added range and sanity CHECK constraints on `ratings.rating` (0 to 5), `materials.price` (>= 0), `materials.length_minute`/`page` (>= 0), and `subscription_plan.price` (>= 0).
+  - Added lookup and JOIN performance indexes on foreign key columns across `materials`, `channels`, `channel_materials`, `ratings`, `favorite`, `reports`, and `replays`.
+  - Added shadow database configuration and migration discipline scripts: `migration:run`, `migration:status`, `migration:generate`, and `migration:check`.
+  - Added PostgreSQL 16 service container to GitHub Actions CI pipeline for migration verification.
+  - Added `docker-compose.yml` for zero-configuration local PostgreSQL database startup.
+  - Added `docs/data-model.md` containing full Mermaid Entity-Relationship Diagram (ERD), Data Dictionary, and Data Flow sequence diagrams.
+- **Data Observability, Boundary Validation & Security**:
+  - Enhanced `AllExceptionsFilter` with Prisma database error translations (`P2002` to 409 Conflict, `P2003` to 400 Bad Request, `P2025`/`P2001` to 404 Not Found, `P2000` to 400 Bad Request).
+  - Updated global `ValidationPipe` to enable `transform: true` alongside `whitelist: true`.
+  - Sanitized user responses in `UserController` (`/me`, `/all`) and `AuthService.logout` to strictly exclude `password` hashes and `refresh_token` credentials.
+  - Migrated Prisma runtime imports to `@prisma/client/runtime/library`, eliminating deprecation warnings.
+- **Expanded Test Coverage**:
+  - Added `src/prisma/prisma-integrity.spec.ts` validating composite unique constraint violations, foreign key errors, and multi-step transaction rollbacks.
+  - Added `src/social-links-channel/social-links-channel.service.spec.ts` covering full CRUD lifecycle and database error paths.
+  - Expanded `src/channel/channel.service.spec.ts` and `src/seller-profiles/seller-profiles.service.spec.ts`.
+  - Raised Jest coverage thresholds to 20% branches, 24% functions, 25% lines, and 26% statements across 28 suites (164 tests).
 
 ## [0.0.1] - 2026-09-19
 

@@ -93,7 +93,21 @@ Every PR must maintain or increase the Jest test coverage thresholds specified i
 
 ---
 
-## 5. Pull Request Process
+## 5. Database Migration Discipline
+
+1. **Immutability**: Applied migrations are strictly immutable once merged into `main`. Never edit, delete, or re-order applied migration files in `prisma/migrations`.
+2. **New Migrations**: All schema modifications, constraints, or index additions must be introduced through a new, timestamped migration using:
+   ```bash
+   npm run migration:generate -- --name my_change_name
+   ```
+3. **Data Safety**:
+   - Adding `NOT NULL`, `UNIQUE`, or `CHECK` constraints to populated tables must be accompanied by read-only verification queries to ensure no existing records violate the constraint.
+   - Separate data backfills from structural schema alterations.
+4. **Drift Verification**: Always run `npm run migration:check` before pushing your branch to verify that the committed migrations match `prisma/schema.prisma`.
+
+---
+
+## 6. Pull Request Process
 
 1. Ensure all CI workflow checks pass in GitHub Actions.
 2. Ensure PR titles follow Conventional Commits format (e.g. `feat(auth): support session revocation`).
