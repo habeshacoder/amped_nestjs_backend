@@ -11,6 +11,9 @@
   },
   "scripts": {
     "deploy": "vercel",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
     "prisma:dev:deploy": "prisma migrate deploy",
     "prisma:test:deploye": "dotenv -e .env.test -- prisma migrate deploy",
     "migration:run": "prisma migrate deploy",
