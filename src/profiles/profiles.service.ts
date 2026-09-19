@@ -5,7 +5,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { User } from '@prisma/client';
 import * as argon from 'argon2';
-import { AuthService } from 'src/auth/auth.service';
 import * as fs from 'fs';
 
 @Injectable()
