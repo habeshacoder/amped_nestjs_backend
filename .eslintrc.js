@@ -21,7 +21,7 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
-    'no-console': 'warn',
+    'no-console': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-explicit-any': 'warn',
   },

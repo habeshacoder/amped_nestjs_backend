@@ -1,4 +1,4 @@
-import { Body, ForbiddenException, Injectable } from '@nestjs/common';
+import { Body, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config/dist/config.service';
@@ -9,6 +9,8 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class ChapaWebHook {
+  private readonly logger = new Logger(ChapaWebHook.name);
+
   constructor(
     private prisma: PrismaService,
     private chapaService: ChapaService,
@@ -40,9 +42,9 @@ export class ChapaWebHook {
       }),
     };
 
-    request(options, function (error, response) {
+    request(options, (error, response) => {
       if (error) throw new Error(error);
-      console.log(response.body);
+      this.logger.log(response.body);
     });
   }
 
@@ -55,11 +57,11 @@ export class ChapaWebHook {
 
     // Using Express
     this.config.get('CHAPA_WEBHOOK_URL'),
-      function (req, res) {
+      (req, res) => {
         //validate event
         const hash = crypto.createHmac('sha256', secret).digest('hex');
 
-        console.log('Hash', hash);
+        this.logger.log(`Hash: ${hash}`);
 
         if (hash == req.headers['Chapa-Signature']) {
           // Retrieve the request's body

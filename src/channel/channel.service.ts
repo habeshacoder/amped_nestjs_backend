@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable prettier/prettier */
-import { Catch, ForbiddenException, Injectable, Res } from '@nestjs/common';
+import {
+  Catch,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  Res,
+} from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,6 +15,8 @@ const fs = require('fs');
 
 @Injectable()
 export class ChannelService {
+  private readonly logger = new Logger(ChannelService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(images, channelDto: ChannelDto) {
@@ -78,8 +86,6 @@ export class ChannelService {
         created_at: 'asc',
       },
     });
-    // console.log('chann:--------', chann);
-    // const shuffledElements = chann.sort(() => 0.5 - Math.random());
     return chann;
   }
 
@@ -116,8 +122,6 @@ export class ChannelService {
       next: nextPage,
       last: lastPage,
     };
-
-    //console.log('Meta: ', meta.Links);
 
     const channels = await this.prisma.channel.findMany({
       take,
@@ -319,7 +323,7 @@ export class ChannelService {
             if (newChannelProfile) {
               fs.unlink('./uploads/channel/' + oldImage, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -385,7 +389,7 @@ export class ChannelService {
             if (newCoverImage) {
               fs.unlink('./uploads/channel/' + oldImage, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -502,7 +506,7 @@ export class ChannelService {
         if (newChannelImage) {
           fs.unlink('./uploads/channel/profile/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -598,7 +602,7 @@ export class ChannelService {
         if (newChannelImage) {
           fs.unlink('./uploads/channel/cover/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -743,7 +747,7 @@ export class ChannelService {
           if (newPreview) {
             fs.unlink('./uploads/channel/preview/' + oldFile, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });

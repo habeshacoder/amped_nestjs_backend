@@ -5,6 +5,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  Logger,
   UseGuards,
 } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
@@ -15,6 +16,8 @@ import { DeleteUserDto } from './dto/delete_user.dto';
 
 @Controller('users')
 export class UserController {
+  private readonly logger = new Logger(UserController.name);
+
   constructor(private prisma: PrismaService) {}
 
   @UseGuards(JwtGuard)
@@ -47,7 +50,7 @@ export class UserController {
 
   @Delete('delete')
   async deleteUser(@Body() deleteUserDto: DeleteUserDto) {
-    console.log(deleteUserDto.email);
+    this.logger.log(`Deleting user with email: ${deleteUserDto.email}`);
     const user = await this.prisma.user.findFirst({
       where: {
         email: deleteUserDto.email,

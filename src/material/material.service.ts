@@ -1,7 +1,12 @@
 /* eslint-disable prefer-const */
 /* eslint-disable prettier/prettier */
-import { Req, Res } from '@nestjs/common';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
@@ -14,6 +19,7 @@ let fs = require('fs');
 
 @Injectable()
 export class MaterialService {
+  private readonly logger = new Logger(MaterialService.name);
   private stream: ReadStream;
   private seekPosition = 0;
 
@@ -59,7 +65,7 @@ export class MaterialService {
   }
 
   async createFile(images, id: number) {
-    console.log('images/////////:', images);
+    this.logger.debug('createFile images received');
     const m_name =
       images['material'][0].path.split('/')[
         images['material'][0].path.split('/').length - 1
@@ -124,13 +130,6 @@ export class MaterialService {
             material_id: material.id,
           },
         });
-        console.log(
-          'before let img of images',
-          m_name,
-          p_name,
-          c_name,
-          pr_name,
-        );
 
         let add = await this.prisma.materialImage.create({
           data: {
@@ -328,8 +327,6 @@ export class MaterialService {
       ],
     };
 
-    //console.log('Meta: ', meta.Links);
-
     const materials = await this.prisma.material.findMany({
       take,
       skip,
@@ -357,7 +354,7 @@ export class MaterialService {
 
     let skip = null;
     const num_of_material = await this.prisma.material.count();
-    console.log('Material Count: ', num_of_material);
+    this.logger.log(`Material Count: ${num_of_material}`);
     const totalPages = Math.ceil(num_of_material / take); // round up decimal point totalPages value
 
     if (page >= 0 && page < totalPages) {
@@ -419,8 +416,6 @@ export class MaterialService {
         },
       ],
     };
-
-    //console.log('Meta: ', meta.Links);
 
     const materials = await this.prisma.material.findMany({
       take,
@@ -532,8 +527,6 @@ export class MaterialService {
       next: nextPage,
       last: lastPage,
     };
-
-    //console.log('Meta: ', meta.Links);
 
     const sellerMaterials = await this.prisma.material.findMany({
       take,
@@ -660,7 +653,7 @@ export class MaterialService {
           if (newMaterial) {
             fs.unlink('./uploads/material/' + oldMaterial, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -725,7 +718,7 @@ export class MaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -805,7 +798,7 @@ export class MaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -884,7 +877,7 @@ export class MaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -966,7 +959,7 @@ export class MaterialService {
           if (d) {
             fs.unlink('./uploads/material/' + i, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -1069,7 +1062,7 @@ export class MaterialService {
           if (newMaterial) {
             fs.unlink('./uploads/material/' + oldFile, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -1204,7 +1197,7 @@ export class MaterialService {
         if (newMaterialImage) {
           fs.unlink('./uploads/material/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -1303,7 +1296,7 @@ export class MaterialService {
         if (newMaterialImage) {
           fs.unlink('./uploads/material/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -1436,7 +1429,7 @@ export class MaterialService {
           if (newPreview) {
             fs.unlink('./uploads/material/' + oldFile, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });

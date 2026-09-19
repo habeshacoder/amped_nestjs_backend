@@ -94,7 +94,6 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    // console.log(userId);
     await this.updateRefreshToken(userId, '');
     const updatedUser = await this.prisma.user.findUnique({
       where: {

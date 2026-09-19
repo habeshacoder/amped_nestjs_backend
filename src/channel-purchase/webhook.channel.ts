@@ -1,4 +1,4 @@
-import { Body, ForbiddenException, Injectable } from '@nestjs/common';
+import { Body, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config/dist/config.service';
@@ -9,6 +9,8 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class ChapaWebHookChannel {
+  private readonly logger = new Logger(ChapaWebHookChannel.name);
+
   constructor(
     private prisma: PrismaService,
     private chapaService: ChapaService,
@@ -28,10 +30,9 @@ export class ChapaWebHookChannel {
       body: JSON.stringify({
         amount: dto.total.toString(),
         currency: dto.currency,
-        email: dto.email,
-        first_name: dto.first_name,
-        last_name: dto.last_name,
-        phone_number: dto.phone_no,
+        email: user.email,
+        first_name: 'biniyam',
+        last_name: 'belayneh',
         tx_ref: secret,
         callback_url: 'https://localhost:3000/channel-purchase/verify',
         return_url: 'https://localhost:3000/channel-purchase/cart',
@@ -40,9 +41,9 @@ export class ChapaWebHookChannel {
       }),
     };
 
-    request(options, function (error, response) {
+    request(options, (error, response) => {
       if (error) throw new Error(error);
-      console.log(response.body);
+      this.logger.log(response.body);
     });
   }
 
@@ -55,11 +56,11 @@ export class ChapaWebHookChannel {
 
     // Using Express
     this.config.get('CHAPA_WEBHOOK_URL'),
-      function (req, res) {
+      (req, res) => {
         //validate event
         const hash = crypto.createHmac('sha256', secret).digest('hex');
 
-        console.log('Hash', hash);
+        this.logger.log(`Hash: ${hash}`);
 
         if (hash == req.headers['Chapa-Signature']) {
           // Retrieve the request's body

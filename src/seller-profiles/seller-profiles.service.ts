@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { SellerProfileDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
@@ -8,6 +8,8 @@ import * as fs from 'fs';
 
 @Injectable()
 export class SellerProfilesService {
+  private readonly logger = new Logger(SellerProfilesService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(images, sellerProfileDto: SellerProfileDto, user: User) {
@@ -178,7 +180,7 @@ export class SellerProfilesService {
           if (newProfile) {
             fs.unlink('./uploads/sellerProfile/image' + oldImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -238,7 +240,7 @@ export class SellerProfilesService {
           if (newCover) {
             fs.unlink('./uploads/sellerProfile/image' + oldCImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -290,7 +292,7 @@ export class SellerProfilesService {
           if (image != 'null') {
             fs.unlink('./uploads/sellerProfile/image/' + image, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -298,7 +300,7 @@ export class SellerProfilesService {
           if (cover != 'null') {
             fs.unlink('./uploads/sellerProfile/image/' + cover, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -371,7 +373,7 @@ export class SellerProfilesService {
           if (newProfile) {
             fs.unlink('./uploads/sellerProfile/image/' + oldImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -451,7 +453,7 @@ export class SellerProfilesService {
           if (newProfile) {
             fs.unlink('./uploads/sellerProfile/image/' + oldImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });

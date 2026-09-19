@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { ProfileDto, UpdateDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
@@ -9,6 +9,8 @@ import * as fs from 'fs';
 
 @Injectable()
 export class ProfilesService {
+  private readonly logger = new Logger(ProfilesService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(images, ProfileDto: ProfileDto, user: User) {
@@ -188,7 +190,7 @@ export class ProfilesService {
           if (newProfile) {
             fs.unlink('./uploads/profile/profile/' + oldImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -248,7 +250,7 @@ export class ProfilesService {
           if (newCover) {
             fs.unlink('./uploads/profile/profile/' + oldCImage, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -280,7 +282,6 @@ export class ProfilesService {
   }
 
   async updatePassword(dto: UpdateDto, user: User) {
-    // console.log("Password:", user)
     const userPass = await this.prisma.user.findUnique({
       where: {
         id: user.id,
@@ -336,7 +337,7 @@ export class ProfilesService {
           if (image != 'null') {
             fs.unlink('./uploads/profile/profile/' + image, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -344,7 +345,7 @@ export class ProfilesService {
           if (cover != 'null') {
             fs.unlink('./uploads/profile/profile/' + cover, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });

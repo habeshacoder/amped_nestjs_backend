@@ -1,7 +1,6 @@
 /* eslint-disable prefer-const */
 /* eslint-disable prettier/prettier */
-import { Res } from '@nestjs/common';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,6 +12,8 @@ const fs = require('fs');
 
 @Injectable()
 export class ChannelMaterialService {
+  private readonly logger = new Logger(ChannelMaterialService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(materialDto: ChannelMaterialDto) {
@@ -319,7 +320,7 @@ export class ChannelMaterialService {
           if (newMaterial) {
             fs.unlink('./uploads/material/' + oldMaterial, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -384,7 +385,7 @@ export class ChannelMaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -464,7 +465,7 @@ export class ChannelMaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -545,7 +546,7 @@ export class ChannelMaterialService {
             if (newMaterial) {
               fs.unlink('./uploads/material/' + oldMaterial, (err) => {
                 if (err) {
-                  console.error(err);
+                  this.logger.error(err);
                   return;
                 }
               });
@@ -627,7 +628,7 @@ export class ChannelMaterialService {
           if (d) {
             fs.unlink('./uploads/material/' + i, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -730,7 +731,7 @@ export class ChannelMaterialService {
           if (newMaterial) {
             fs.unlink('./uploads/material/' + oldFile, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
@@ -823,7 +824,7 @@ export class ChannelMaterialService {
         if (newMaterialImage) {
           fs.unlink('./uploads/material/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -922,7 +923,7 @@ export class ChannelMaterialService {
         if (newMaterialImage) {
           fs.unlink('./uploads/material/' + oldImage, (err) => {
             if (err) {
-              console.error(err);
+              this.logger.error(err);
               return;
             }
           });
@@ -1055,7 +1056,7 @@ export class ChannelMaterialService {
           if (newPreview) {
             fs.unlink('./uploads/material/' + oldFile, (err) => {
               if (err) {
-                console.error(err);
+                this.logger.error(err);
                 return;
               }
             });
