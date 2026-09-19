@@ -23,7 +23,7 @@ export class ReportService {
         (reportDto.channel_id && !reportDto.material_id)
       ) {
         try {
-          let reportType: ReportType = reportDto.report_type; //parse to enum type
+          const reportType: ReportType = reportDto.report_type; //parse to enum type
 
           const report = await this.prisma.report.create({
             data: {

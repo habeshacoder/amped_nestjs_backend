@@ -9,7 +9,7 @@ export class SubscriptionPlanService {
   constructor(private prisma: PrismaService) {}
 
   async create(subscriptionPlanDto: SubscriptionPlanDto) {
-    for await (let [i, sub] of subscriptionPlanDto.channel_id.entries()) {
+    for await (const [i, sub] of subscriptionPlanDto.channel_id.entries()) {
       //let sub of subscriptionPlanDto.channel_id) {
       try {
         const subscriptionPlan = await this.prisma.subscriptionPlan.create({
@@ -97,9 +97,9 @@ export class SubscriptionPlanService {
       },
     });
 
-    let subs = [];
+    const subs = [];
 
-    for await (let chan of channel) {
+    for await (const chan of channel) {
       subs.push(
         await this.prisma.subscriptionPlan.findMany({
           where: {

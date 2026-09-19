@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -67,10 +62,4 @@ import * as Joi from 'joi';
     ChannelPurchaseModule,
   ],
 })
-export class AppModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //     // consumer.apply(PreauthMiddleware).forRoutes({
-  //     //     path: '/auth/firebase', method: RequestMethod.GET,
-  //     // });
-  // }
-}
+export class AppModule {}

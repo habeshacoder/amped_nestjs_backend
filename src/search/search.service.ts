@@ -31,7 +31,7 @@ export class SearchService {
       },
     });
 
-    let mainMatches = foundMatterial;
+    const mainMatches = foundMatterial;
 
     return {
       mainMatches,
@@ -50,7 +50,7 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundChannel = await this.prisma.channel.findMany({
       where: whe,
@@ -60,7 +60,7 @@ export class SearchService {
       },
     });
 
-    var mainMatches = foundChannel;
+    const mainMatches = foundChannel;
 
     return {
       mainMatches,
@@ -78,13 +78,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundUser = await this.prisma.user.findMany({
       where: whe,
     });
 
-    var mainMatches = foundUser;
+    const mainMatches = foundUser;
 
     return {
       mainMatches,
@@ -103,13 +103,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundSellerProfile = await this.prisma.sellerProfile.findMany({
       where: whe,
     });
 
-    var mainMatches = foundSellerProfile;
+    const mainMatches = foundSellerProfile;
 
     return {
       mainMatches,
@@ -127,13 +127,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundProfile = await this.prisma.profile.findMany({
       where: whe,
     });
 
-    var mainMatches = foundProfile;
+    const mainMatches = foundProfile;
 
     return {
       mainMatches,
@@ -152,13 +152,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundChannelMaterial = await this.prisma.channelMaterial.findMany({
       where: whe,
     });
 
-    var mainMatches = foundChannelMaterial;
+    const mainMatches = foundChannelMaterial;
     return {
       mainMatches,
       message: 'Matches returned successfully.',
@@ -175,13 +175,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundSubscriptionPlan = await this.prisma.subscriptionPlan.findMany({
       where: whe,
     });
 
-    var mainMatches = foundSubscriptionPlan;
+    const mainMatches = foundSubscriptionPlan;
     return {
       mainMatches,
       message: 'Matches returned successfully.',
@@ -199,13 +199,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundReplays = await this.prisma.replay.findMany({
       where: whe,
     });
 
-    var mainMatches = foundReplays;
+    const mainMatches = foundReplays;
     return {
       mainMatches,
       message: 'Matches returned successfully.',
@@ -222,13 +222,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundReplays = await this.prisma.rate.findMany({
       where: whe,
     });
 
-    var mainMatches = foundReplays;
+    const mainMatches = foundReplays;
     return {
       mainMatches,
       message: 'Matches returned successfully.',
@@ -245,13 +245,13 @@ export class SearchService {
       });
     }
 
-    var whe = Object.fromEntries(where);
+    const whe = Object.fromEntries(where);
 
     const foundReplays = await this.prisma.report.findMany({
       where: whe,
     });
 
-    var mainMatches = foundReplays;
+    const mainMatches = foundReplays;
     return {
       mainMatches,
       message: 'Matches returned successfully.',

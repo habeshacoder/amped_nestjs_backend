@@ -618,7 +618,7 @@ export class ChannelMaterialService {
 
       if (matI) {
         for await (let img of matI) {
-          var i = img.image;
+          let i = img.image;
           const d = await this.prisma.channelMaterialImage.delete({
             where: {
               id: img.id,
