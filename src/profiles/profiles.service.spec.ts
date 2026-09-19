@@ -90,9 +90,14 @@ describe('ProfilesService', () => {
   describe('updateProfile', () => {
     it('should update profile successfully', async () => {
       prisma.profile.findFirst.mockResolvedValue(mockProfile);
-      prisma.profile.update.mockResolvedValue({ ...mockProfile, first_name: 'Jane' });
+      prisma.profile.update.mockResolvedValue({
+        ...mockProfile,
+        first_name: 'Jane',
+      });
 
-      const result = await service.updateProfile(1, { first_name: 'Jane' } as any);
+      const result = await service.updateProfile(1, {
+        first_name: 'Jane',
+      } as any);
       expect(result.first_name).toBe('Jane');
     });
 

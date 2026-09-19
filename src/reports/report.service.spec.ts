@@ -42,10 +42,7 @@ describe('ReportService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ReportService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [ReportService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<ReportService>(ReportService);
@@ -81,7 +78,9 @@ describe('ReportService', () => {
         material_id: 10,
       };
 
-      await expect(service.create(dto as any, mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw ForbiddenException if both material_id and channel_id are present', async () => {
@@ -94,7 +93,9 @@ describe('ReportService', () => {
         channel_id: 20,
       };
 
-      await expect(service.create(dto as any, mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -136,7 +137,9 @@ describe('ReportService', () => {
 
   describe('reportsOnChannel', () => {
     it('should return reports on a channel', async () => {
-      prisma.report.findMany.mockResolvedValue([{ ...mockReport, channel_id: 5, material_id: null }]);
+      prisma.report.findMany.mockResolvedValue([
+        { ...mockReport, channel_id: 5, material_id: null },
+      ]);
 
       const result = await service.reportsOnChannel(5);
       expect(result).toHaveLength(1);

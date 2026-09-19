@@ -47,7 +47,10 @@ describe('AuthController', () => {
       passwordConfirm: 'Password123!',
       phoneNo: '1234567890',
     };
-    authService.signup.mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
+    authService.signup.mockResolvedValue({
+      accessToken: 'at',
+      refreshToken: 'rt',
+    });
 
     const result = await controller.signup(dto);
     expect(authService.signup).toHaveBeenCalledWith(dto);
@@ -59,7 +62,10 @@ describe('AuthController', () => {
       email: 'user@test.com',
       password: 'Password123!',
     };
-    authService.signin.mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
+    authService.signin.mockResolvedValue({
+      accessToken: 'at',
+      refreshToken: 'rt',
+    });
 
     const result = await controller.signin(dto);
     expect(authService.signin).toHaveBeenCalledWith(dto);
@@ -81,7 +87,10 @@ describe('AuthController', () => {
     const req = {
       user: { sub: 'user-1', refreshToken: 'old-rt' },
     } as unknown as Request;
-    authService.refreshTokens.mockResolvedValue({ accessToken: 'new-at', refreshToken: 'new-rt' });
+    authService.refreshTokens.mockResolvedValue({
+      accessToken: 'new-at',
+      refreshToken: 'new-rt',
+    });
 
     const result = await controller.refreshTokens(req);
     expect(authService.refreshTokens).toHaveBeenCalledWith('user-1', 'old-rt');

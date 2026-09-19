@@ -33,7 +33,8 @@ describe('ChapaWebHookChannel', () => {
     config = {
       get: jest.fn().mockImplementation((key: string) => {
         if (key === 'CHAPA_WEBHOOK_HASH_KEY') return 'test_webhook_secret_key';
-        if (key === 'CHAPA_WEBHOOK_URL') return 'https://api.chapa.co/v1/transaction/initialize';
+        if (key === 'CHAPA_WEBHOOK_URL')
+          return 'https://api.chapa.co/v1/transaction/initialize';
         return null;
       }),
     };
@@ -56,17 +57,32 @@ describe('ChapaWebHookChannel', () => {
 
   it('should compute valid HMAC SHA256 signature for webhook verification', () => {
     const secret = 'test_webhook_secret_key';
-    const payload = JSON.stringify({ event: 'charge.success', tx_ref: 'tx-123' });
-    const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    const payload = JSON.stringify({
+      event: 'charge.success',
+      tx_ref: 'tx-123',
+    });
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
 
-    const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    const signature = crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
     expect(signature).toBe(expectedSignature);
   });
 
   it('should reject mismatched webhook signature', () => {
     const secret = 'test_webhook_secret_key';
-    const payload = JSON.stringify({ event: 'charge.success', tx_ref: 'tx-123' });
-    const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    const payload = JSON.stringify({
+      event: 'charge.success',
+      tx_ref: 'tx-123',
+    });
+    const signature = crypto
+      .createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
     const invalidSignature = 'invalid_tampered_signature_hex';
 
     expect(signature).not.toBe(invalidSignature);

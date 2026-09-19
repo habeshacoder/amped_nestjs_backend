@@ -86,7 +86,9 @@ describe('SellerProfilesService', () => {
         name: 'Updated Studio',
       });
 
-      const result = await service.updateProfileInfo(1, { name: 'Updated Studio' } as any);
+      const result = await service.updateProfileInfo(1, {
+        name: 'Updated Studio',
+      } as any);
       expect(result.name).toBe('Updated Studio');
     });
 

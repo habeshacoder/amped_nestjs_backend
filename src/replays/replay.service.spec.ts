@@ -33,10 +33,7 @@ describe('ReplayService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ReplayService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [ReplayService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<ReplayService>(ReplayService);
@@ -68,7 +65,9 @@ describe('ReplayService', () => {
         replay: 'Thank you for your feedback!',
       };
 
-      await expect(service.create(dto as any)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(dto as any)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 

@@ -40,10 +40,7 @@ describe('RatingService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        RatingService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [RatingService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<RatingService>(RatingService);
@@ -78,7 +75,9 @@ describe('RatingService', () => {
         material_id: 10,
       };
 
-      await expect(service.create(dto as any, mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw ForbiddenException if both material_id and channel_id are missing or present', async () => {
@@ -89,7 +88,9 @@ describe('RatingService', () => {
         remark: 'Great',
       };
 
-      await expect(service.create(dto as any, mockUser)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 

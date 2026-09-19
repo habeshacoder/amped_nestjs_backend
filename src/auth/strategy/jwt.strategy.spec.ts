@@ -24,7 +24,10 @@ describe('JwtStrategy', () => {
       get: jest.fn().mockReturnValue('test_jwt_secret_key_123'),
     };
 
-    strategy = new JwtStrategy(config as unknown as ConfigService, prisma as unknown as PrismaService);
+    strategy = new JwtStrategy(
+      config as unknown as ConfigService,
+      prisma as unknown as PrismaService,
+    );
   });
 
   it('should validate and return user without password', async () => {
@@ -35,9 +38,14 @@ describe('JwtStrategy', () => {
     };
     prisma.user.findUnique.mockResolvedValue({ ...mockUser });
 
-    const result = await strategy.validate({ sub: 'user-1', email: 'test@example.com' });
+    const result = await strategy.validate({
+      sub: 'user-1',
+      email: 'test@example.com',
+    });
 
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-1' } });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+    });
     expect(result).toBeDefined();
     expect(result.password).toBeUndefined();
     expect(result.id).toBe('user-1');

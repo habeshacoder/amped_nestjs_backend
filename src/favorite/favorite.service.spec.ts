@@ -56,14 +56,20 @@ describe('FavoriteService', () => {
       prisma.favorite.findFirst.mockResolvedValue(null);
       prisma.favorite.create.mockResolvedValue(mockFavorite);
 
-      const result = await service.create({ material_id: 10, channel_id: null } as any, mockUser);
+      const result = await service.create(
+        { material_id: 10, channel_id: null } as any,
+        mockUser,
+      );
       expect(result).toEqual(mockFavorite);
     });
 
     it('should return message if material already added in favorite', async () => {
       prisma.favorite.findFirst.mockResolvedValue(mockFavorite);
 
-      const result = await service.create({ material_id: 10, channel_id: null } as any, mockUser);
+      const result = await service.create(
+        { material_id: 10, channel_id: null } as any,
+        mockUser,
+      );
       expect(result).toEqual({ message: 'Material already added in Favorite' });
     });
   });
@@ -98,9 +104,15 @@ describe('FavoriteService', () => {
   describe('update', () => {
     it('should update favorite if found', async () => {
       prisma.favorite.findUnique.mockResolvedValue(mockFavorite);
-      prisma.favorite.update.mockResolvedValue({ ...mockFavorite, material_id: 20 });
+      prisma.favorite.update.mockResolvedValue({
+        ...mockFavorite,
+        material_id: 20,
+      });
 
-      const result = await service.update(1, { material_id: 20, channel_id: null } as any);
+      const result = await service.update(1, {
+        material_id: 20,
+        channel_id: null,
+      } as any);
       expect(result.material_id).toBe(20);
     });
 

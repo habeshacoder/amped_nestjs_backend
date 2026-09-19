@@ -55,7 +55,8 @@ describe('AuthService', () => {
     config = {
       get: jest.fn().mockImplementation((key: string) => {
         if (key === 'JWT_SECRET') return 'test_jwt_secret_key_123';
-        if (key === 'JWT_REFRESH_SECRET') return 'test_refresh_jwt_secret_key_123';
+        if (key === 'JWT_REFRESH_SECRET')
+          return 'test_refresh_jwt_secret_key_123';
         return null;
       }),
     };
@@ -79,7 +80,10 @@ describe('AuthService', () => {
   describe('signup', () => {
     it('should successfully register a new user and return tokens', async () => {
       prisma.user.create.mockResolvedValue(mockUser);
-      prisma.user.update.mockResolvedValue({ ...mockUser, refresh_token: 'hashed_rf' });
+      prisma.user.update.mockResolvedValue({
+        ...mockUser,
+        refresh_token: 'hashed_rf',
+      });
 
       const dto = {
         email: 'test@example.com',
@@ -120,12 +124,18 @@ describe('AuthService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.signin({ email: 'nonexistent@example.com', password: 'Password123!' }),
+        service.signin({
+          email: 'nonexistent@example.com',
+          password: 'Password123!',
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException if provider is not local or all', async () => {
-      prisma.user.findUnique.mockResolvedValue({ ...mockUser, provider: 'google' });
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        provider: 'google',
+      });
 
       await expect(
         service.signin({ email: 'test@example.com', password: 'Password123!' }),
@@ -137,7 +147,10 @@ describe('AuthService', () => {
       jest.spyOn(argon, 'verify').mockResolvedValue(false);
 
       await expect(
-        service.signin({ email: 'test@example.com', password: 'WrongPassword!' }),
+        service.signin({
+          email: 'test@example.com',
+          password: 'WrongPassword!',
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -158,8 +171,14 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear refreshToken and return the updated user', async () => {
-      prisma.user.update.mockResolvedValue({ ...mockUser, refresh_token: null });
-      prisma.user.findUnique.mockResolvedValue({ ...mockUser, refresh_token: null });
+      prisma.user.update.mockResolvedValue({
+        ...mockUser,
+        refresh_token: null,
+      });
+      prisma.user.findUnique.mockResolvedValue({
+        ...mockUser,
+        refresh_token: null,
+      });
 
       const result = await service.logout('user-uuid-1');
 

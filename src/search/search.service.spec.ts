@@ -32,10 +32,7 @@ describe('SearchService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        SearchService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [SearchService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<SearchService>(SearchService);
@@ -55,7 +52,9 @@ describe('SearchService', () => {
   });
 
   it('suggestChannel should search channels by name', async () => {
-    prisma.channel.findMany.mockResolvedValue([{ id: 1, name: 'Science Channel' }]);
+    prisma.channel.findMany.mockResolvedValue([
+      { id: 1, name: 'Science Channel' },
+    ]);
 
     const result = await service.suggestChannel({ key: 'Science' } as any);
     expect(result.success).toBe(true);

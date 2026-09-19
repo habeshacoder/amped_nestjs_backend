@@ -100,7 +100,9 @@ describe('SubscriptionPlanService', () => {
       prisma.subscriptionPlan.delete.mockResolvedValue(mockPlan);
 
       const result = await service.remove(1);
-      expect(result).toEqual({ message: 'Subscription Plan deleted successfully' });
+      expect(result).toEqual({
+        message: 'Subscription Plan deleted successfully',
+      });
     });
 
     it('should throw ForbiddenException if plan does not exist', async () => {

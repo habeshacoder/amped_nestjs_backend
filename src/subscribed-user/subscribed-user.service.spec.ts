@@ -53,7 +53,10 @@ describe('SubscribedUserService', () => {
       prisma.subscribedUser.findFirst.mockResolvedValue(null);
       prisma.subscribedUser.create.mockResolvedValue(mockSubscribedUser);
 
-      const result = await service.create({ subscription_id: 5 } as any, mockUser);
+      const result = await service.create(
+        { subscription_id: 5 } as any,
+        mockUser,
+      );
       expect(result).toEqual(mockSubscribedUser);
     });
 
@@ -90,7 +93,9 @@ describe('SubscribedUserService', () => {
       prisma.subscribedUser.delete.mockResolvedValue(mockSubscribedUser);
 
       const result = await service.remove(1);
-      expect(result).toEqual({ message: 'Subscribed User deleted successfully' });
+      expect(result).toEqual({
+        message: 'Subscribed User deleted successfully',
+      });
     });
 
     it('should throw ForbiddenException if subscribed user not found', async () => {

@@ -38,10 +38,7 @@ describe('ChannelService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ChannelService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [ChannelService, { provide: PrismaService, useValue: prisma }],
     }).compile();
 
     service = module.get<ChannelService>(ChannelService);
@@ -85,9 +82,9 @@ describe('ChannelService', () => {
     it('should throw ForbiddenException if page is out of bounds', async () => {
       prisma.channel.count.mockResolvedValue(10);
 
-      await expect(service.paginateChannels({ take: 5, page: 5 })).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.paginateChannels({ take: 5, page: 5 }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });
