@@ -28,7 +28,7 @@
 //         //generate tx_ref here
 //         const tx_ref = await this.chapaService.generateTransactionReference();
 //         const secret = this.config.get('CHAPA_SECRET_KEY');
-//         // console.log("TX: ", tx_ref);
+//         // this.logger.log("TX: ", tx_ref);
 
 //         try {
 //             const unfinishedOrders = await this.prisma.unfinishedOrders.create({
@@ -42,7 +42,7 @@
 //             });
 
 //             if (unfinishedOrders) {
-//                 // console.log(unfinishedOrders);
+//                 // this.logger.log(unfinishedOrders);
 //                 dto.material.forEach(async (material) => {
 //                     const addedMaterial = await this.prisma.unfinishedOrderDetails.create(
 //                         {
@@ -102,7 +102,7 @@
 //                     },
 //                     function (error) {
 //                         /* code if some error */
-//                         console.error(error)
+//                         this.logger.error(error)
 //                     }
 //                 )
 //                 return re
@@ -127,7 +127,7 @@
 //     //     const secret = this.config.get('CHAPA_SECRET_KEY');
 //     //     // let res = null;
 
-//     //     console.log("V_TX-r: ", tx_ref)
+//     //     this.logger.log("V_TX-r: ", tx_ref)
 //     //     try {
 //     //         const orders = await this.prisma.unfinishedOrders.findUnique({
 //     //             where: {
@@ -142,7 +142,7 @@
 
 //     //             // const verifypayment = new VerifyPayment(tx_ref, secret);
 
-//     //             // console.log(verifypayment.verifyPayment());
+//     //             // this.logger.log(verifypayment.verifyPayment());
 
 //     //             var options = {
 //     //                 method: 'GET',
@@ -175,7 +175,7 @@
 //     //                 },
 //     //                 function (error) {
 //     //                     /* code if some error */
-//     //                     console.error(error)
+//     //                     this.logger.error(error)
 //     //                 }
 //     //             )
 
@@ -208,7 +208,7 @@
 //     //                 throw new ForbiddenException('Credentials Taken');
 //     //             }
 //     //         }
-//     //         console.log(error);
+//     //         this.logger.log(error);
 //     //         throw new ForbiddenException(
 //     //             'There has been an error. Please check the inputs and try again.',
 //     //         );

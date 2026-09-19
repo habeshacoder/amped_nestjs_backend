@@ -44,7 +44,7 @@
 //         });
 
 //       if (unfinishedOrderChannel) {
-//         // console.log(unfinishedOrders);
+//         // this.logger.log(unfinishedOrders);
 //         // dto.material.forEach(async (material) => {
 //         //     const addedMaterial = await this.prisma.unfinishedOrderDetails.create(
 //         //         {
@@ -106,7 +106,7 @@
 //           },
 //           function (error) {
 //             /* code if some error */
-//             console.error(error);
+//             this.logger.error(error);
 //           },
 //         );
 //         return re;
@@ -141,7 +141,7 @@
 //       if (orders) {
 //         // const verifypayment = new VerifyPayment(tx_ref, secret);
 
-//         // console.log(verifypayment.verifyPayment());
+//         // this.logger.log(verifypayment.verifyPayment());
 
 //         var options = {
 //           method: 'GET',
@@ -174,7 +174,7 @@
 //           },
 //           function (error) {
 //             /* code if some error */
-//             console.error(error);
+//             this.logger.error(error);
 //           },
 //         );
 
@@ -214,7 +214,7 @@
 //           throw new ForbiddenException('Credentials Taken');
 //         }
 //       }
-//       console.log(error);
+//       this.logger.log(error);
 //       throw new ForbiddenException(
 //         'There has been an error. Please check the inputs and try again.',
 //       );
