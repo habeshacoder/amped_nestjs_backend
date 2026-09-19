@@ -3,6 +3,9 @@ import { MaterialService } from './material.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Parent, Type } from '@prisma/client';
 
+import { MaterialQueryService } from './material-query.service';
+import { MaterialStorageService } from './material-storage.service';
+
 describe('MaterialService', () => {
   let service: MaterialService;
   let prisma: {
@@ -35,6 +38,8 @@ describe('MaterialService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MaterialService,
+        MaterialQueryService,
+        MaterialStorageService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
