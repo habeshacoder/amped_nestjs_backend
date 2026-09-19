@@ -4,6 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ForbiddenException } from '@nestjs/common';
 import { Parent, Type } from '@prisma/client';
 
+import { ChannelMaterialQueryService } from './channel-material-query.service';
+import { ChannelMaterialStorageService } from './channel-material-storage.service';
+
 describe('ChannelMaterialService', () => {
   let service: ChannelMaterialService;
   let prisma: {
@@ -38,6 +41,8 @@ describe('ChannelMaterialService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChannelMaterialService,
+        ChannelMaterialQueryService,
+        ChannelMaterialStorageService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
