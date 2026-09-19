@@ -75,6 +75,15 @@ npm run build
 npm run start:prod
 ```
 
+### 8. Run via Docker (Optional)
+```bash
+# Build the production container image
+docker build -t amped-backend:latest .
+
+# Run the container with environment variables
+docker run -p 3007:3007 --env-file .env amped-backend:latest
+```
+
 ---
 
 ## Database Architecture & Migration Workflow
