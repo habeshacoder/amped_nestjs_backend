@@ -15,9 +15,9 @@ import {
 import { RatingService } from './rating.service';
 import { RatingDto } from './dto';
 import { User } from '@prisma/client';
-import { JwtGuard } from 'src/auth/guard';
+import { JwtGuard } from '../auth/guard';
 import { UpdateRatingDto } from './dto/update-rating.dto';
-import { GetUser } from 'src/auth/decorator';
+import { GetUser } from '../auth/decorator';
 
 @Controller('rate')
 export class RatingController {
