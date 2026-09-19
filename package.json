@@ -124,6 +124,14 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/$1"
+    },
+    "coverageThreshold": {
+      "global": {
+        "branches": 15,
+        "functions": 20,
+        "lines": 20,
+        "statements": 20
+      }
     }
   }
 }
