@@ -173,7 +173,9 @@ export class MaterialService {
     });
   }
 
-  async getHomeItems() {}
+  async getHomeItems() {
+    return [];
+  }
 
   async getMaterialByType(materialType: Type) {
     const mat = await this.prisma.material.findMany({

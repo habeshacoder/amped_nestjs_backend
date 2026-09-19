@@ -4,7 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { Material_PurchaseDto } from './dto';
 import { ChapaService } from 'chapa-nestjs';
-var request = require('request');
+import * as request from 'request';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class ChapaWebHook {
@@ -21,7 +22,7 @@ export class ChapaWebHook {
     const secret = this.config.get('CHAPA_WEBHOOK_HASH_KEY');
     const webhook_URL = this.config.get('CHAPA_WEBHOOK_URL');
 
-    var options = {
+    const options = {
       method: 'POST',
       url: webhook_URL,
       body: JSON.stringify({
@@ -50,7 +51,6 @@ export class ChapaWebHook {
     //save the data as purchased
     //return a success message
 
-    var crypto = require('crypto');
     const secret = this.config.get('CHAPA_WEBHOOK_HASH_KEY');
 
     // Using Express

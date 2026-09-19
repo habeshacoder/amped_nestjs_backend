@@ -4,7 +4,7 @@ import { SellerProfileDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { User } from '@prisma/client';
-const fs = require('fs');
+import * as fs from 'fs';
 
 @Injectable()
 export class SellerProfilesService {
