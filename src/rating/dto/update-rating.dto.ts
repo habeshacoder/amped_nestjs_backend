@@ -1,10 +1,4 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  maxLength,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class UpdateRatingDto {
   @IsNotEmpty({ message: 'Rating cannot be empty' })

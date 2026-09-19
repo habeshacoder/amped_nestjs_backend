@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsString } from 'class-validator';
 
 export class Channel_PurchaseDto {
   @IsString({ message: 'FirstName must be a string' })
@@ -9,10 +9,8 @@ export class Channel_PurchaseDto {
   @IsNotEmpty({ message: "LastName can't be empty" })
   last_name: string;
 
-  @IsString({ message: 'Phone Number must be a string' })
   @IsNotEmpty({ message: "Phone Number can't be empty" })
-  @IsNotEmpty({ message: "Email can't be empty" })
-  phone_no: number;
+  phone_no: string;
 
   @IsString()
   @IsEmail()

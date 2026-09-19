@@ -7,8 +7,10 @@ export class FavoriteDto {
   user_id: string;
 
   @IsOptional()
+  @IsNumber()
   channel_id?: number;
 
   @IsOptional()
+  @IsNumber()
   material_id?: number;
 }

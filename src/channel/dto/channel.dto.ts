@@ -1,11 +1,11 @@
-/* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ChannelDto {
   @IsString({ message: 'Channel Name must be a string' })
   @IsNotEmpty({ message: "Channel Name can't be empty" })
   name: string;
 
+  @IsOptional()
   @IsString({ message: 'Channel Description must be a string' })
   description: string;
 

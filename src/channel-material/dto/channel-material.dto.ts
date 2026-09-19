@@ -1,5 +1,11 @@
-/* eslint-disable prettier/prettier */
-import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Parent, Type, Genere, Catagory } from '@prisma/client';
 
 export class ChannelMaterialDto {
@@ -66,8 +72,9 @@ export class ChannelMaterialDto {
   @IsNumber()
   episode: number;
 
-  @IsNotEmpty({ message: 'Subscription cannot be empty' })
-  subscription_id: Array<number>;
+  @IsOptional()
+  @IsArray()
+  subscription_id?: Array<number>;
 
   @IsNumber()
   continues_from: number;

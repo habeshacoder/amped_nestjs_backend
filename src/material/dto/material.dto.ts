@@ -1,11 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {
-  IsIn,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Parent, Type, Genere, Catagory } from '@prisma/client';
 
 export class MaterialDto {

@@ -1,12 +1,12 @@
-/* eslint-disable prettier/prettier */
 import { Sex } from '@prisma/client';
-import { IsNotEmpty, IsString, IsIn } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class SellerProfileDto {
   @IsNotEmpty({ message: 'Name cannot be empty' })
   @IsString({ message: 'Name must be a string' })
   name: string;
 
+  @IsOptional()
   @IsString({ message: 'Description must be a string' })
   description: string;
 
@@ -14,6 +14,7 @@ export class SellerProfileDto {
   @IsIn(['Male', 'Female', 'Unspecified'])
   sex: Sex;
 
+  @IsOptional()
   @IsString({ message: 'Birth date must be a string' })
   date_of_birth: string;
 }
