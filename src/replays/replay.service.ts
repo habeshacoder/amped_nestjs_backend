@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { ReplayDto } from './dto/replay.dto';
 import { UpdateReplayDto } from './dto/update-replay.dto';
 
