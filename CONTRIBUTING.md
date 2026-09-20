@@ -51,6 +51,9 @@ All commit messages must adhere to the [Conventional Commits](https://www.conven
 - `test: add unit test suite for ChannelMaterialService`
 - `chore: enforce jest coverage threshold`
 
+### Rule: Tests Ship With The Change
+Every feature, fix, or refactoring commit **must include its corresponding tests in the exact same commit**. Never defer tests to a follow-up commit. Commits are validated with `commitlint` via husky git hooks before acceptance.
+
 ---
 
 ## 3. Local Quality Verification (Pre-Commit Checks)
