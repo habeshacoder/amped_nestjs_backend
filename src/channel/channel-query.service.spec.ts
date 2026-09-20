@@ -83,22 +83,96 @@ describe('ChannelQueryService', () => {
   });
 
   describe('paginateChannels', () => {
-    it('should return paginated channels and meta', async () => {
-      prisma.channel.count.mockResolvedValue(10);
+    it('should return paginated channels and meta for first page', async () => {
+      prisma.channel.count.mockResolvedValue(15);
       prisma.channel.findMany.mockResolvedValue([mockChannel]);
 
       const result = await service.paginateChannels({ take: 5, page: 0 });
       expect(result).toHaveProperty('Materials');
-      expect(result).toHaveProperty('Meta');
-      expect(result.Meta.Num_Of_Channels).toBe(10);
-      expect(result.Meta.Num_Of_Pages).toBe(2);
+      expect(result.Meta).toEqual({
+        Num_Of_Channels: 15,
+        Num_Of_Pages: 3,
+        Per_Page: 5,
+        Channels_In_last_page: 5,
+        self: 0,
+        prev: null,
+        next: 1,
+        last: 2,
+      });
+      expect(prisma.channel.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 0,
+          take: 5,
+        }),
+      );
     });
 
-    it('should throw NotFoundError if page is out of bounds', async () => {
+    it('should compute previous and next pages correctly for middle page', async () => {
+      prisma.channel.count.mockResolvedValue(15);
+      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+
+      const result = await service.paginateChannels({ take: 5, page: 1 });
+      expect(result.Meta.self).toBe(1);
+      expect(result.Meta.prev).toBe(0);
+      expect(result.Meta.next).toBe(2);
+      expect(result.Meta.last).toBe(2);
+      expect(prisma.channel.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 5, take: 5 }),
+      );
+    });
+
+    it('should set next to null on the last page', async () => {
+      prisma.channel.count.mockResolvedValue(15);
+      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+
+      const result = await service.paginateChannels({ take: 5, page: 2 });
+      expect(result.Meta.self).toBe(2);
+      expect(result.Meta.prev).toBe(1);
+      expect(result.Meta.next).toBeNull();
+      expect(result.Meta.last).toBe(2);
+      expect(prisma.channel.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 10, take: 5 }),
+      );
+    });
+
+    it('should handle empty result set when count is 0 and page is 0', async () => {
+      prisma.channel.count.mockResolvedValue(0);
+
+      const result = await service.paginateChannels({ take: 5, page: 0 });
+      expect(result.Materials).toEqual([]);
+      expect(result.Meta).toEqual({
+        Num_Of_Channels: 0,
+        Num_Of_Pages: 0,
+        Per_Page: 5,
+        Channels_In_last_page: 0,
+        self: 0,
+        prev: null,
+        next: null,
+        last: 0,
+      });
+    });
+
+    it('should throw NotFoundError if page is greater than total pages', async () => {
       prisma.channel.count.mockResolvedValue(10);
 
       await expect(
         service.paginateChannels({ take: 5, page: 5 }),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NotFoundError if page is negative', async () => {
+      prisma.channel.count.mockResolvedValue(10);
+
+      await expect(
+        service.paginateChannels({ take: 5, page: -1 }),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NotFoundError if count is 0 and requested page > 0', async () => {
+      prisma.channel.count.mockResolvedValue(0);
+
+      await expect(
+        service.paginateChannels({ take: 5, page: 1 }),
       ).rejects.toThrow(NotFoundError);
     });
   });

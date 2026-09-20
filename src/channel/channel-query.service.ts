@@ -50,25 +50,39 @@ export class ChannelQueryService {
     const take = params.take ?? 10;
     const page = params.page ?? 0;
 
-    let skip: number | null = null;
     const num_of_channel = await this.prisma.channel.count();
     const totalPages = Math.ceil(num_of_channel / take);
 
-    if (page >= 0 && page < totalPages) {
-      skip = take * page;
-    } else {
+    if (num_of_channel === 0) {
+      if (page !== 0) {
+        throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
+      }
+      return {
+        Materials: [],
+        Meta: {
+          Num_Of_Channels: 0,
+          Num_Of_Pages: 0,
+          Per_Page: take,
+          Channels_In_last_page: 0,
+          self: 0,
+          prev: null,
+          next: null,
+          last: 0,
+        },
+      };
+    }
+
+    if (page < 0 || page >= totalPages) {
       throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
     }
 
-    let previousPage: number | null = page - 1;
-    let nextPage: number | null = page + 1;
+    const skip = take * page;
+    const previousPage: number | null = page === 0 ? null : page - 1;
+    const nextPage: number | null = page + 1 >= totalPages ? null : page + 1;
     const lastPage = totalPages - 1;
 
     let channels_in_last_page = num_of_channel % take;
     if (channels_in_last_page === 0) channels_in_last_page = take;
-
-    if (page === 0) previousPage = null;
-    if (nextPage >= totalPages) nextPage = null;
 
     const meta = {
       Num_Of_Channels: num_of_channel,
