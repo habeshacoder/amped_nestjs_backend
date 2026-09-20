@@ -160,6 +160,23 @@ describe('SellerProfilesService', () => {
   });
 
   describe('updateProfileImage', () => {
+    it('should throw NotFoundError if seller profile not found', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateProfileImage({ image: [] }, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should return success message if no image filename extracted', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(mockSellerProfile);
+
+      const result = await service.updateProfileImage({}, 1);
+      expect(result).toEqual({
+        message: 'Profile Image Uploaded Successfully',
+      });
+    });
+
     it('should update image and delete old file', async () => {
       prisma.sellerProfile.findFirst.mockResolvedValue({
         ...mockSellerProfile,
@@ -182,6 +199,110 @@ describe('SellerProfilesService', () => {
       expect(fileStorage.deleteFile).toHaveBeenCalledWith(
         'sellerProfile/image',
         'old-avatar.png',
+      );
+    });
+  });
+
+  describe('updateCoverImage', () => {
+    it('should throw NotFoundError if seller profile not found', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateCoverImage({ cover: [] }, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should return success message if no cover filename extracted', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(mockSellerProfile);
+
+      const result = await service.updateCoverImage({}, 1);
+      expect(result).toEqual({
+        message: 'Cover Image Uploaded Successfully',
+      });
+    });
+
+    it('should update cover and delete old file', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue({
+        ...mockSellerProfile,
+        cover_image: 'old-cover.png',
+      });
+      prisma.sellerProfile.update.mockResolvedValue({
+        ...mockSellerProfile,
+        cover_image: 'new-cover.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.updateCoverImage(
+        { cover: [{ path: 'uploads/new-cover.png' }] },
+        1,
+      );
+
+      expect(result).toEqual({
+        message: 'Cover Image Uploaded Successfully',
+      });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'old-cover.png',
+      );
+    });
+  });
+
+  describe('uploadImage & uploadCover', () => {
+    it('should throw NotFoundError if seller profile not found in uploadImage', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(null);
+      await expect(
+        service.uploadImage({ filename: 'img.png' } as any, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NotFoundError if seller profile not found in uploadCover', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue(null);
+      await expect(
+        service.uploadCover({ filename: 'cvr.png' } as any, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should uploadImage and delete old file', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue({
+        ...mockSellerProfile,
+        image: 'old-pic.png',
+      });
+      prisma.sellerProfile.update.mockResolvedValue({
+        ...mockSellerProfile,
+        image: 'new-pic.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.uploadImage(
+        { filename: 'new-pic.png' } as any,
+        1,
+      );
+      expect(result.image).toBe('new-pic.png');
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'old-pic.png',
+      );
+    });
+
+    it('should uploadCover and delete old file', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue({
+        ...mockSellerProfile,
+        cover_image: 'old-cover.png',
+      });
+      prisma.sellerProfile.update.mockResolvedValue({
+        ...mockSellerProfile,
+        cover_image: 'new-cover.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.uploadCover(
+        { filename: 'new-cover.png' } as any,
+        1,
+      );
+      expect(result.cover_image).toBe('new-cover.png');
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'old-cover.png',
       );
     });
   });
