@@ -24,6 +24,7 @@ import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.modul
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HealthModule } from './health/health.module';
+import { CommonModule } from './common/common.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -47,6 +48,7 @@ import * as Joi from 'joi';
     AuthModule,
     UserModule,
     PrismaModule,
+    CommonModule,
     ProfilesModule,
     MulterModule.register({ dest: './uploads' }),
     SellerProfilesModule,
