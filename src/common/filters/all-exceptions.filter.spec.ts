@@ -1,6 +1,12 @@
 import { AllExceptionsFilter } from './all-exceptions.filter';
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ArgumentsHost } from '@nestjs/common';
+import {
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+  ForbiddenError,
+} from '../exceptions/domain-exceptions';
 
 describe('AllExceptionsFilter', () => {
   let filter: AllExceptionsFilter;
@@ -17,7 +23,11 @@ describe('AllExceptionsFilter', () => {
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnValue({ json: mockJson });
     mockResponse = { status: mockStatus };
-    mockRequest = { method: 'GET', url: '/test-endpoint' };
+    mockRequest = {
+      method: 'GET',
+      url: '/test-endpoint',
+      headers: { 'x-request-id': 'req-123' },
+    };
 
     mockHost = {
       switchToHttp: jest.fn().mockReturnValue({
@@ -42,6 +52,69 @@ describe('AllExceptionsFilter', () => {
     expect(filter).toBeDefined();
   });
 
+  it('should catch DomainException and format code, path, timestamp, requestId', () => {
+    const exception = new NotFoundError(
+      'Channel not found',
+      'CHANNEL_NOT_FOUND',
+    );
+    filter.catch(exception, mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.NOT_FOUND,
+        code: 'CHANNEL_NOT_FOUND',
+        message: 'Channel not found',
+        path: '/test-endpoint',
+        requestId: 'req-123',
+      }),
+    );
+  });
+
+  it('should catch ConflictError and format correctly', () => {
+    const exception = new ConflictError('Channel name taken');
+    filter.catch(exception, mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.CONFLICT,
+        code: 'CONFLICT',
+        message: 'Channel name taken',
+      }),
+    );
+  });
+
+  it('should catch ValidationError and format correctly', () => {
+    const exception = new ValidationError('Invalid channel data');
+    filter.catch(exception, mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid channel data',
+      }),
+    );
+  });
+
+  it('should catch ForbiddenError and format correctly', () => {
+    const exception = new ForbiddenError(
+      'Only the channel owner can perform this action',
+    );
+    filter.catch(exception, mockHost);
+
+    expect(mockStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN);
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.FORBIDDEN,
+        code: 'FORBIDDEN',
+        message: 'Only the channel owner can perform this action',
+      }),
+    );
+  });
+
   it('should catch HttpException and format the response correctly', () => {
     const exception = new HttpException(
       { message: 'Forbidden access', error: 'Forbidden' },
@@ -51,11 +124,15 @@ describe('AllExceptionsFilter', () => {
     filter.catch(exception, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.FORBIDDEN);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.FORBIDDEN,
-      message: 'Forbidden access',
-      error: 'Forbidden',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.FORBIDDEN,
+        message: 'Forbidden access',
+        error: 'Forbidden',
+        path: '/test-endpoint',
+        requestId: 'req-123',
+      }),
+    );
     expect(loggerWarnSpy).toHaveBeenCalled();
   });
 
@@ -65,11 +142,12 @@ describe('AllExceptionsFilter', () => {
     filter.catch(exception, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Bad Request',
-      error: 'HttpException',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Bad Request',
+      }),
+    );
   });
 
   it('should catch unhandled generic Error and return 500 status', () => {
@@ -81,6 +159,7 @@ describe('AllExceptionsFilter', () => {
     expect(mockJson).toHaveBeenCalledWith(
       expect.objectContaining({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        code: 'INTERNAL_SERVER_ERROR',
         error: 'Error',
       }),
     );
@@ -97,11 +176,13 @@ describe('AllExceptionsFilter', () => {
     filter.catch(prismaError, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.CONFLICT);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.CONFLICT,
-      message: 'A record with this unique constraint already exists.',
-      error: 'Conflict',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.CONFLICT,
+        code: 'P2002',
+        message: 'A record with this unique constraint already exists.',
+      }),
+    );
     expect(loggerWarnSpy).toHaveBeenCalled();
   });
 
@@ -114,12 +195,14 @@ describe('AllExceptionsFilter', () => {
     filter.catch(prismaError, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.BAD_REQUEST,
-      message:
-        'Foreign key constraint violated: referenced entity does not exist.',
-      error: 'Bad Request',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: 'P2003',
+        message:
+          'Foreign key constraint violated: referenced entity does not exist.',
+      }),
+    );
     expect(loggerWarnSpy).toHaveBeenCalled();
   });
 
@@ -133,11 +216,13 @@ describe('AllExceptionsFilter', () => {
     filter.catch(prismaError, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.NOT_FOUND,
-      message: 'The requested database record was not found.',
-      error: 'Not Found',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.NOT_FOUND,
+        code: 'P2025',
+        message: 'The requested database record was not found.',
+      }),
+    );
     expect(loggerWarnSpy).toHaveBeenCalled();
   });
 
@@ -151,11 +236,13 @@ describe('AllExceptionsFilter', () => {
     filter.catch(prismaError, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Provided value exceeds maximum database field length.',
-      error: 'Bad Request',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.BAD_REQUEST,
+        code: 'P2000',
+        message: 'Provided value exceeds maximum database field length.',
+      }),
+    );
     expect(loggerWarnSpy).toHaveBeenCalled();
   });
 
@@ -169,11 +256,13 @@ describe('AllExceptionsFilter', () => {
     filter.catch(prismaError, mockHost);
 
     expect(mockStatus).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(mockJson).toHaveBeenCalledWith({
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'A database error occurred.',
-      error: 'Internal Server Error',
-    });
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        code: 'DATABASE_ERROR',
+        message: 'A database error occurred.',
+      }),
+    );
     expect(loggerErrorSpy).toHaveBeenCalled();
   });
 });
