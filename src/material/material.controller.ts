@@ -33,6 +33,7 @@ import { join } from 'path';
 import { GetUser } from '../auth/decorator';
 import { statSync, createReadStream } from 'fs';
 import { Response } from 'express';
+import { FileFieldsValidationPipe } from '../common/pipes/file-fields-validation.pipe';
 
 @Controller('material')
 export class MaterialController {
@@ -67,7 +68,29 @@ export class MaterialController {
   )
   createFile(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles()
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          material: { required: false, maxSizeBytes: 200 * 1024 * 1024 },
+          profile: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          cover: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          images: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          preview: { required: false, maxSizeBytes: 50 * 1024 * 1024 },
+        },
+      }),
+    )
     files: {
       material?: Express.Multer.File[];
       profile?: Express.Multer.File[];
@@ -246,7 +269,14 @@ export class MaterialController {
   )
   updateMaterial(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: { material?: Express.Multer.File[] },
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          material: { required: true, maxSizeBytes: 200 * 1024 * 1024 },
+        },
+      }),
+    )
+    files: { material?: Express.Multer.File[] },
   ) {
     return this.materialService.updateMaterial(files as any, id);
   }
@@ -264,7 +294,18 @@ export class MaterialController {
   )
   updateMaterialProfile(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: { profile?: Express.Multer.File[] },
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          profile: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { profile?: Express.Multer.File[] },
   ) {
     return this.materialService.updateMaterialProfile(files as any, id);
   }
@@ -282,7 +323,18 @@ export class MaterialController {
   )
   updateMaterialCover(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: { cover?: Express.Multer.File[] },
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          cover: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { cover?: Express.Multer.File[] },
   ) {
     return this.materialService.updateMaterialCover(files as any, id);
   }
@@ -300,7 +352,18 @@ export class MaterialController {
   )
   updateMaterialImage(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: { images?: Express.Multer.File[] },
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          images: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { images?: Express.Multer.File[] },
   ) {
     return this.materialService.updateMaterialImage(files as any, id);
   }
@@ -318,7 +381,14 @@ export class MaterialController {
   )
   updateMaterialPreview(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: { preview?: Express.Multer.File[] },
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          preview: { required: true, maxSizeBytes: 50 * 1024 * 1024 },
+        },
+      }),
+    )
+    files: { preview?: Express.Multer.File[] },
   ) {
     return this.materialService.updateMaterialPreview(files as any, id);
   }

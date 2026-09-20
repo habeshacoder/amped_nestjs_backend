@@ -16,6 +16,7 @@ import {
   ParseFilePipeBuilder,
   UploadedFiles,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ChannelMaterialService } from './channel-material.service';
 import { ChannelMaterialDto } from './dto';
@@ -33,6 +34,7 @@ import {
 } from '../common/utils/file-upload.utils';
 import { Material, Type } from '@prisma/client';
 import { join } from 'path';
+import { FileFieldsValidationPipe } from '../common/pipes/file-fields-validation.pipe';
 
 @Controller('channel-material')
 export class ChannelMaterialController {
@@ -68,17 +70,39 @@ export class ChannelMaterialController {
     ),
   )
   createFile(
-    @Param('id') id: string,
-    @UploadedFiles()
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          material: { required: false, maxSizeBytes: 200 * 1024 * 1024 },
+          profile: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          cover: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          images: {
+            required: false,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+          preview: { required: false, maxSizeBytes: 50 * 1024 * 1024 },
+        },
+      }),
+    )
     files: {
-      material: Express.Multer.File;
-      profile: Express.Multer.File;
-      cover: Express.Multer.File;
-      images: Express.Multer.File;
-      preview: Express.Multer.File;
+      material?: Express.Multer.File[];
+      profile?: Express.Multer.File[];
+      cover?: Express.Multer.File[];
+      images?: Express.Multer.File[];
+      preview?: Express.Multer.File[];
     },
   ) {
-    return this.channelMaterialService.createFile(files, +id);
+    return this.channelMaterialService.createFile(files as any, id);
   }
 
   @Get()
@@ -133,11 +157,17 @@ export class ChannelMaterialController {
     ),
   )
   updateMaterial(
-    @Param('id') id: string,
-    @UploadedFiles() files: { material: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          material: { required: true, maxSizeBytes: 200 * 1024 * 1024 },
+        },
+      }),
+    )
+    files: { material?: Express.Multer.File[] },
   ) {
-    //, profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
-    return this.channelMaterialService.updateMaterial(files, +id);
+    return this.channelMaterialService.updateMaterial(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -161,11 +191,21 @@ export class ChannelMaterialController {
     ),
   )
   updateMaterialProfile(
-    @Param('id') id: string,
-    @UploadedFiles() files: { profile: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          profile: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { profile?: Express.Multer.File[] },
   ) {
-    //, profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
-    return this.channelMaterialService.updateMaterialProfile(files, +id);
+    return this.channelMaterialService.updateMaterialProfile(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -189,11 +229,21 @@ export class ChannelMaterialController {
     ),
   )
   updateMaterialCover(
-    @Param('id') id: string,
-    @UploadedFiles() files: { cover: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          cover: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { cover?: Express.Multer.File[] },
   ) {
-    // , profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
-    return this.channelMaterialService.updateMaterialCover(files, +id);
+    return this.channelMaterialService.updateMaterialCover(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -217,11 +267,21 @@ export class ChannelMaterialController {
     ),
   )
   updateMaterialImage(
-    @Param('id') id: string,
-    @UploadedFiles() files: { images: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          images: {
+            required: true,
+            maxSizeBytes: 10 * 1024 * 1024,
+            allowedMimeTypes: ['image/*'],
+          },
+        },
+      }),
+    )
+    files: { images?: Express.Multer.File[] },
   ) {
-    //, profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
-    return this.channelMaterialService.updateMaterialImage(files, +id);
+    return this.channelMaterialService.updateMaterialImage(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -245,11 +305,17 @@ export class ChannelMaterialController {
     ),
   )
   updateMaterialPreview(
-    @Param('id') id: string,
-    @UploadedFiles() files: { preview: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles(
+      new FileFieldsValidationPipe({
+        fields: {
+          preview: { required: true, maxSizeBytes: 50 * 1024 * 1024 },
+        },
+      }),
+    )
+    files: { preview?: Express.Multer.File[] },
   ) {
-    //, profile: Express.Multer.File, cover: Express.Multer.File, images: Express.Multer.File, preview: Express.Multer.File}) {
-    return this.channelMaterialService.updateMaterialPreview(files, +id);
+    return this.channelMaterialService.updateMaterialPreview(files as any, id);
   }
 
   // @UseGuards(JwtGuard)
