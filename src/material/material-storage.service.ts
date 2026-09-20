@@ -1,736 +1,441 @@
-/* eslint-disable prefer-const */
 import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Response } from 'express';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
-import * as fs from 'fs';
+import {
+  FileStorageService,
+  UploadedImages,
+} from '../common/services/file-storage.service';
 
 @Injectable()
 export class MaterialStorageService {
   private readonly logger = new Logger(MaterialStorageService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fileStorage: FileStorageService,
+  ) {}
 
-  async createFile(images, id: number) {
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
+  async createFile(images: UploadedImages, id: number) {
     this.logger.debug('createFile images received');
-    const m_name =
-      images['material'][0].path.split('/')[
-        images['material'][0].path.split('/').length - 1
-      ];
-    const p_name =
-      images['profile'][0].path.split('/')[
-        images['profile'][0].path.split('/').length - 1
-      ];
-    const c_name =
-      images['cover'][0].path.split('/')[
-        images['cover'][0].path.split('/').length - 1
-      ];
-    const pr_name =
-      images['preview'][0].path.split('/')[
-        images['preview'][0].path.split('/').length - 1
-      ];
-    const image =
-      images['images'][0].path.split('/')[
-        images['images'][0].path.split('/').length - 1
-      ];
+    const extracted = this.fileStorage.extractEntityFileNames(images);
 
     const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
       include: {
         material_image: true,
         material_preview: true,
       },
     });
 
-    if (material) {
-      try {
-        await this.prisma.material.update({
-          data: {
-            material: m_name,
-          },
-          where: {
-            id: id,
-          },
-        });
-
-        await this.prisma.materialImage.create({
-          data: {
-            image: p_name,
-            primary: true,
-            material_id: material.id,
-          },
-        });
-
-        await this.prisma.materialImage.create({
-          data: {
-            image: c_name,
-            cover: true,
-            material_id: material.id,
-          },
-        });
-
-        await this.prisma.previewMaterial.create({
-          data: {
-            preview: pr_name,
-            material_id: material.id,
-          },
-        });
-
-        await this.prisma.materialImage.create({
-          data: {
-            image: image,
-            material_id: material.id,
-          },
-        });
-
-        return material;
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
-    } else {
+    if (!material) {
       throw new ForbiddenException(
         'The material not found. Please check your inputs.',
       );
     }
-  }
 
-  async updateMaterial(materialFile, id: number) {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
-    });
-
-    if (material) {
-      const m_name = materialFile['material'][0].path.split('\\');
-
-      if (m_name != null) {
-        try {
-          const oldMaterial = material.material;
-
-          const newMaterial = await this.prisma.material.update({
-            where: {
-              id: material.id,
-            },
-            data: {
-              material: m_name[3],
-            },
-          });
-
-          if (newMaterial) {
-            fs.unlink('./uploads/material/' + oldMaterial, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-
-          return {
-            message: 'Material Updated Successfully',
-          };
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      }
-    } else {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-  }
-
-  async updateMaterialProfile(materialProfile, id: number) {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
-    });
-
-    if (material) {
-      const p_name = materialProfile['profile'][0].path.split('\\');
-
-      if (p_name != null) {
-        const matImg = await this.prisma.materialImage.findFirst({
-          where: {
-            material_id: material.id,
-            primary: true,
-          },
+    try {
+      if (extracted.material) {
+        await this.prisma.material.update({
+          where: { id },
+          data: { material: extracted.material },
         });
-
-        if (matImg) {
-          try {
-            const oldMaterial = matImg.image;
-
-            const newMaterial = await this.prisma.materialImage.update({
-              where: {
-                id: matImg.id,
-              },
-              data: {
-                image: p_name[2],
-              },
-            });
-
-            if (newMaterial) {
-              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
-                if (err) {
-                  this.logger.error(err);
-                  return;
-                }
-              });
-            } else {
-              throw new ForbiddenException(
-                'There has been an error. Please check the inputs and try again.',
-              );
-            }
-
-            return {
-              message: 'Material Profile Updated Successfully',
-            };
-          } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-              if (error.code === 'P2002') {
-                throw new ForbiddenException('Credentials Taken');
-              }
-            }
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } else {
-          const newMaterial = await this.prisma.materialImage.create({
-            data: {
-              image: p_name[2],
-              primary: true,
-              material_id: material.id,
-            },
-          });
-
-          if (newMaterial) {
-            return {
-              message: 'Material Profile Updated Successfully',
-            };
-          }
-        }
       }
-    } else {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-  }
 
-  async updateMaterialCover(materialCover, id: number) {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
-    });
-
-    if (material) {
-      const c_name = materialCover['cover'][0].path.split('\\');
-
-      if (c_name != null) {
-        const matImg = await this.prisma.materialImage.findFirst({
-          where: {
-            material_id: material.id,
-            cover: true,
-          },
-        });
-
-        if (matImg) {
-          try {
-            const oldMaterial = matImg.image;
-
-            const newMaterial = await this.prisma.materialImage.update({
-              where: {
-                id: matImg.id,
-              },
-              data: {
-                image: c_name[2],
-              },
-            });
-
-            if (newMaterial) {
-              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
-                if (err) {
-                  this.logger.error(err);
-                  return;
-                }
-              });
-            } else {
-              throw new ForbiddenException(
-                'There has been an error. Please check the inputs and try again.',
-              );
-            }
-
-            return {
-              message: 'Material Profile Updated Successfully',
-            };
-          } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-              if (error.code === 'P2002') {
-                throw new ForbiddenException('Credentials Taken');
-              }
-            }
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } else {
-          const newMaterial = await this.prisma.materialImage.create({
-            data: {
-              image: c_name[2],
-              cover: true,
-              material_id: material.id,
-            },
-          });
-
-          if (newMaterial) {
-            return {
-              message: 'Material Cover Updated Successfully',
-            };
-          }
-        }
-      }
-    } else {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-  }
-
-  async updateMaterialPreview(materialPreview, id: number) {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
-    });
-
-    if (material) {
-      const p_name = materialPreview['preview'][0].path.split('\\');
-
-      if (p_name != null) {
-        const matPrv = await this.prisma.previewMaterial.findFirst({
-          where: {
-            material_id: material.id,
-          },
-        });
-
-        if (matPrv) {
-          try {
-            const oldMaterial = matPrv.preview;
-
-            const newMaterial = await this.prisma.previewMaterial.update({
-              where: {
-                id: matPrv.id,
-              },
-              data: {
-                preview: p_name[2],
-              },
-            });
-
-            if (newMaterial) {
-              fs.unlink('./uploads/material/' + oldMaterial, (err) => {
-                if (err) {
-                  this.logger.error(err);
-                  return;
-                }
-              });
-            } else {
-              throw new ForbiddenException(
-                'There has been an error. Please check the inputs and try again.',
-              );
-            }
-
-            return {
-              message: 'Material Preview Updated Successfully',
-            };
-          } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-              if (error.code === 'P2002') {
-                throw new ForbiddenException('Credentials Taken');
-              }
-            }
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } else {
-          const newMaterial = await this.prisma.previewMaterial.create({
-            data: {
-              preview: p_name[2],
-              material_id: material.id,
-            },
-          });
-
-          if (newMaterial) {
-            return {
-              message: 'Material Preview Updated Successfully',
-            };
-          }
-        }
-      }
-    } else {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-  }
-
-  async updateMaterialImage(materialPreview, id: number) {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
-    });
-
-    if (material) {
-      const matI = await this.prisma.materialImage.findMany({
-        where: {
-          material_id: material.id,
-          primary: false,
-          cover: false,
-        },
-      });
-
-      for await (let img of materialPreview['images']) {
-        let name = img.path.split('\\');
+      if (extracted.profile) {
         await this.prisma.materialImage.create({
           data: {
-            image: name[2],
+            image: extracted.profile,
+            primary: true,
             material_id: material.id,
           },
         });
       }
 
-      if (matI) {
-        for await (let img of matI) {
-          let i = img.image;
-          const d = await this.prisma.materialImage.delete({
-            where: {
-              id: img.id,
-            },
-          });
-          if (d) {
-            fs.unlink('./uploads/material/' + i, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          }
-        }
+      if (extracted.cover) {
+        await this.prisma.materialImage.create({
+          data: {
+            image: extracted.cover,
+            cover: true,
+            material_id: material.id,
+          },
+        });
       }
 
-      return {
-        message: 'Material Images Updated Successfully',
-      };
-    } else {
+      if (extracted.preview) {
+        await this.prisma.previewMaterial.create({
+          data: {
+            preview: extracted.preview,
+            material_id: material.id,
+          },
+        });
+      }
+
+      if (extracted.image) {
+        await this.prisma.materialImage.create({
+          data: {
+            image: extracted.image,
+            material_id: material.id,
+          },
+        });
+      }
+
+      return material;
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  async updateMaterial(materialFile: UploadedImages, id: number) {
+    const material = await this.prisma.material.findFirst({ where: { id } });
+    if (!material) {
       throw new ForbiddenException(
         "Can't update while there is no material. Please create a material first.",
       );
+    }
+
+    const fileName = this.fileStorage.extractFieldFileName(
+      materialFile,
+      'material',
+    );
+    if (!fileName) {
+      return { message: 'Material Updated Successfully' };
+    }
+
+    try {
+      const oldMaterial = material.material;
+      await this.prisma.material.update({
+        where: { id: material.id },
+        data: { material: fileName },
+      });
+
+      await this.fileStorage.deleteFile('material', oldMaterial);
+      return { message: 'Material Updated Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  async updateMaterialProfile(materialProfile: UploadedImages, id: number) {
+    const material = await this.prisma.material.findFirst({ where: { id } });
+    if (!material) {
+      throw new ForbiddenException(
+        "Can't update while there is no material. Please create a material first.",
+      );
+    }
+
+    const fileName = this.fileStorage.extractFieldFileName(
+      materialProfile,
+      'profile',
+    );
+    if (!fileName) {
+      return { message: 'Material Profile Updated Successfully' };
+    }
+
+    const matImg = await this.prisma.materialImage.findFirst({
+      where: { material_id: material.id, primary: true },
+    });
+
+    try {
+      if (matImg) {
+        await this.prisma.materialImage.update({
+          where: { id: matImg.id },
+          data: { image: fileName },
+        });
+        await this.fileStorage.deleteFile('material', matImg.image);
+      } else {
+        await this.prisma.materialImage.create({
+          data: {
+            image: fileName,
+            primary: true,
+            material_id: material.id,
+          },
+        });
+      }
+      return { message: 'Material Profile Updated Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  async updateMaterialCover(materialCover: UploadedImages, id: number) {
+    const material = await this.prisma.material.findFirst({ where: { id } });
+    if (!material) {
+      throw new ForbiddenException(
+        "Can't update while there is no material. Please create a material first.",
+      );
+    }
+
+    const fileName = this.fileStorage.extractFieldFileName(
+      materialCover,
+      'cover',
+    );
+    if (!fileName) {
+      return { message: 'Material Cover Updated Successfully' };
+    }
+
+    const matImg = await this.prisma.materialImage.findFirst({
+      where: { material_id: material.id, cover: true },
+    });
+
+    try {
+      if (matImg) {
+        await this.prisma.materialImage.update({
+          where: { id: matImg.id },
+          data: { image: fileName },
+        });
+        await this.fileStorage.deleteFile('material', matImg.image);
+      } else {
+        await this.prisma.materialImage.create({
+          data: {
+            image: fileName,
+            cover: true,
+            material_id: material.id,
+          },
+        });
+      }
+      return { message: 'Material Cover Updated Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  async updateMaterialPreview(materialPreview: UploadedImages, id: number) {
+    const material = await this.prisma.material.findFirst({ where: { id } });
+    if (!material) {
+      throw new ForbiddenException(
+        "Can't update while there is no material. Please create a material first.",
+      );
+    }
+
+    const fileName = this.fileStorage.extractFieldFileName(
+      materialPreview,
+      'preview',
+    );
+    if (!fileName) {
+      return { message: 'Material Preview Updated Successfully' };
+    }
+
+    const preview = await this.prisma.previewMaterial.findFirst({
+      where: { material_id: material.id },
+    });
+
+    try {
+      if (preview) {
+        await this.prisma.previewMaterial.update({
+          where: { id: preview.id },
+          data: { preview: fileName },
+        });
+        await this.fileStorage.deleteFile('material', preview.preview);
+      } else {
+        await this.prisma.previewMaterial.create({
+          data: {
+            preview: fileName,
+            material_id: material.id,
+          },
+        });
+      }
+      return { message: 'Material Preview Updated Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  async updateMaterialImage(materialImages: UploadedImages, id: number) {
+    const material = await this.prisma.material.findFirst({ where: { id } });
+    if (!material) {
+      throw new ForbiddenException(
+        "Can't update while there is no material. Please create a material first.",
+      );
+    }
+
+    const fileName =
+      this.fileStorage.extractFieldFileName(materialImages, 'images') ||
+      this.fileStorage.extractFieldFileName(materialImages, 'image');
+
+    if (!fileName) {
+      return { message: 'Material Image Updated Successfully' };
+    }
+
+    const matImg = await this.prisma.materialImage.findFirst({
+      where: {
+        material_id: material.id,
+        primary: false,
+        cover: false,
+      },
+    });
+
+    try {
+      if (matImg) {
+        await this.prisma.materialImage.update({
+          where: { id: matImg.id },
+          data: { image: fileName },
+        });
+        await this.fileStorage.deleteFile('material', matImg.image);
+      } else {
+        await this.prisma.materialImage.create({
+          data: {
+            image: fileName,
+            material_id: material.id,
+          },
+        });
+      }
+      return { message: 'Material Image Updated Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
   async uploadMaterial(file: Express.Multer.File, id: number) {
-    const material = await this.prisma.material.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    const name = file.path.split('\\');
-
-    if (material) {
-      if (material.material == null || material.material == 'null') {
-        try {
-          const newMaterial = await this.prisma.material.update({
-            where: {
-              id: id,
-            },
-            data: {
-              material: name[3],
-            },
-          });
-
-          if (newMaterial) {
-            return newMaterial;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } else {
-        const oldFile = material.material;
-
-        try {
-          const newMaterial = await this.prisma.material.update({
-            where: {
-              id: id,
-            },
-            data: {
-              material: name[3],
-            },
-          });
-
-          if (newMaterial) {
-            fs.unlink('./uploads/material/' + oldFile, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-            return newMaterial;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      }
-    } else {
+    const material = await this.prisma.material.findUnique({ where: { id } });
+    if (!material) {
       throw new ForbiddenException('Please register the title first.');
+    }
+
+    const fileName = this.fileStorage.extractFileName(
+      file?.filename || file?.path,
+    );
+
+    try {
+      const updated = await this.prisma.material.update({
+        where: { id },
+        data: { material: fileName },
+      });
+
+      if (material.material && material.material !== 'null') {
+        await this.fileStorage.deleteFile('material', material.material);
+      }
+
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
-  async showMaterial(id: number, @Res() res) {
-    const material = await this.prisma.material.findUnique({
-      where: {
-        id,
-      },
-    });
+  async showMaterial(id: number, @Res() res: Response) {
+    const material = await this.prisma.material.findUnique({ where: { id } });
+    if (!material || !material.material) {
+      throw new ForbiddenException('Material not found');
+    }
 
     return res.sendFile(
-      join(process.cwd(), 'uploads/material/' + material.material),
+      join(process.cwd(), 'uploads/material', material.material),
     );
   }
 
   async uploadMaterialProfile(file: Express.Multer.File, id: number) {
-    const materialImage = await this.prisma.materialImage.findFirst({
-      where: {
-        material_id: id,
-        primary: true,
-      },
+    const fileName = this.fileStorage.extractFileName(
+      file?.filename || file?.path,
+    );
+
+    const existingImage = await this.prisma.materialImage.findFirst({
+      where: { material_id: id, primary: true },
     });
 
-    const name = file.path.split('\\');
-
-    if (!materialImage) {
-      try {
-        const newMaterialProfile = await this.prisma.materialImage.create({
+    try {
+      if (!existingImage) {
+        return await this.prisma.materialImage.create({
           data: {
-            image: name[3],
+            image: fileName,
             primary: true,
             material_id: id,
           },
         });
-
-        if (newMaterialProfile) {
-          return newMaterialProfile;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
       }
-    } else {
-      const oldImage = materialImage.image;
 
-      try {
-        const newMaterialImage = await this.prisma.materialImage.update({
-          where: {
-            id: materialImage.id,
-          },
-          data: {
-            image: name[3],
-          },
-        });
+      const updated = await this.prisma.materialImage.update({
+        where: { id: existingImage.id },
+        data: { image: fileName },
+      });
 
-        if (newMaterialImage) {
-          fs.unlink('./uploads/material/' + oldImage, (err) => {
-            if (err) {
-              this.logger.error(err);
-              return;
-            }
-          });
-          return newMaterialImage;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
+      await this.fileStorage.deleteFile('material', existingImage.image);
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
-  async showMaterialProfile(id: number, @Res() res) {
+  async showMaterialProfile(id: number, @Res() res: Response) {
     const materialImage = await this.prisma.materialImage.findFirst({
-      where: {
-        material_id: id,
-        primary: true,
-      },
+      where: { material_id: id, primary: true },
     });
+    if (!materialImage) {
+      throw new ForbiddenException('Material profile not found');
+    }
 
     return res.sendFile(
-      join(process.cwd(), './uploads/material/' + materialImage.image),
+      join(process.cwd(), 'uploads/material', materialImage.image),
     );
   }
 
   async uploadMaterialCover(file: Express.Multer.File, id: number) {
-    const materialImage = await this.prisma.materialImage.findFirst({
-      where: {
-        material_id: id,
-        cover: true,
-      },
+    const fileName = this.fileStorage.extractFileName(
+      file?.filename || file?.path,
+    );
+
+    const existingCover = await this.prisma.materialImage.findFirst({
+      where: { material_id: id, cover: true },
     });
 
-    const name = file.path.split('\\');
-
-    if (!materialImage) {
-      try {
-        const newMaterialCover = await this.prisma.materialImage.create({
+    try {
+      if (!existingCover) {
+        return await this.prisma.materialImage.create({
           data: {
-            image: name[3],
+            image: fileName,
             cover: true,
             material_id: id,
           },
         });
-
-        if (newMaterialCover) {
-          return newMaterialCover;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
       }
-    } else {
-      const oldImage = materialImage.image;
 
-      try {
-        const newMaterialImage = await this.prisma.materialImage.update({
-          where: {
-            id: materialImage.id,
-          },
-          data: {
-            image: name[3],
-          },
-        });
+      const updated = await this.prisma.materialImage.update({
+        where: { id: existingCover.id },
+        data: { image: fileName },
+      });
 
-        if (newMaterialImage) {
-          fs.unlink('./uploads/material/' + oldImage, (err) => {
-            if (err) {
-              this.logger.error(err);
-              return;
-            }
-          });
-          return newMaterialImage;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
+      await this.fileStorage.deleteFile('material', existingCover.image);
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
-  async showMaterialCover(id: number, @Res() res) {
+  async showMaterialCover(id: number, @Res() res: Response) {
     const materialImage = await this.prisma.materialImage.findFirst({
-      where: {
-        material_id: id,
-        cover: true,
-      },
+      where: { material_id: id, cover: true },
     });
+    if (!materialImage) {
+      throw new ForbiddenException('Material cover not found');
+    }
 
     return res.sendFile(
-      join(process.cwd(), './uploads/material/' + materialImage.image),
+      join(process.cwd(), 'uploads/material', materialImage.image),
     );
   }
 
   async uploadMaterialImage(files: Array<Express.Multer.File>, id: number) {
     const uploadedImages = [];
     for (const file of files) {
-      const name = file.path.split('\\');
+      const fileName = this.fileStorage.extractFileName(
+        file?.filename || file?.path,
+      );
       try {
         const newMaterialImage = await this.prisma.materialImage.create({
           data: {
-            image: name[3],
+            image: fileName,
             material_id: id,
           },
         });
@@ -738,125 +443,69 @@ export class MaterialStorageService {
           uploadedImages.push(newMaterialImage);
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     }
     return uploadedImages;
   }
 
-  async showMaterialImage(id: number, @Res() res) {
+  async showMaterialImage(id: number, @Res() res: Response) {
     const materialImage = await this.prisma.materialImage.findFirst({
-      where: {
-        id,
-      },
+      where: { id },
     });
+    if (!materialImage) {
+      throw new ForbiddenException('Material image not found');
+    }
 
     return res.sendFile(
-      join(process.cwd(), 'uploads/material/' + materialImage.image),
+      join(process.cwd(), 'uploads/material', materialImage.image),
     );
   }
 
   async uploadMaterialPreview(file: Express.Multer.File, id: number) {
+    const fileName = this.fileStorage.extractFileName(
+      file?.filename || file?.path,
+    );
+
     const preview = await this.prisma.previewMaterial.findFirst({
-      where: {
-        material_id: id,
-      },
+      where: { material_id: id },
     });
 
-    const name = file.path.split('\\');
-
-    if (preview) {
-      if (preview.preview == null || preview.preview == 'null') {
-        try {
-          const newPreview = await this.prisma.previewMaterial.update({
-            where: {
-              id: preview.id,
-            },
-            data: {
-              preview: name[3],
-            },
-          });
-
-          if (newPreview) {
-            return newPreview;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } else {
-        const oldFile = preview.preview;
-
-        try {
-          const newPreview = await this.prisma.previewMaterial.update({
-            where: {
-              id: preview.id,
-            },
-            data: {
-              preview: name[3],
-            },
-          });
-
-          if (newPreview) {
-            fs.unlink('./uploads/material/' + oldFile, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-            return newPreview;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
+    try {
+      if (!preview) {
+        return await this.prisma.previewMaterial.create({
+          data: {
+            material_id: id,
+            preview: fileName,
+          },
+        });
       }
-    } else {
-      return await this.prisma.previewMaterial.create({
-        data: {
-          material_id: id,
-          preview: name[3],
-        },
+
+      const updated = await this.prisma.previewMaterial.update({
+        where: { id: preview.id },
+        data: { preview: fileName },
       });
+
+      if (preview.preview && preview.preview !== 'null') {
+        await this.fileStorage.deleteFile('material', preview.preview);
+      }
+
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
-  async showMaterialPreview(id: number, @Res() res) {
+  async showMaterialPreview(id: number, @Res() res: Response) {
     const preview = await this.prisma.previewMaterial.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
+    if (!preview) {
+      throw new ForbiddenException('Material preview not found');
+    }
 
     return res.sendFile(
-      join(process.cwd(), 'uploads/material/' + preview.preview),
+      join(process.cwd(), 'uploads/material', preview.preview),
     );
   }
 }

@@ -5,6 +5,7 @@ import { Parent, Type } from '@prisma/client';
 
 import { MaterialQueryService } from './material-query.service';
 import { MaterialStorageService } from './material-storage.service';
+import { FileStorageService } from '../common/services/file-storage.service';
 
 describe('MaterialService', () => {
   let service: MaterialService;
@@ -40,6 +41,7 @@ describe('MaterialService', () => {
         MaterialService,
         MaterialQueryService,
         MaterialStorageService,
+        FileStorageService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
