@@ -25,6 +25,9 @@ import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HealthModule } from './health/health.module';
 import { CommonModule } from './common/common.module';
+import { LoggerModule } from 'nestjs-pino';
+import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'crypto';
 import * as Joi from 'joi';
 
 @Module({
@@ -43,7 +46,44 @@ import * as Joi from 'joi';
         CHAPA_WEBHOOK_HASH_KEY: Joi.string().allow('').optional().default(''),
         CHAPA_WEBHOOK_URL: Joi.string().allow('').optional().default(''),
         SHADOW_DATABASE_URL: Joi.string().allow('').optional().default(''),
+        SENTRY_DSN: Joi.string().allow('').optional().default(''),
       }),
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const nodeEnv = config.get<string>('NODE_ENV') || 'development';
+        const isProd = nodeEnv === 'production';
+        const isTest = nodeEnv === 'test';
+        return {
+          pinoHttp: {
+            level: isTest ? 'silent' : isProd ? 'info' : 'debug',
+            transport:
+              isProd || isTest
+                ? undefined
+                : {
+                    target: 'pino-pretty',
+                    options: {
+                      singleLine: true,
+                      colorize: true,
+                    },
+                  },
+            genReqId: (req: any) =>
+              (req.headers['x-request-id'] as string) || randomUUID(),
+            redact: {
+              paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'req.body.password',
+                'req.body.token',
+                'res.headers["set-cookie"]',
+              ],
+              censor: '***REDACTED***',
+            },
+          },
+        };
+      },
     }),
     AuthModule,
     UserModule,
