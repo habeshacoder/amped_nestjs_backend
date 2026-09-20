@@ -5,27 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-09-20
 
 ### Added
-- **Data Engineering & Schema Integrity**:
-  - Authored timestamped migration `20260920020000_add_data_integrity_and_indexes` adding composite unique constraints on `favorite`, `ratings`, `material_user`, `material_in_subscription_plan`, and `subscribed_users`.
-  - Added range and sanity CHECK constraints on `ratings.rating` (0 to 5), `materials.price` (>= 0), `materials.length_minute`/`page` (>= 0), and `subscription_plan.price` (>= 0).
-  - Added lookup and JOIN performance indexes on foreign key columns across `materials`, `channels`, `channel_materials`, `ratings`, `favorite`, `reports`, and `replays`.
-  - Added shadow database configuration and migration discipline scripts: `migration:run`, `migration:status`, `migration:generate`, and `migration:check`.
-  - Added PostgreSQL 16 service container to GitHub Actions CI pipeline for migration verification.
-  - Added `docker-compose.yml` for zero-configuration local PostgreSQL database startup.
-  - Added `docs/data-model.md` containing full Mermaid Entity-Relationship Diagram (ERD), Data Dictionary, and Data Flow sequence diagrams.
-- **Data Observability, Boundary Validation & Security**:
-  - Enhanced `AllExceptionsFilter` with Prisma database error translations (`P2002` to 409 Conflict, `P2003` to 400 Bad Request, `P2025`/`P2001` to 404 Not Found, `P2000` to 400 Bad Request).
-  - Updated global `ValidationPipe` to enable `transform: true` alongside `whitelist: true`.
-  - Sanitized user responses in `UserController` (`/me`, `/all`) and `AuthService.logout` to strictly exclude `password` hashes and `refresh_token` credentials.
-  - Migrated Prisma runtime imports to `@prisma/client/runtime/library`, eliminating deprecation warnings.
-- **Expanded Test Coverage**:
-  - Added `src/prisma/prisma-integrity.spec.ts` validating composite unique constraint violations, foreign key errors, and multi-step transaction rollbacks.
-  - Added `src/social-links-channel/social-links-channel.service.spec.ts` covering full CRUD lifecycle and database error paths.
-  - Expanded `src/channel/channel.service.spec.ts` and `src/seller-profiles/seller-profiles.service.spec.ts`.
-  - Raised Jest coverage thresholds to 20% branches, 24% functions, 25% lines, and 26% statements across 28 suites (164 tests).
+- **Framework & Runtime Upgrades**:
+  - Upgraded NestJS core modules to major version `10.4.0` with standard root namespace imports.
+  - Aligned runtime engines to `node >= 20.0.0` and npm `>= 10.0.0` matching `.nvmrc`.
+  - Pinned Prisma CLI and client to exact version `4.16.2`.
+  - Upgraded TypeScript to `5.9.x` and Jest to `29.7.x`.
+- **Architectural Refactoring & Cleanliness**:
+  - Created centralized `FileStorageService` with comprehensive path-parsing and file lifecycle methods.
+  - Decoupled `ChannelService` into specialized `ChannelQueryService` and `ChannelCommandService`.
+  - Reduced LOC across all modules to ensure no source file exceeds 500 lines of code.
+  - Added automated code duplication scanning via `jscpd` (`npm run dup`).
+- **Domain Exceptions, Observability & Health**:
+  - Replaced ad-hoc `ForbiddenException` instances with typed domain exceptions (`NotFoundError`, `ConflictError`, `ValidationError`, `ForbiddenError`).
+  - Standardized error response envelope via `AllExceptionsFilter` (`statusCode`, `code`, `message`, `error`, `timestamp`, `requestId`, `path`).
+  - Added high-performance structured JSON logging via `nestjs-pino` with correlation request IDs and sensitive field redaction.
+  - Added optional Sentry telemetry service (no-op when unconfigured).
+  - Integrated `@nestjs/terminus` health checks with database ping on `/health`.
+- **Security & Validation Hardening**:
+  - Enabled global `ValidationPipe` with payload transformation and strict whitelisting.
+  - Validated multipart file uploads using `FileFieldsValidationPipe` with MIME type allowlists and file size enforcement.
+  - Added security headers with `helmet`, rate limiting with `@nestjs/throttler`, and configurable CORS allowlists.
+  - Mounted interactive Swagger documentation at `/docs` in non-production environments.
+- **Testing Architecture**:
+  - Expanded test coverage across 35 test suites, 301 unit tests, and 5 PostgreSQL-backed E2E smoke tests.
+  - Enforced ratcheted global coverage thresholds in Jest (50% statements, 50% branches, 50% lines, 35% functions).
+- **CI/CD & Maintenance Automation**:
+  - Re-architected GitHub Actions into parallel cached jobs (`lint`, `format`, `typecheck`, `unit-test` matrix across Node 20 & 22, `e2e`, `migrations`, `audit`, `build`, `docker-build`).
+  - Added release workflow publishing multi-arch images to GitHub Container Registry (`ghcr.io`) and creating GitHub Releases.
+  - Added `commitlint`, `husky` git hooks, and `lint-staged` pre-commit verification.
+  - Added `SECURITY.md`, `CODE_OF_CONDUCT.md`, and GitHub issue/PR templates.
 
 ## [0.0.1] - 2026-09-19
 
