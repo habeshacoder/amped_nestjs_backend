@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SellerProfileDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -7,6 +7,12 @@ import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class SellerProfilesService {
@@ -22,11 +28,12 @@ export class SellerProfilesService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new ForbiddenException('Credentials Taken');
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
     }
-    throw new ForbiddenException(
-      'There has been an error. Please check the inputs and try again.',
-    );
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
   }
 
   async create(
@@ -72,18 +79,26 @@ export class SellerProfilesService {
   async findOne(id: number) {
     if (!Number.isNaN(id) && id != null) {
       try {
-        return await this.prisma.sellerProfile.findUnique({
+        const profile = await this.prisma.sellerProfile.findUnique({
           where: { id },
           include: {
             social_links_profile: true,
           },
         });
+        if (!profile) {
+          throw new NotFoundError(
+            'There is no profile. Please create a profile first.',
+            'SELLER_PROFILE_NOT_FOUND',
+          );
+        }
+        return profile;
       } catch (error) {
         this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new ValidationError(
         'There is no profile. Please create a profile first.',
+        'INVALID_ID',
       );
     }
   }
@@ -105,8 +120,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 
@@ -131,8 +147,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 
@@ -167,8 +184,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 
@@ -203,8 +221,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't delete while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 
@@ -233,8 +252,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 
@@ -265,8 +285,9 @@ export class SellerProfilesService {
     });
 
     if (!sProfile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'SELLER_PROFILE_NOT_FOUND',
       );
     }
 

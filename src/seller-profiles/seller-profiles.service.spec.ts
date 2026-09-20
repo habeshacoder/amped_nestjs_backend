@@ -2,7 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SellerProfilesService } from './seller-profiles.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
-import { ForbiddenException } from '@nestjs/common';
+import {
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { User } from '@prisma/client';
 
 describe('SellerProfilesService', () => {
@@ -80,6 +85,18 @@ describe('SellerProfilesService', () => {
         }),
       });
     });
+
+    it('should throw ConflictError on P2002 unique constraint violation', async () => {
+      const p2002 = new PrismaClientKnownRequestError('Duplicate', {
+        code: 'P2002',
+        clientVersion: '5.x',
+      });
+      prisma.sellerProfile.create.mockRejectedValue(p2002);
+
+      await expect(service.create({}, {} as any, mockUser)).rejects.toThrow(
+        ConflictError,
+      );
+    });
   });
 
   describe('findAll', () => {
@@ -97,6 +114,16 @@ describe('SellerProfilesService', () => {
 
       const result = await service.findOne(1);
       expect(result).toEqual(mockSellerProfile);
+    });
+
+    it('should throw ValidationError if id is invalid', async () => {
+      await expect(service.findOne(NaN)).rejects.toThrow(ValidationError);
+    });
+
+    it('should throw NotFoundError if seller profile is not found', async () => {
+      prisma.sellerProfile.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -123,12 +150,12 @@ describe('SellerProfilesService', () => {
       expect(result.name).toBe('Updated Studio');
     });
 
-    it('should throw ForbiddenException if seller profile not found', async () => {
+    it('should throw NotFoundError if seller profile not found', async () => {
       prisma.sellerProfile.findFirst.mockResolvedValue(null);
 
       await expect(
         service.updateProfileInfo(999, { name: 'Updated Studio' } as any),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -186,10 +213,10 @@ describe('SellerProfilesService', () => {
       );
     });
 
-    it('should throw ForbiddenException if profile to delete is not found', async () => {
+    it('should throw NotFoundError if profile to delete is not found', async () => {
       prisma.sellerProfile.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove(999)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(999)).rejects.toThrow(NotFoundError);
     });
   });
 });

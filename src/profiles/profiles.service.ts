@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ProfileDto, UpdateDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -8,6 +8,13 @@ import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ProfilesService {
@@ -23,11 +30,12 @@ export class ProfilesService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new ForbiddenException('Credentials Taken');
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
     }
-    throw new ForbiddenException(
-      'There has been an error. Please check the inputs and try again.',
-    );
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
   }
 
   async create(images: UploadedImages, profileDto: ProfileDto, user: User) {
@@ -36,8 +44,9 @@ export class ProfilesService {
     });
 
     if (existing) {
-      throw new ForbiddenException(
+      throw new ConflictError(
         "Can't create a profile while the user already have a profile. Please try updating the profile.",
+        'PROFILE_EXISTS',
       );
     }
 
@@ -94,8 +103,9 @@ export class ProfilesService {
   async updateProfile(id: number, profileDto: ProfileDto) {
     const profile = await this.prisma.profile.findFirst({ where: { id } });
     if (!profile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'PROFILE_NOT_FOUND',
       );
     }
 
@@ -117,8 +127,9 @@ export class ProfilesService {
   async updateProfileImage(profileImage: UploadedImages, id: number) {
     const profile = await this.prisma.profile.findFirst({ where: { id } });
     if (!profile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'PROFILE_NOT_FOUND',
       );
     }
 
@@ -150,8 +161,9 @@ export class ProfilesService {
   async updateCoverImage(coverImage: UploadedImages, id: number) {
     const profile = await this.prisma.profile.findFirst({ where: { id } });
     if (!profile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no profile. Please create a profile first.",
+        'PROFILE_NOT_FOUND',
       );
     }
 
@@ -183,17 +195,21 @@ export class ProfilesService {
     });
 
     if (!userPass) {
-      throw new ForbiddenException('User not found');
+      throw new NotFoundError('User not found', 'USER_NOT_FOUND');
     }
 
     const pwMatches = await argon.verify(userPass.password, dto.oldPassword);
     if (!pwMatches) {
-      throw new ForbiddenException('Wrong Password Please Try Again');
+      throw new ForbiddenError(
+        'Wrong Password Please Try Again',
+        'INVALID_CREDENTIALS',
+      );
     }
 
     if (dto.newPassword !== dto.newPasswordConfirm) {
-      throw new ForbiddenException(
+      throw new ValidationError(
         'Wrong Password Confirmation, Please Try Again',
+        'PASSWORD_MISMATCH',
       );
     }
 
@@ -209,8 +225,9 @@ export class ProfilesService {
   async remove(id: number) {
     const profile = await this.prisma.profile.findFirst({ where: { id } });
     if (!profile) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't delete while there is no profile. Please create a profile first.",
+        'PROFILE_NOT_FOUND',
       );
     }
 

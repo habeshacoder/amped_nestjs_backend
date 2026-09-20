@@ -2,8 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProfilesService } from './profiles.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
-import { ForbiddenException } from '@nestjs/common';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { User } from '@prisma/client';
+import * as argon from 'argon2';
 
 describe('ProfilesService', () => {
   let service: ProfilesService;
@@ -16,6 +23,10 @@ describe('ProfilesService', () => {
       create: jest.Mock;
       update: jest.Mock;
       delete: jest.Mock;
+    };
+    user: {
+      findUnique: jest.Mock;
+      update: jest.Mock;
     };
   };
 
@@ -36,6 +47,10 @@ describe('ProfilesService', () => {
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+      },
+      user: {
+        findUnique: jest.fn(),
+        update: jest.fn(),
       },
     };
 
@@ -58,24 +73,26 @@ describe('ProfilesService', () => {
   describe('create', () => {
     it('should create user profile with extracted media filenames', async () => {
       prisma.profile.findFirst.mockResolvedValue(null);
-      prisma.profile.create.mockResolvedValue(mockProfile);
+      prisma.profile.create.mockResolvedValue({
+        id: 1,
+        first_name: 'John',
+      });
 
-      const files = {
+      const images = {
         profile: [{ path: 'uploads/profile.png' }],
         cover: [{ path: 'uploads/cover.png' }],
       };
 
       const result = await service.create(
-        files,
+        images,
         { first_name: 'John', last_name: 'Doe' } as any,
         mockUser,
       );
 
-      expect(result).toEqual(mockProfile);
+      expect(result).toEqual({ id: 1, first_name: 'John' });
       expect(prisma.profile.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           first_name: 'John',
-          last_name: 'Doe',
           profile_image: 'profile.png',
           cover_image: 'cover.png',
           user_id: 'user-1',
@@ -83,11 +100,24 @@ describe('ProfilesService', () => {
       });
     });
 
-    it('should throw if user already has a profile', async () => {
+    it('should throw ConflictError if user already has a profile', async () => {
       prisma.profile.findFirst.mockResolvedValue(mockProfile);
 
       await expect(service.create({}, {} as any, mockUser)).rejects.toThrow(
-        ForbiddenException,
+        ConflictError,
+      );
+    });
+
+    it('should throw ConflictError on P2002 Prisma error', async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+      const p2002 = new PrismaClientKnownRequestError('Duplicate', {
+        code: 'P2002',
+        clientVersion: '5.x',
+      });
+      prisma.profile.create.mockRejectedValue(p2002);
+
+      await expect(service.create({}, {} as any, mockUser)).rejects.toThrow(
+        ConflictError,
       );
     });
   });
@@ -142,12 +172,12 @@ describe('ProfilesService', () => {
       expect(result.first_name).toBe('Jane');
     });
 
-    it('should throw ForbiddenException if profile not found', async () => {
+    it('should throw NotFoundError if profile not found', async () => {
       prisma.profile.findFirst.mockResolvedValue(null);
 
       await expect(
         service.updateProfile(999, { first_name: 'Jane' } as any),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -174,6 +204,151 @@ describe('ProfilesService', () => {
       expect(fileStorage.deleteFile).toHaveBeenCalledWith(
         'profile/profile',
         'old-pic.png',
+      );
+    });
+
+    it('should throw NotFoundError if profile not found', async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateProfileImage({ profile: [] }, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+  });
+
+  describe('updateCoverImage', () => {
+    it('should throw NotFoundError if profile not found', async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateCoverImage({ cover: [] }, 999),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should update cover image and delete old cover', async () => {
+      prisma.profile.findFirst.mockResolvedValue({
+        ...mockProfile,
+        cover_image: 'old-cover.png',
+      });
+      prisma.profile.update.mockResolvedValue({
+        ...mockProfile,
+        cover_image: 'new-cover.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.updateCoverImage(
+        { cover: [{ path: 'uploads/new-cover.png' }] },
+        1,
+      );
+
+      expect(result).toEqual({ message: 'Cover Image Uploaded Successfully' });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'profile/profile',
+        'old-cover.png',
+      );
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('should throw NotFoundError if user not found', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updatePassword(
+          {
+            oldPassword: 'old',
+            newPassword: 'new',
+            newPasswordConfirm: 'new',
+          } as any,
+          mockUser,
+        ),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw ForbiddenError if old password does not match', async () => {
+      const hashedPw = await argon.hash('correctPassword');
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        password: hashedPw,
+      });
+
+      await expect(
+        service.updatePassword(
+          {
+            oldPassword: 'wrongPassword',
+            newPassword: 'newPassword123',
+            newPasswordConfirm: 'newPassword123',
+          } as any,
+          mockUser,
+        ),
+      ).rejects.toThrow(ForbiddenError);
+    });
+
+    it('should throw ValidationError if newPassword and newPasswordConfirm mismatch', async () => {
+      const hashedPw = await argon.hash('correctPassword');
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        password: hashedPw,
+      });
+
+      await expect(
+        service.updatePassword(
+          {
+            oldPassword: 'correctPassword',
+            newPassword: 'newPassword123',
+            newPasswordConfirm: 'differentPassword',
+          } as any,
+          mockUser,
+        ),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it('should update password successfully', async () => {
+      const hashedPw = await argon.hash('correctPassword');
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        password: hashedPw,
+      });
+      prisma.user.update.mockResolvedValue({ id: 'user-1' });
+
+      const result = await service.updatePassword(
+        {
+          oldPassword: 'correctPassword',
+          newPassword: 'newPassword123',
+          newPasswordConfirm: 'newPassword123',
+        } as any,
+        mockUser,
+      );
+
+      expect(result).toEqual({ message: 'Password Updated Successfully' });
+    });
+  });
+
+  describe('remove', () => {
+    it('should throw NotFoundError if profile to remove not found', async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+
+      await expect(service.remove(999)).rejects.toThrow(NotFoundError);
+    });
+
+    it('should delete profile and clean up images', async () => {
+      prisma.profile.findFirst.mockResolvedValue({
+        ...mockProfile,
+        profile_image: 'pic.png',
+        cover_image: 'cover.png',
+      });
+      prisma.profile.delete.mockResolvedValue(mockProfile);
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.remove(1);
+      expect(result).toEqual({ message: 'Profile deleted successfully' });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'profile/profile',
+        'pic.png',
+      );
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'profile/profile',
+        'cover.png',
       );
     });
   });

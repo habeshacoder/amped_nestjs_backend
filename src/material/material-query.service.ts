@@ -6,7 +6,6 @@ import {
   ConflictError,
   DomainException,
   NotFoundError,
-  ValidationError,
 } from '../common/exceptions/domain-exceptions';
 
 @Injectable()

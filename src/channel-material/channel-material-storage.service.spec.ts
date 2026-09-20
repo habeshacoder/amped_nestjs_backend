@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
-import { ForbiddenException } from '@nestjs/common';
 import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { Response } from 'express';
 
@@ -73,12 +72,12 @@ describe('ChannelMaterialStorageService', () => {
   });
 
   describe('createFile', () => {
-    it('should throw ForbiddenException if channel material not found', async () => {
+    it('should throw NotFoundError if channel material not found', async () => {
       prisma.channelMaterial.findFirst.mockResolvedValue(null);
 
       await expect(
         service.createFile({ material: [{ path: 'uploads/book.epub' }] }, 999),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should extract filenames and update channel material + related entities', async () => {
@@ -134,7 +133,7 @@ describe('ChannelMaterialStorageService', () => {
           { material: [{ path: 'uploads/channel/new.mp3' }] },
           1,
         ),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should update material and delete old file', async () => {

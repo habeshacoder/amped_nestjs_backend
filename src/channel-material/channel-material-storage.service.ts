@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
+import { Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,6 +6,11 @@ import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ChannelMaterialStorageService {
@@ -21,11 +26,12 @@ export class ChannelMaterialStorageService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new ForbiddenException('Credentials Taken');
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
     }
-    throw new ForbiddenException(
-      'There has been an error. Please check the inputs and try again.',
-    );
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
   }
 
   private async updateImageField(
@@ -37,8 +43,9 @@ export class ChannelMaterialStorageService {
       where: { id },
     });
     if (!material) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
 
@@ -175,8 +182,9 @@ export class ChannelMaterialStorageService {
     });
 
     if (!material) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         'The material not found. Please check your inputs.',
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
 
@@ -237,8 +245,9 @@ export class ChannelMaterialStorageService {
       where: { id },
     });
     if (!material) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
 
@@ -281,8 +290,9 @@ export class ChannelMaterialStorageService {
       where: { id },
     });
     if (!material) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
 
@@ -328,7 +338,10 @@ export class ChannelMaterialStorageService {
       where: { id },
     });
     if (!material) {
-      throw new ForbiddenException('Please register the title first.');
+      throw new NotFoundError(
+        'Please register the title first.',
+        'CHANNEL_MATERIAL_NOT_FOUND',
+      );
     }
 
     const fileName = this.fileStorage.extractFileName(

@@ -1,11 +1,15 @@
-/* eslint-disable prefer-const */
-import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
+import { Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChannelMaterialDto } from './dto';
 import { Type } from '@prisma/client';
 import { ChannelMaterialQueryService } from './channel-material-query.service';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ChannelMaterialService {
@@ -16,6 +20,19 @@ export class ChannelMaterialService {
     private queryService: ChannelMaterialQueryService,
     private storageService: ChannelMaterialStorageService,
   ) {}
+
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
+    }
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
+  }
 
   async create(materialDto: ChannelMaterialDto) {
     try {
@@ -43,7 +60,7 @@ export class ChannelMaterialService {
       });
 
       if (material && materialDto.subscription_id != null) {
-        for await (let sub of materialDto.subscription_id) {
+        for await (const sub of materialDto.subscription_id) {
           await this.prisma.materialInSubscriptionPlan.create({
             data: {
               channelMaterial_id: material.id,
@@ -54,14 +71,7 @@ export class ChannelMaterialService {
       }
       return material;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
@@ -99,26 +109,14 @@ export class ChannelMaterialService {
           },
         });
 
-        if (newMaterial) {
-          return newMaterial;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
+        return newMaterial;
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
   }
@@ -132,23 +130,19 @@ export class ChannelMaterialService {
 
     if (material) {
       try {
-        const deleted = await this.prisma.channelMaterial.delete({
+        await this.prisma.channelMaterial.delete({
           where: {
             id: id,
           },
         });
-
-        if (deleted) {
-          return { message: 'Material deleted successfully' };
-        }
+        return { message: 'Material deleted successfully' };
       } catch (error) {
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't delete while there is no material. Please create a material first.",
+        'CHANNEL_MATERIAL_NOT_FOUND',
       );
     }
   }

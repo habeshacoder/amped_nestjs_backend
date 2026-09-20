@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelMaterialService } from './channel-material.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ForbiddenException } from '@nestjs/common';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { Parent, Type } from '@prisma/client';
 
 import { ChannelMaterialQueryService } from './channel-material-query.service';
@@ -177,10 +177,10 @@ describe('ChannelMaterialService', () => {
   });
 
   describe('remove', () => {
-    it('should throw ForbiddenException if material does not exist', async () => {
+    it('should throw NotFoundError if material does not exist', async () => {
       prisma.channelMaterial.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove(99)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(99)).rejects.toThrow(NotFoundError);
     });
 
     it('should delete material if exists', async () => {

@@ -1,7 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { Type } from '@prisma/client';
+import {
+  ConflictError,
+  DomainException,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ChannelMaterialQueryService {
@@ -58,14 +62,16 @@ export class ChannelMaterialQueryService {
         return { message: 'Material Not Found' };
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Wrong link');
-        }
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictError('Wrong link', 'CONFLICT');
       }
-      throw new ForbiddenException(
-        'There has been an error. Please check the link and try again.',
-      );
+      if (error instanceof DomainException) {
+        throw error;
+      }
+      throw error;
     }
   }
 
