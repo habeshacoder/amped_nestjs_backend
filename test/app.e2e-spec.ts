@@ -42,6 +42,8 @@ describe('App End-to-End Tests', () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
       }),
     );
     await app.init();
