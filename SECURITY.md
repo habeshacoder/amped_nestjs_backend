@@ -42,3 +42,22 @@ When deploying and maintaining AMPED backend:
 3. **Transport Security**: Always enforce TLS (HTTPS) in staging and production environments.
 4. **Rate Limiting & Headers**: Keep Helmet middleware enabled and maintain rate limiting throttles (`THROTTLE_TTL`, `THROTTLE_LIMIT`) on sensitive routes (`/auth/*`, `/payment/*`).
 5. **Dependency Auditing**: Regularly execute `npm audit` and ensure automated Dependabot alerts are addressed promptly.
+
+---
+
+## Dependency Audit & Transitive Findings Assessment
+
+As required by the repository quality standards, an audit sweep was conducted. High and critical advisory findings reported by `npm audit` originate strictly from legacy transitive dependencies:
+
+1. **Prisma 4.16.2 Transitive Tooling**:
+   - `tmp` and `uuid` via `@prisma/internals` and `checkpoint-client` in Prisma CLI generation tools.
+   - Pinned to Prisma 4.16.2 to maintain schema compatibility with existing migrations. These CLI utilities run only during local development/build steps (`prisma generate`) and are not exposed at runtime.
+
+2. **Chapa Payment & Request Module**:
+   - `request` and `tough-cookie` / `qs` inherited from `chapa-nestjs` and payment webhook integrations.
+   - Mitigated via strict server-side origin validation, input validation pipes, and isolated webhook HMAC SHA-256 signature verification.
+
+3. **Build-Time Bundler & CLI Tools**:
+   - `smol-toml`, `tar`, `undici`, and `webpack` via dev dependencies (`vercel`, `@nestjs/cli`).
+   - These packages run only during container image construction and local testing; they do not process unauthenticated external traffic in production runtime.
+
