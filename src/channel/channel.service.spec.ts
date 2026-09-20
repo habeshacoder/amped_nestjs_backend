@@ -1,21 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelService } from './channel.service';
+import { ChannelQueryService } from './channel-query.service';
+import { ChannelCommandService } from './channel-command.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ForbiddenException } from '@nestjs/common';
+import { FileStorageService } from '../common/services/file-storage.service';
 
 describe('ChannelService', () => {
   let service: ChannelService;
-  let prisma: {
-    channel: {
-      findMany: jest.Mock;
-      findUnique: jest.Mock;
-      count: jest.Mock;
-      create: jest.Mock;
-    };
-    channelImage: {
-      create: jest.Mock;
-    };
-  };
+  let queryService: ChannelQueryService;
+  let commandService: ChannelCommandService;
 
   const mockChannel = {
     id: 1,
@@ -25,23 +18,42 @@ describe('ChannelService', () => {
   };
 
   beforeEach(async () => {
-    prisma = {
-      channel: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        count: jest.fn(),
-        create: jest.fn(),
-      },
-      channelImage: {
-        create: jest.fn(),
-      },
-    };
-
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ChannelService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        ChannelService,
+        ChannelQueryService,
+        ChannelCommandService,
+        FileStorageService,
+        {
+          provide: PrismaService,
+          useValue: {
+            channel: {
+              findMany: jest.fn().mockResolvedValue([mockChannel]),
+              findUnique: jest.fn().mockResolvedValue(mockChannel),
+              count: jest.fn().mockResolvedValue(10),
+              create: jest.fn().mockResolvedValue(mockChannel),
+              update: jest.fn().mockResolvedValue(mockChannel),
+              delete: jest.fn().mockResolvedValue(mockChannel),
+            },
+            channelImage: {
+              findFirst: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+            previewChannel: {
+              findFirst: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+            },
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<ChannelService>(ChannelService);
+    queryService = module.get<ChannelQueryService>(ChannelQueryService);
+    commandService = module.get<ChannelCommandService>(ChannelCommandService);
   });
 
   it('should be defined', () => {
@@ -49,83 +61,68 @@ describe('ChannelService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all channels', async () => {
-      prisma.channel.findMany.mockResolvedValue([mockChannel]);
-
+    it('should delegate to queryService.findAll', async () => {
+      const spy = jest
+        .spyOn(queryService, 'findAll')
+        .mockResolvedValue([mockChannel] as any);
       const result = await service.findAll();
       expect(result).toEqual([mockChannel]);
-      expect(prisma.channel.findMany).toHaveBeenCalled();
-    });
-  });
-
-  describe('findOne', () => {
-    it('should return a channel by id', async () => {
-      prisma.channel.findUnique.mockResolvedValue(mockChannel);
-
-      const result = await service.findOne(1);
-      expect(result).toEqual(mockChannel);
+      expect(spy).toHaveBeenCalled();
     });
   });
 
   describe('paginateChannels', () => {
-    it('should return paginated channels and meta', async () => {
-      prisma.channel.count.mockResolvedValue(10);
-      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+    it('should delegate to queryService.paginateChannels', async () => {
+      const mockResult = {
+        Materials: [mockChannel],
+        Meta: {
+          Num_Of_Channels: 10,
+          Num_Of_Pages: 2,
+          Per_Page: 5,
+          Channels_In_last_page: 5,
+          self: 0,
+          prev: null,
+          next: 1,
+          last: 1,
+        },
+      } as any;
 
+      const spy = jest
+        .spyOn(queryService, 'paginateChannels')
+        .mockResolvedValue(mockResult);
       const result = await service.paginateChannels({ take: 5, page: 0 });
-      expect(result).toHaveProperty('Materials');
-      expect(result).toHaveProperty('Meta');
-      expect(result.Meta.Num_Of_Channels).toBe(10);
-      expect(result.Meta.Num_Of_Pages).toBe(2);
-    });
-
-    it('should throw ForbiddenException if page is out of bounds', async () => {
-      prisma.channel.count.mockResolvedValue(10);
-
-      await expect(
-        service.paginateChannels({ take: 5, page: 5 }),
-      ).rejects.toThrow(ForbiddenException);
+      expect(result).toEqual(mockResult);
+      expect(spy).toHaveBeenCalledWith({ take: 5, page: 0 });
     });
   });
 
-  describe('findForSeller', () => {
-    it('should return published channels for a seller', async () => {
-      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+  describe('create', () => {
+    it('should delegate to commandService.create', async () => {
+      const spy = jest
+        .spyOn(commandService, 'create')
+        .mockResolvedValue(mockChannel as any);
+      const files = { profile: [{ path: 'uploads/p.png' }] };
+      const dto = {
+        name: 'Tech',
+        description: 'Desc',
+        sellerProfile_id: '1',
+      } as any;
 
-      const result = await service.findForSeller(1);
-      expect(result).toEqual([mockChannel]);
-      expect(prisma.channel.findMany).toHaveBeenCalledWith({
-        where: {
-          sellerProfile_id: 1,
-          draft: false,
-        },
-        include: expect.any(Object),
-      });
+      const result = await service.create(files, dto);
+      expect(result).toEqual(mockChannel);
+      expect(spy).toHaveBeenCalledWith(files, dto);
     });
   });
 
-  describe('findDraftForSeller', () => {
-    it('should return draft channels for a seller', async () => {
-      prisma.channel.findMany.mockResolvedValue([mockChannel]);
+  describe('remove', () => {
+    it('should delegate to commandService.remove', async () => {
+      const spy = jest.spyOn(commandService, 'remove').mockResolvedValue({
+        message: 'Channel Deleted Successfully',
+      } as any);
 
-      const result = await service.findDraftForSeller(1);
-      expect(result).toEqual([mockChannel]);
-      expect(prisma.channel.findMany).toHaveBeenCalledWith({
-        where: {
-          sellerProfile_id: 1,
-          draft: true,
-        },
-        include: expect.any(Object),
-      });
-    });
-  });
-
-  describe('getMyChannels', () => {
-    it('should return seller channels', async () => {
-      prisma.channel.findMany.mockResolvedValue([mockChannel]);
-
-      const result = await service.getMyChannels(1);
-      expect(result).toEqual([mockChannel]);
+      const result = await service.remove(1);
+      expect(result).toEqual({ message: 'Channel Deleted Successfully' });
+      expect(spy).toHaveBeenCalledWith(1);
     });
   });
 });
