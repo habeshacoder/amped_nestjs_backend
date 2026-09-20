@@ -60,6 +60,7 @@
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/terminus": "^10.2.3",
     "@prisma/client": "4.16.2",
+    "@sentry/node": "^10.75.0",
     "argon2": "^0.30.2",
     "chapa-nestjs": "^1.2.0",
     "class-transformer": "^0.5.1",

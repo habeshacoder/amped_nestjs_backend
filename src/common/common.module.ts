@@ -1,9 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { FileStorageService } from './services/file-storage.service';
+import { SentryService } from './services/sentry.service';
 
 @Global()
 @Module({
-  providers: [FileStorageService],
-  exports: [FileStorageService],
+  providers: [FileStorageService, SentryService],
+  exports: [FileStorageService, SentryService],
 })
 export class CommonModule {}
