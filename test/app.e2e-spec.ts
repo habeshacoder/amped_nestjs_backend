@@ -12,6 +12,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
 
 describe('App End-to-End Tests', () => {
   let app: INestApplication;
@@ -39,6 +40,7 @@ describe('App End-to-End Tests', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -66,13 +68,45 @@ describe('App End-to-End Tests', () => {
   });
 
   it('GET /users/me should reject unauthenticated requests with 401', () => {
-    return request(app.getHttpServer()).get('/users/me').expect(401);
+    return request(app.getHttpServer())
+      .get('/users/me')
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.statusCode).toBe(401);
+        expect(res.body.path).toBe('/users/me');
+      });
   });
 
   it('POST /auth/signin should reject empty body with 400', () => {
     return request(app.getHttpServer())
       .post('/auth/signin')
       .send({})
-      .expect(400);
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.statusCode).toBe(400);
+        expect(res.body.path).toBe('/auth/signin');
+      });
+  });
+
+  it('POST /auth/signin should reject invalid email format with 400', () => {
+    return request(app.getHttpServer())
+      .post('/auth/signin')
+      .send({ email: 'not-an-email', password: 'password123' })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.statusCode).toBe(400);
+      });
+  });
+
+  it('GET /unknown-endpoint should return 404 with standardized error response', () => {
+    return request(app.getHttpServer())
+      .get('/unknown-endpoint')
+      .expect(404)
+      .expect((res) => {
+        expect(res.body.statusCode).toBe(404);
+        expect(res.body.path).toBe('/unknown-endpoint');
+        expect(res.body.timestamp).toBeDefined();
+        expect(res.body.requestId).toBeDefined();
+      });
   });
 });
