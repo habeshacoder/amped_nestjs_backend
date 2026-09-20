@@ -21,12 +21,13 @@ import { FavoriteModule } from './favorite/favorite.module';
 import { SearchModule } from './search/search.module';
 import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.module';
 
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HealthModule } from './health/health.module';
 import { CommonModule } from './common/common.module';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
 import * as Joi from 'joi';
 
@@ -47,6 +48,9 @@ import * as Joi from 'joi';
         CHAPA_WEBHOOK_URL: Joi.string().allow('').optional().default(''),
         SHADOW_DATABASE_URL: Joi.string().allow('').optional().default(''),
         SENTRY_DSN: Joi.string().allow('').optional().default(''),
+        CORS_ORIGIN: Joi.string().allow('').optional().default('*'),
+        THROTTLE_TTL: Joi.number().default(60000),
+        THROTTLE_LIMIT: Joi.number().default(100),
       }),
     }),
     LoggerModule.forRootAsync({
@@ -107,11 +111,25 @@ import * as Joi from 'joi';
     SearchModule,
     ChannelPurchaseModule,
     HealthModule,
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('THROTTLE_TTL') || 60000,
+          limit: config.get<number>('THROTTLE_LIMIT') || 100,
+        },
+      ],
+    }),
   ],
   providers: [
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
