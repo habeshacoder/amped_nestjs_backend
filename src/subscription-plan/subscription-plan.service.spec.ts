@@ -23,7 +23,7 @@ describe('SubscriptionPlanService', () => {
     description: 'Basic access',
     price: 100,
     channel_id: 5,
-    material_in_subscription_plan: [],
+    material_in_subscription_plan: [] as any[],
   };
 
   beforeEach(async () => {

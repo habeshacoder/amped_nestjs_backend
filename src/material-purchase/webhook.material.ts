@@ -42,7 +42,7 @@ export class ChapaWebHook {
       }),
     };
 
-    request(options, (error, response) => {
+    request(options, (error: any, response: any) => {
       if (error) throw new Error(error);
       this.logger.log(response.body);
     });
@@ -57,7 +57,7 @@ export class ChapaWebHook {
 
     // Using Express
     this.config.get('CHAPA_WEBHOOK_URL'),
-      (req, res) => {
+      (req: any, res: any) => {
         //validate event
         const hash = crypto.createHmac('sha256', secret).digest('hex');
 

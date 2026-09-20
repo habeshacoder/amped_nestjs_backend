@@ -15,6 +15,7 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
+import { Response } from 'express';
 import { ProfileDto, UpdateDto } from './dto';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from 'src/auth/decorator';
@@ -52,10 +53,10 @@ export class ProfilesController {
   create(
     @UploadedFiles()
     files: { profile: Express.Multer.File; cover: Express.Multer.File },
-    @Body() ProfileDto: ProfileDto,
+    @Body() profileDto: ProfileDto,
     @GetUser() user: User,
   ) {
-    return this.profilesService.create(files, ProfileDto, user);
+    return this.profilesService.create(files, profileDto, user);
   }
 
   @Get()
@@ -88,8 +89,8 @@ export class ProfilesController {
 
   @UseGuards(JwtGuard)
   @Patch(':id')
-  updateProfileInfo(@Param('id') id: string, @Body() ProfileDto: ProfileDto) {
-    return this.profilesService.updateProfile(+id, ProfileDto);
+  updateProfileInfo(@Param('id') id: string, @Body() profileDto: ProfileDto) {
+    return this.profilesService.updateProfile(+id, profileDto);
   }
 
   @UseGuards(JwtGuard)
@@ -136,7 +137,10 @@ export class ProfilesController {
 
   @HttpCode(HttpStatus.OK)
   @Get('profile-image/:imageName')
-  findProfileImage(@Param('imageName') imageName, @Res() res) {
+  findProfileImage(
+    @Param('imageName') imageName: string,
+    @Res() res: Response,
+  ) {
     return res.sendFile(
       join(process.cwd(), './uploads/profile/profile/' + imageName),
     );
@@ -144,7 +148,7 @@ export class ProfilesController {
 
   @HttpCode(HttpStatus.OK)
   @Get('cover-image/:imageName')
-  findCoverImage(@Param('imageName') imageName, @Res() res) {
+  findCoverImage(@Param('imageName') imageName: string, @Res() res: Response) {
     return res.sendFile(
       join(process.cwd(), './uploads/profile/profile/' + imageName),
     );

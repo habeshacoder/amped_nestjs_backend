@@ -22,7 +22,7 @@ describe('FavoriteService', () => {
     id: 1,
     user_id: 'user-1',
     material_id: 10,
-    channel_id: null,
+    channel_id: null as number | null,
   };
 
   beforeEach(async () => {

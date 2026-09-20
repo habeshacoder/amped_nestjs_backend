@@ -19,6 +19,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ChannelMaterialService } from './channel-material.service';
+import { Response } from 'express';
 import { ChannelMaterialDto } from './dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import {
@@ -341,7 +342,7 @@ export class ChannelMaterialController {
 
   @HttpCode(HttpStatus.OK)
   @Get('material/:fileName')
-  getMaterial(@Param('fileName') fileName, @Res() res) {
+  getMaterial(@Param('fileName') fileName: string, @Res() res: Response) {
     return res.sendFile(
       join(process.cwd(), 'uploads/channel/material/' + fileName),
     );
@@ -349,28 +350,13 @@ export class ChannelMaterialController {
   //add purchased middleware here
   @HttpCode(HttpStatus.OK)
   @Get('material/:id')
-  findMaterial(@Param('id') id: string, @Res() res) {
+  findMaterial(@Param('id') id: string, @Res() res: Response) {
     return this.channelMaterialService.showMaterial(+id, res);
   }
 
-  //material image upload
-  // @Post('upload/material_profile')
-  // @UseInterceptors(FileInterceptor('profile', {
-  //     storage: diskStorage({
-  //         destination: './uploads/material/profile',
-  //         filename: editFileName,
-  //     }),
-  //     fileFilter: imageFileFilter,
-  // }))
-  // //add validators for dimension
-  // @HttpCode(HttpStatus.CREATED)
-  // createProfile(@UploadedFile() file: Express.Multer.File, @Body('id') id: string) {
-  //     return this.materialService.uploadMaterialProfile(file, +id);
-  // }
-
   @HttpCode(HttpStatus.OK)
   @Get('material_profile/:id')
-  findMaterialProfile(@Param('id') id: string, @Res() res) {
+  findMaterialProfile(@Param('id') id: string, @Res() res: Response) {
     return this.channelMaterialService.showMaterialProfile(+id, res);
   }
 
@@ -382,72 +368,30 @@ export class ChannelMaterialController {
 
   @HttpCode(HttpStatus.OK)
   @Get('material_profile-image/:imageName')
-  getMaterialImage(@Param('imageName') imageName, @Res() res) {
+  getMaterialImage(
+    @Param('imageName') imageName: string,
+    @Res() res: Response,
+  ) {
     return res.sendFile(
       join(process.cwd(), 'uploads/channel/material/' + imageName),
     );
   }
 
-  // @UseGuards(JwtGuard)
-  // @Post('upload/material_cover')
-  // @UseInterceptors(FileInterceptor('cover', {
-  //     storage: diskStorage({
-  //         destination: './uploads/material/cover',
-  //         filename: editFileName,
-  //     }),
-  //     fileFilter: imageFileFilter,
-  // }))
-  // //add validators for dimension
-  // @HttpCode(HttpStatus.CREATED)
-  // createCover(@UploadedFile() file: Express.Multer.File, @Body('id') id: string) {
-  //     return this.materialService.uploadMaterialCover(file, +id);
-  // }
-
   @HttpCode(HttpStatus.OK)
   @Get('material_cover/:id')
-  findMaterialCover(@Param('id') id: string, @Res() res) {
+  findMaterialCover(@Param('id') id: string, @Res() res: Response) {
     return this.channelMaterialService.showMaterialCover(+id, res);
   }
 
-  //multiple images upload
-  // @UseGuards(JwtGuard)
-  // @Post('upload/material/images')
-  // @UseInterceptors(FilesInterceptor('images', 10, {
-  //     storage: diskStorage({
-  //         destination: './uploads/material/images',
-  //         filename: editFileName,
-  //     }),
-  //     fileFilter: imageFileFilter,
-  // }))
-  // uploadFile(@UploadedFiles() files: Array<Express.Multer.File>, @Body('id') id: string) {
-  //     return this.materialService.uploadMaterialImage(files, +id);
-  // }
-
   @HttpCode(HttpStatus.OK)
   @Get('material_image/:id')
-  findMaterialImage(@Param('id') id: string, @Res() res) {
+  findMaterialImage(@Param('id') id: string, @Res() res: Response) {
     return this.channelMaterialService.showMaterialImage(+id, res);
   }
 
-  //material preview upload
-  // @UseGuards(JwtGuard)
-  // @Post('upload/preview')
-  // @UseInterceptors(FileInterceptor('preview', {
-  //     storage: diskStorage({
-  //         destination: './uploads/material/preview',
-  //         filename: editFileName,
-  //     }),
-  //     fileFilter: fileFilter,
-  // }))
-  // //add validators for dimension
-  // @HttpCode(HttpStatus.CREATED)
-  // createMaterialPreview(@UploadedFile() file: Express.Multer.File, @Body('id') id: string) {
-  //     return this.materialService.uploadMaterialPreview(file, +id);
-  // }
-
   @HttpCode(HttpStatus.OK)
   @Get('material_preview/:id')
-  findMaterialPreview(@Param('id') id: string, @Res() res) {
+  findMaterialPreview(@Param('id') id: string, @Res() res: Response) {
     return this.channelMaterialService.showMaterialPreview(+id, res);
   }
 }

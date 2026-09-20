@@ -24,7 +24,7 @@ describe('RatingService', () => {
     rating: 5,
     remark: 'Excellent',
     material_id: 10,
-    channel_id: null,
+    channel_id: null as number | null,
   };
 
   beforeEach(async () => {
@@ -59,7 +59,7 @@ describe('RatingService', () => {
         rating: 5,
         remark: 'Great',
         material_id: 10,
-        channel_id: undefined,
+        channel_id: undefined as number | undefined,
       };
 
       const result = await service.create(dto as any, mockUser);

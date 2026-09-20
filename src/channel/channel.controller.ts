@@ -29,6 +29,7 @@ import {
   imageFileFilter,
 } from '../common/utils/file-upload.utils';
 import { ChannelService } from './channel.service';
+import { Response } from 'express';
 import { ChannelDto } from './dto';
 import { join } from 'path';
 
@@ -173,14 +174,17 @@ export class ChannelController {
 
   @HttpCode(HttpStatus.OK)
   @Get('channel_profile/:id')
-  findChannelProfile(@Param('id') id: string, @Res() res) {
+  findChannelProfile(@Param('id') id: string, @Res() res: Response) {
     return this.channelService.showChannelProfile(+id, res);
   }
 
   // GET CHANNEL IMAGE BY IMAGE NAME 06/21/
   @HttpCode(HttpStatus.OK)
   @Get('channel_profile_image/:imageName')
-  findProfileImage(@Param('imageName') imageName, @Res() res) {
+  findProfileImage(
+    @Param('imageName') imageName: string,
+    @Res() res: Response,
+  ) {
     return res.sendFile(join(process.cwd(), 'uploads/channel/' + imageName));
   }
 
@@ -201,7 +205,7 @@ export class ChannelController {
 
   @HttpCode(HttpStatus.OK)
   @Get('channel_cover/:id')
-  findChannelCover(@Param('id') id: string, @Res() res) {
+  findChannelCover(@Param('id') id: string, @Res() res: Response) {
     return this.channelService.showChannelCover(+id, res);
   }
 
@@ -226,7 +230,7 @@ export class ChannelController {
 
   @HttpCode(HttpStatus.OK)
   @Get('channel_image/:id')
-  findChannelImage(@Param('id') id: string, @Res() res) {
+  findChannelImage(@Param('id') id: string, @Res() res: Response) {
     return this.channelService.showChannelImage(+id, res);
   }
 
@@ -258,7 +262,7 @@ export class ChannelController {
 
   @HttpCode(HttpStatus.OK)
   @Get('channel_preview/:id')
-  findChannelPreview(@Param('id') id: string, @Res() res) {
+  findChannelPreview(@Param('id') id: string, @Res() res: Response) {
     return this.channelService.showChannelPreview(+id, res);
   }
 }

@@ -33,15 +33,15 @@ export class AuthController {
 
   @UseGuards(JwtGuard)
   @Get('logout')
-  logout(@Req() req: Request) {
-    return this.authService.logout(req.user['id']);
+  logout(@Req() req: Request & { user?: Record<string, any> }) {
+    return this.authService.logout(req.user?.['id']);
   }
 
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
-  refreshTokens(@Req() req: Request) {
-    const userId = req.user['sub'];
-    const refreshToken = req.user['refreshToken'];
+  refreshTokens(@Req() req: Request & { user?: Record<string, any> }) {
+    const userId = req.user?.['sub'];
+    const refreshToken = req.user?.['refreshToken'];
     return this.authService.refreshTokens(userId, refreshToken);
   }
 

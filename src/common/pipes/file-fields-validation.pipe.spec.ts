@@ -55,7 +55,7 @@ describe('FileFieldsValidationPipe', () => {
 
   it('should throw BadRequestException if required field is an empty array', () => {
     const files = {
-      material: [],
+      material: [] as any[],
     };
 
     expect(() => pipe.transform(files)).toThrow(/Field 'material' is required/);

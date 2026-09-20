@@ -47,7 +47,7 @@ describe('JwtStrategy', () => {
       where: { id: 'user-1' },
     });
     expect(result).toBeDefined();
-    expect(result.password).toBeUndefined();
-    expect(result.id).toBe('user-1');
+    expect((result as any)?.password).toBeUndefined();
+    expect(result?.id).toBe('user-1');
   });
 });

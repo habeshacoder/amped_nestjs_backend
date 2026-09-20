@@ -66,7 +66,7 @@ describe('UserController', () => {
         },
       });
       expect(result).toBeDefined();
-      expect(result.profiles).toBeDefined();
+      expect(result?.['profiles']).toBeDefined();
     });
 
     it('should exclude password and refresh_token from response', async () => {

@@ -28,7 +28,7 @@ export class MaterialQueryService {
     });
   }
 
-  async getHomeItems() {
+  async getHomeItems(): Promise<any[]> {
     return [];
   }
 

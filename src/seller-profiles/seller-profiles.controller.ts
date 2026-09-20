@@ -12,20 +12,17 @@ import {
   HttpStatus,
   UseInterceptors,
   Res,
-  UploadedFile,
   UploadedFiles,
 } from '@nestjs/common';
 import { SellerProfilesService } from './seller-profiles.service';
+import { Response } from 'express';
 import { SellerProfileDto } from './dto';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { join } from 'path';
 import {
   editFileName,
   imageFileFilter,
@@ -131,7 +128,10 @@ export class SellerProfilesController {
 
   @HttpCode(HttpStatus.OK)
   @Get('profile-image/:imageName')
-  findProfileImage(@Param('imageName') imageName, @Res() res) {
+  findProfileImage(
+    @Param('imageName') imageName: string,
+    @Res() res: Response,
+  ) {
     return res.sendFile(
       join(process.cwd(), 'uploads/sellerProfile/image/' + imageName),
     );
@@ -139,7 +139,7 @@ export class SellerProfilesController {
 
   @HttpCode(HttpStatus.OK)
   @Get('cover-image/:imageName')
-  findCoverImage(@Param('imageName') imageName, @Res() res) {
+  findCoverImage(@Param('imageName') imageName: string, @Res() res: Response) {
     return res.sendFile(
       join(process.cwd(), 'uploads/sellerProfile/image/' + imageName),
     );
