@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -15,17 +14,23 @@ import {
   UploadedFiles,
   Query,
   Header,
+  Headers,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { Headers } from '@nestjs/common';
 import { MaterialService } from './material.service';
-import { MaterialDto } from './dto';
+import {
+  MaterialDto,
+  UpdateMaterialDto,
+  PaginationQueryDto,
+  TakeQueryDto,
+} from './dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { editFileName } from '../common/utils/file-upload.utils';
 import { Catagory, Material, Parent, Type, User } from '@prisma/client';
 import { join } from 'path';
-import { GetUser } from 'src/auth/decorator';
+import { GetUser } from '../auth/decorator';
 import { statSync, createReadStream } from 'fs';
 import { Response } from 'express';
 
@@ -61,17 +66,17 @@ export class MaterialController {
     ),
   )
   createFile(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @UploadedFiles()
     files: {
-      material: Express.Multer.File;
-      profile: Express.Multer.File;
-      cover: Express.Multer.File;
-      images: Express.Multer.File;
-      preview: Express.Multer.File;
+      material?: Express.Multer.File[];
+      profile?: Express.Multer.File[];
+      cover?: Express.Multer.File[];
+      images?: Express.Multer.File[];
+      preview?: Express.Multer.File[];
     },
   ) {
-    return this.materialService.createFile(files, +id);
+    return this.materialService.createFile(files as any, id);
   }
 
   @Get()
@@ -84,12 +89,11 @@ export class MaterialController {
   @Header('Content-Type', 'audio/mpeg')
   async audioStreaming(
     @Param('fileName') fileName: string,
-    @Headers() headers,
+    @Headers('range') audioRange: string | undefined,
     @Res() res: Response,
   ) {
     const audioPath = join(process.cwd(), 'uploads/material/' + fileName);
     const { size } = statSync(audioPath);
-    const audioRange = headers.range;
     if (audioRange) {
       const parts = audioRange.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
@@ -104,13 +108,13 @@ export class MaterialController {
         'Content-Range': `bytes ${start}-${end}/${size}`,
         'Content-Length': chunksize,
       };
-      res.writeHead(HttpStatus.PARTIAL_CONTENT, head); //206
+      res.writeHead(HttpStatus.PARTIAL_CONTENT, head);
       readStreamfile.pipe(res);
     } else {
       const head = {
         'Content-Length': size,
       };
-      res.writeHead(HttpStatus.OK, head); //200
+      res.writeHead(HttpStatus.OK, head);
       createReadStream(audioPath).pipe(res);
     }
   }
@@ -120,12 +124,11 @@ export class MaterialController {
   @Header('Content-Type', 'application/epub+zip')
   async epubStreaming(
     @Param('fileName') fileName: string,
-    @Headers() headers,
+    @Headers('range') audioRange: string | undefined,
     @Res() res: Response,
   ) {
     const audioPath = join(process.cwd(), 'uploads/material/' + fileName);
     const { size } = statSync(audioPath);
-    const audioRange = headers.range;
     if (audioRange) {
       const parts = audioRange.replace(/bytes=/, '').split('-');
       const start = parseInt(parts[0], 10);
@@ -140,40 +143,39 @@ export class MaterialController {
         'Content-Range': `bytes ${start}-${end}/${size}`,
         'Content-Length': chunksize,
       };
-      res.writeHead(HttpStatus.PARTIAL_CONTENT, head); //206
+      res.writeHead(HttpStatus.PARTIAL_CONTENT, head);
       readStreamfile.pipe(res);
     } else {
       const head = {
         'Content-Length': size,
       };
-      res.writeHead(HttpStatus.OK, head); //200
+      res.writeHead(HttpStatus.OK, head);
       createReadStream(audioPath).pipe(res);
     }
   }
 
   @Get('/materials_web')
-  getMaterialsWeb(@Query('take') take: string, @Query('page') page: string) {
+  getMaterialsWeb(@Query() query: PaginationQueryDto) {
     return this.materialService.getMaterialsWeb({
-      take: Number(take),
-      page: Number(page),
+      take: query.take,
+      page: query.page,
     });
   }
 
   @Get('/paginate_by_type/:type')
   paginateMaterialByType(
     @Param('type') materialType: Type,
-    @Query('take') take: string,
-    @Query('page') page: string,
+    @Query() query: PaginationQueryDto,
   ) {
     return this.materialService.paginateMaterialByType(materialType, {
-      take: Number(take),
-      page: Number(page),
+      take: query.take,
+      page: query.page,
     });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.materialService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.materialService.findOne(id);
   }
 
   @Get('/home')
@@ -185,6 +187,7 @@ export class MaterialController {
   getMaterialByType(@Param('type') materialType: Type) {
     return this.materialService.getMaterialByType(materialType);
   }
+
   @Get('/materials_by/:parent')
   getMaterialByParent(@Param('parent') materialParent: Parent) {
     return this.materialService.getMaterialByParent(materialParent);
@@ -201,31 +204,33 @@ export class MaterialController {
   }
 
   @Get('/materials_mob')
-  getMaterialsMob(@Query('take') take: string): Promise<Material[]> {
-    return this.materialService.getMaterialsMob({ take: Number(take) });
+  getMaterialsMob(@Query() query: TakeQueryDto): Promise<Material[]> {
+    return this.materialService.getMaterialsMob({ take: query.take });
   }
 
   @Get('/seller/:id')
-  findForSeller(@Param('id') id: string) {
-    return this.materialService.findForSeller(+id);
+  findForSeller(@Param('id', ParseIntPipe) id: number) {
+    return this.materialService.findForSeller(id);
   }
 
   @Get('/paginated_seller_materials/:seller_id')
   getPaginatedSellerMaterials(
-    @Param('seller_id') seller_id: string,
-    @Query('take') take: string,
-    @Query('page') page: string,
+    @Param('seller_id', ParseIntPipe) seller_id: number,
+    @Query() query: PaginationQueryDto,
   ) {
-    return this.materialService.paginateSellerMaterials(+seller_id, {
-      take: Number(take),
-      page: Number(page),
+    return this.materialService.paginateSellerMaterials(seller_id, {
+      take: query.take,
+      page: query.page,
     });
   }
 
   @UseGuards(JwtGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() materialDto: MaterialDto) {
-    return this.materialService.update(+id, materialDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() materialDto: UpdateMaterialDto,
+  ) {
+    return this.materialService.update(id, materialDto as MaterialDto);
   }
 
   @UseGuards(JwtGuard)
@@ -240,10 +245,10 @@ export class MaterialController {
     }),
   )
   updateMaterial(
-    @Param('id') id: string,
-    @UploadedFiles() files: { material: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { material?: Express.Multer.File[] },
   ) {
-    return this.materialService.updateMaterial(files, +id);
+    return this.materialService.updateMaterial(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -258,10 +263,10 @@ export class MaterialController {
     }),
   )
   updateMaterialProfile(
-    @Param('id') id: string,
-    @UploadedFiles() files: { profile: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { profile?: Express.Multer.File[] },
   ) {
-    return this.materialService.updateMaterialProfile(files, +id);
+    return this.materialService.updateMaterialProfile(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -276,10 +281,10 @@ export class MaterialController {
     }),
   )
   updateMaterialCover(
-    @Param('id') id: string,
-    @UploadedFiles() files: { cover: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { cover?: Express.Multer.File[] },
   ) {
-    return this.materialService.updateMaterialCover(files, +id);
+    return this.materialService.updateMaterialCover(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -294,10 +299,10 @@ export class MaterialController {
     }),
   )
   updateMaterialImage(
-    @Param('id') id: string,
-    @UploadedFiles() files: { images: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { images?: Express.Multer.File[] },
   ) {
-    return this.materialService.updateMaterialImage(files, +id);
+    return this.materialService.updateMaterialImage(files as any, id);
   }
 
   @UseGuards(JwtGuard)
@@ -312,29 +317,27 @@ export class MaterialController {
     }),
   )
   updateMaterialPreview(
-    @Param('id') id: string,
-    @UploadedFiles() files: { preview: Express.Multer.File },
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { preview?: Express.Multer.File[] },
   ) {
-    return this.materialService.updateMaterialPreview(files, +id);
+    return this.materialService.updateMaterialPreview(files as any, id);
   }
 
-  // @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.materialService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.materialService.remove(id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material/:fileName')
-  getMaterial(@Param('fileName') fileName, @Res() res) {
+  getMaterial(@Param('fileName') fileName: string, @Res() res: Response) {
     return res.sendFile(join(process.cwd(), 'uploads/material/' + fileName));
   }
 
-  //add purchased middleware here
   @HttpCode(HttpStatus.OK)
   @Get('/material/:id')
-  findMaterial(@Param('id') id: string, @Res() res) {
-    return this.materialService.showMaterial(+id, res);
+  findMaterial(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    return this.materialService.showMaterial(id, res);
   }
 
   @UseGuards(JwtGuard)
@@ -348,51 +351,68 @@ export class MaterialController {
   @HttpCode(HttpStatus.OK)
   @Get('/user-purchase/:material_id')
   checkUserPurchasedMaterial(
-    @Param('material_id') material_id: string,
+    @Param('material_id', ParseIntPipe) material_id: number,
     @GetUser() user: User,
   ) {
-    return this.materialService.isMaterialPurchased(user, +material_id);
+    return this.materialService.isMaterialPurchased(user, material_id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_profile/:id')
-  findMaterialProfile(@Param('id') id: string, @Res() res) {
-    return this.materialService.showMaterialProfile(+id, res);
+  findMaterialProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    return this.materialService.showMaterialProfile(id, res);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_cover-name/:id')
-  getMaterialCoverImageName(@Param('id') id: string) {
-    return this.materialService.getMaterialCoverName(+id);
+  getMaterialCoverImageName(@Param('id', ParseIntPipe) id: number) {
+    return this.materialService.getMaterialCoverName(id);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_profile-image/:imageName')
-  getMaterialImage(@Param('imageName') imageName, @Res() res) {
+  getMaterialImage(
+    @Param('imageName') imageName: string,
+    @Res() res: Response,
+  ) {
     return res.sendFile(join(process.cwd(), 'uploads/material/' + imageName));
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_cover/:id')
-  findMaterialCover(@Param('id') id: string, @Res() res) {
-    return this.materialService.showMaterialCover(+id, res);
+  findMaterialCover(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    return this.materialService.showMaterialCover(id, res);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_image/:id')
-  findMaterialImage(@Param('id') id: string, @Res() res) {
-    return this.materialService.showMaterialImage(+id, res);
+  findMaterialImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    return this.materialService.showMaterialImage(id, res);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_preview/:id')
-  findMaterialPreview(@Param('id') id: string, @Res() res) {
-    return this.materialService.showMaterialPreview(+id, res);
+  findMaterialPreview(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    return this.materialService.showMaterialPreview(id, res);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('material_preview-images/:material_id')
-  getMaterialPreviewImages(@Param('material_id') material_id: string) {
-    return this.materialService.getMaterialPreviewImages(+material_id);
+  getMaterialPreviewImages(
+    @Param('material_id', ParseIntPipe) material_id: number,
+  ) {
+    return this.materialService.getMaterialPreviewImages(material_id);
   }
 }

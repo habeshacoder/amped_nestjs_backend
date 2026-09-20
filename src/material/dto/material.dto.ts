@@ -1,5 +1,10 @@
-/* eslint-disable prettier/prettier */
-import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Parent, Type, Genere, Catagory } from '@prisma/client';
 
 export class MaterialDto {
@@ -35,43 +40,55 @@ export class MaterialDto {
   @IsString({ message: 'Title must be a string' })
   title: string;
 
+  @IsOptional()
   @IsString({ message: 'Description must be a string' })
-  description: string;
+  description?: string;
 
+  @IsOptional()
   @IsNumber()
-  price: number;
+  price?: number;
 
   @IsNotEmpty({ message: 'Seller cannot be empty' })
   @IsNumber()
   sellerProfile_id: number;
 
+  @IsOptional()
   @IsString({ message: 'Author must be a string' })
-  author: string;
+  author?: string;
 
+  @IsOptional()
   @IsString({ message: 'Reader must be a string' })
-  reader: string;
+  reader?: string;
 
+  @IsOptional()
   @IsString({ message: 'Translator must be a string' })
-  translator: string;
+  translator?: string;
 
+  @IsOptional()
   @IsNumber()
-  length_minute: number;
+  length_minute?: number;
 
+  @IsOptional()
   @IsNumber()
-  length_page: number;
+  length_page?: number;
 
+  @IsOptional()
   @IsString({ message: 'Language must be a string' })
-  language: string;
+  language?: string;
 
+  @IsOptional()
   @IsString({ message: 'Publisher must be a string' })
-  publisher: string;
+  publisher?: string;
 
+  @IsOptional()
   @IsNumber()
-  episode: number;
+  episode?: number;
 
+  @IsOptional()
   @IsNumber()
-  continues_from: number;
+  continues_from?: number;
 
+  @IsOptional()
   @IsNumber()
-  first_published_at: number;
+  first_published_at?: number;
 }
