@@ -1,26 +1,43 @@
-/* eslint-disable prettier/prettier */
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { SellerProfileDto } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { User } from '@prisma/client';
-import * as fs from 'fs';
+import {
+  FileStorageService,
+  UploadedImages,
+} from '../common/services/file-storage.service';
 
 @Injectable()
 export class SellerProfilesService {
   private readonly logger = new Logger(SellerProfilesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fileStorage: FileStorageService,
+  ) {}
 
-  async create(images, sellerProfileDto: SellerProfileDto, user: User) {
-    const p_name =
-      images['image'][0].path.split('/')[
-        images['image'][0].path.split('/').length - 1
-      ];
-    const c_name =
-      images['cover'][0].path.split('/')[
-        images['image'][0].path.split('/').length - 1
-      ];
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
+  async create(
+    images: UploadedImages,
+    sellerProfileDto: SellerProfileDto,
+    user: User,
+  ) {
+    const imageName =
+      this.fileStorage.extractFieldFileName(images, 'image') ||
+      this.fileStorage.extractFieldFileName(images, 'profile');
+    const coverName = this.fileStorage.extractFieldFileName(images, 'cover');
 
     try {
       const sProfile = await this.prisma.sellerProfile.create({
@@ -29,24 +46,15 @@ export class SellerProfilesService {
           description: sellerProfileDto.description,
           sex: sellerProfileDto.sex,
           date_of_birth: sellerProfileDto.date_of_birth,
-          image: p_name,
-          cover_image: c_name,
+          image: imageName || 'null',
+          cover_image: coverName || 'null',
           user_id: user.id,
         },
       });
 
-      if (sProfile) {
-        return sProfile;
-      }
+      return sProfile;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
@@ -65,22 +73,13 @@ export class SellerProfilesService {
     if (!Number.isNaN(id) && id != null) {
       try {
         return await this.prisma.sellerProfile.findUnique({
-          where: {
-            id,
-          },
+          where: { id },
           include: {
             social_links_profile: true,
           },
         });
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(
@@ -90,7 +89,7 @@ export class SellerProfilesService {
   }
 
   async findMe(user: User) {
-    const sellerProfile = await this.prisma.sellerProfile.findMany({
+    return await this.prisma.sellerProfile.findMany({
       where: {
         user_id: user.id,
       },
@@ -98,384 +97,197 @@ export class SellerProfilesService {
         social_links_profile: true,
       },
     });
-
-    if (sellerProfile) {
-      return sellerProfile;
-    } else {
-      return { message: 'No seller profile found.' };
-    }
   }
 
   async updateProfileInfo(id: number, sellerProfileDto: SellerProfileDto) {
     const sProfile = await this.prisma.sellerProfile.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (sProfile) {
-      try {
-        const newProfile = await this.prisma.sellerProfile.update({
-          where: {
-            id: id,
-          },
-          data: {
-            name: sellerProfileDto.name,
-            description: sellerProfileDto.description,
-            sex: sellerProfileDto.sex,
-            date_of_birth: sellerProfileDto.date_of_birth,
-          },
-        });
-
-        if (newProfile) {
-          return newProfile;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
-    } else {
+    if (!sProfile) {
       throw new ForbiddenException(
         "Can't update while there is no profile. Please create a profile first.",
       );
     }
+
+    try {
+      return await this.prisma.sellerProfile.update({
+        where: { id },
+        data: {
+          name: sellerProfileDto.name,
+          description: sellerProfileDto.description,
+          sex: sellerProfileDto.sex,
+          date_of_birth: sellerProfileDto.date_of_birth,
+        },
+      });
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
   }
 
-  async updateProfileImage(profileImage, id: number) {
+  async updateProfileImage(profileImage: UploadedImages, id: number) {
     const sProfile = await this.prisma.sellerProfile.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (sProfile) {
-      const p_name =
-        profileImage['image'][0].path.split('/')[
-          profileImage['image'][0].path.split('/').length - 1
-        ];
-
-      if (p_name != null) {
-        try {
-          const oldImage = sProfile.image;
-
-          const newProfile = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              image: p_name,
-            },
-          });
-
-          if (newProfile) {
-            fs.unlink('./uploads/sellerProfile/image' + oldImage, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-
-          return {
-            message: 'Profile Image Uploaded Successfully',
-          };
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      }
-    } else {
+    if (!sProfile) {
       throw new ForbiddenException(
         "Can't update while there is no profile. Please create a profile first.",
       );
     }
+
+    const imageName =
+      this.fileStorage.extractFieldFileName(profileImage, 'image') ||
+      this.fileStorage.extractFieldFileName(profileImage, 'profile');
+
+    if (!imageName) {
+      return { message: 'Profile Image Uploaded Successfully' };
+    }
+
+    try {
+      const oldImage = sProfile.image;
+      await this.prisma.sellerProfile.update({
+        where: { id: sProfile.id },
+        data: { image: imageName },
+      });
+
+      if (oldImage && oldImage !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', oldImage);
+      }
+
+      return { message: 'Profile Image Uploaded Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
   }
 
-  async updateCoverImage(coverImage, id: number) {
+  async updateCoverImage(coverImage: UploadedImages, id: number) {
     const sProfile = await this.prisma.sellerProfile.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (sProfile) {
-      const c_name =
-        coverImage['cover'][0].path.split('/')[
-          coverImage['cover'][0].path.split('/').length - 1
-        ];
-
-      if (c_name != null) {
-        try {
-          const oldCImage = sProfile.cover_image;
-
-          const newCover = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              cover_image: c_name,
-            },
-          });
-
-          if (newCover) {
-            fs.unlink('./uploads/sellerProfile/image' + oldCImage, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-
-          return {
-            message: 'Cover Image Uploaded Successfully',
-          };
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      }
-    } else {
+    if (!sProfile) {
       throw new ForbiddenException(
         "Can't update while there is no profile. Please create a profile first.",
       );
+    }
+
+    const coverName = this.fileStorage.extractFieldFileName(
+      coverImage,
+      'cover',
+    );
+    if (!coverName) {
+      return { message: 'Cover Image Uploaded Successfully' };
+    }
+
+    try {
+      const oldCover = sProfile.cover_image;
+      await this.prisma.sellerProfile.update({
+        where: { id: sProfile.id },
+        data: { cover_image: coverName },
+      });
+
+      if (oldCover && oldCover !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', oldCover);
+      }
+
+      return { message: 'Cover Image Uploaded Successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
   async remove(id: number) {
     const sProfile = await this.prisma.sellerProfile.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (sProfile) {
-      const image = sProfile.image;
-      const cover = sProfile.cover_image;
-      try {
-        const dsprofile = await this.prisma.sellerProfile.delete({
-          where: {
-            id: id,
-          },
-        });
-
-        if (dsprofile) {
-          if (image != 'null') {
-            fs.unlink('./uploads/sellerProfile/image/' + image, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          }
-          if (cover != 'null') {
-            fs.unlink('./uploads/sellerProfile/image/' + cover, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-          }
-          return { message: 'Seller Profile deleted successfully' };
-        }
-      } catch (error) {
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
-    } else {
+    if (!sProfile) {
       throw new ForbiddenException(
         "Can't delete while there is no profile. Please create a profile first.",
       );
     }
+
+    const image = sProfile.image;
+    const cover = sProfile.cover_image;
+
+    try {
+      await this.prisma.sellerProfile.delete({ where: { id } });
+
+      if (image && image !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', image);
+      }
+      if (cover && cover !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', cover);
+      }
+
+      return { message: 'Seller Profile deleted successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
   }
 
   async uploadImage(image: Express.Multer.File, id: number) {
-    const sProfile = await this.prisma.sellerProfile.findUnique({
-      where: {
-        id,
-      },
+    const sProfile = await this.prisma.sellerProfile.findFirst({
+      where: { id },
     });
 
-    const name = image.path.split('\\');
+    if (!sProfile) {
+      throw new ForbiddenException(
+        "Can't update while there is no profile. Please create a profile first.",
+      );
+    }
 
-    if (sProfile) {
-      if (sProfile.image == 'null') {
-        try {
-          const newProfile = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              image: name[3],
-            },
-          });
+    const fileName = this.fileStorage.extractFileName(
+      image?.filename || image?.path,
+    );
 
-          if (newProfile) {
-            return newProfile;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } else {
-        const oldImage = sProfile.image;
+    try {
+      const oldImage = sProfile.image;
+      const updated = await this.prisma.sellerProfile.update({
+        where: { id: sProfile.id },
+        data: { image: fileName },
+      });
 
-        try {
-          const newProfile = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              image: name[3],
-            },
-          });
-
-          if (newProfile) {
-            fs.unlink('./uploads/sellerProfile/image/' + oldImage, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-            return newProfile;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
+      if (oldImage && oldImage !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', oldImage);
       }
-    } else {
-      throw new ForbiddenException('Please fill the name first.');
+
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
   async uploadCover(image: Express.Multer.File, id: number) {
-    const sProfile = await this.prisma.sellerProfile.findUnique({
-      where: {
-        id,
-      },
+    const sProfile = await this.prisma.sellerProfile.findFirst({
+      where: { id },
     });
 
-    const name = image.path.split('\\');
+    if (!sProfile) {
+      throw new ForbiddenException(
+        "Can't update while there is no profile. Please create a profile first.",
+      );
+    }
 
-    if (sProfile) {
-      if (sProfile.cover_image == 'null') {
-        try {
-          const newProfile = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              cover_image: name[3],
-            },
-          });
+    const fileName = this.fileStorage.extractFileName(
+      image?.filename || image?.path,
+    );
 
-          if (newProfile) {
-            return newProfile;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } else {
-        const oldImage = sProfile.cover_image;
+    try {
+      const oldCover = sProfile.cover_image;
+      const updated = await this.prisma.sellerProfile.update({
+        where: { id: sProfile.id },
+        data: { cover_image: fileName },
+      });
 
-        try {
-          const newProfile = await this.prisma.sellerProfile.update({
-            where: {
-              id: sProfile.id,
-            },
-            data: {
-              cover_image: name[3],
-            },
-          });
-
-          if (newProfile) {
-            fs.unlink('./uploads/sellerProfile/image/' + oldImage, (err) => {
-              if (err) {
-                this.logger.error(err);
-                return;
-              }
-            });
-            return newProfile;
-          } else {
-            throw new ForbiddenException(
-              'There has been an error. Please check the inputs and try again.',
-            );
-          }
-        } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
+      if (oldCover && oldCover !== 'null') {
+        await this.fileStorage.deleteFile('sellerProfile/image', oldCover);
       }
-    } else {
-      throw new ForbiddenException('Please fill the name first.');
+
+      return updated;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 }

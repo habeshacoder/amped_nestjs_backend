@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SellerProfilesService } from './seller-profiles.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { FileStorageService } from '../common/services/file-storage.service';
 import { ForbiddenException } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 describe('SellerProfilesService', () => {
   let service: SellerProfilesService;
+  let fileStorage: FileStorageService;
   let prisma: {
     sellerProfile: {
       findFirst: jest.Mock;
@@ -40,15 +42,44 @@ describe('SellerProfilesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SellerProfilesService,
+        FileStorageService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
 
     service = module.get<SellerProfilesService>(SellerProfilesService);
+    fileStorage = module.get<FileStorageService>(FileStorageService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should create seller profile with extracted image filenames', async () => {
+      prisma.sellerProfile.create.mockResolvedValue(mockSellerProfile);
+
+      const files = {
+        image: [{ path: 'uploads/avatar.png' }],
+        cover: [{ path: 'uploads/cover.jpg' }],
+      };
+
+      const result = await service.create(
+        files,
+        { name: 'Studio', description: 'Desc' } as any,
+        mockUser,
+      );
+
+      expect(result).toEqual(mockSellerProfile);
+      expect(prisma.sellerProfile.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'Studio',
+          image: 'avatar.png',
+          cover_image: 'cover.jpg',
+          user_id: 'user-1',
+        }),
+      });
+    });
   });
 
   describe('findAll', () => {
@@ -101,14 +132,42 @@ describe('SellerProfilesService', () => {
     });
   });
 
+  describe('updateProfileImage', () => {
+    it('should update image and delete old file', async () => {
+      prisma.sellerProfile.findFirst.mockResolvedValue({
+        ...mockSellerProfile,
+        image: 'old-avatar.png',
+      });
+      prisma.sellerProfile.update.mockResolvedValue({
+        ...mockSellerProfile,
+        image: 'new-avatar.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.updateProfileImage(
+        { image: [{ path: 'uploads/new-avatar.png' }] },
+        1,
+      );
+
+      expect(result).toEqual({
+        message: 'Profile Image Uploaded Successfully',
+      });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'old-avatar.png',
+      );
+    });
+  });
+
   describe('remove', () => {
     it('should delete seller profile successfully', async () => {
       prisma.sellerProfile.findFirst.mockResolvedValue({
         ...mockSellerProfile,
-        image: 'null',
-        cover_image: 'null',
+        image: 'avatar.png',
+        cover_image: 'cover.png',
       });
       prisma.sellerProfile.delete.mockResolvedValue(mockSellerProfile);
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
 
       const result = await service.remove(1);
       expect(result).toEqual({
@@ -117,6 +176,14 @@ describe('SellerProfilesService', () => {
       expect(prisma.sellerProfile.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'avatar.png',
+      );
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'sellerProfile/image',
+        'cover.png',
+      );
     });
 
     it('should throw ForbiddenException if profile to delete is not found', async () => {

@@ -10,10 +10,12 @@ export interface UploadedFileDescriptor {
   size?: number;
 }
 
-export type UploadedImages = Record<
-  string,
-  UploadedFileDescriptor[] | undefined
->;
+export type UploadedFileValue =
+  | UploadedFileDescriptor
+  | UploadedFileDescriptor[]
+  | any;
+
+export type UploadedImages = Record<string, UploadedFileValue>;
 export type FileFieldMap = UploadedImages;
 
 export interface ExtractedFiles {
@@ -54,16 +56,18 @@ export class FileStorageService {
 
   /**
    * Safely extracts the filename for a specified multipart field.
+   * Handles both arrays (from FileFieldsInterceptor) and single file objects.
    */
   extractFieldFileName(
     files: UploadedImages | undefined | null,
     field: string,
   ): string | null {
-    if (!files || !files[field] || !Array.isArray(files[field])) {
+    if (!files || !files[field]) {
       return null;
     }
 
-    const fileDesc = files[field]?.[0];
+    const fileValue = files[field];
+    const fileDesc = Array.isArray(fileValue) ? fileValue[0] : fileValue;
     if (!fileDesc) {
       return null;
     }

@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfilesService } from './profiles.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { FileStorageService } from '../common/services/file-storage.service';
 import { ForbiddenException } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 describe('ProfilesService', () => {
   let service: ProfilesService;
+  let fileStorage: FileStorageService;
   let prisma: {
     profile: {
       findFirst: jest.Mock;
@@ -40,15 +42,54 @@ describe('ProfilesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProfilesService,
+        FileStorageService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
 
     service = module.get<ProfilesService>(ProfilesService);
+    fileStorage = module.get<FileStorageService>(FileStorageService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should create user profile with extracted media filenames', async () => {
+      prisma.profile.findFirst.mockResolvedValue(null);
+      prisma.profile.create.mockResolvedValue(mockProfile);
+
+      const files = {
+        profile: [{ path: 'uploads/profile.png' }],
+        cover: [{ path: 'uploads/cover.png' }],
+      };
+
+      const result = await service.create(
+        files,
+        { first_name: 'John', last_name: 'Doe' } as any,
+        mockUser,
+      );
+
+      expect(result).toEqual(mockProfile);
+      expect(prisma.profile.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          first_name: 'John',
+          last_name: 'Doe',
+          profile_image: 'profile.png',
+          cover_image: 'cover.png',
+          user_id: 'user-1',
+        }),
+      });
+    });
+
+    it('should throw if user already has a profile', async () => {
+      prisma.profile.findFirst.mockResolvedValue(mockProfile);
+
+      await expect(service.create({}, {} as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
   });
 
   describe('findAll', () => {
@@ -107,6 +148,33 @@ describe('ProfilesService', () => {
       await expect(
         service.updateProfile(999, { first_name: 'Jane' } as any),
       ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('updateProfileImage', () => {
+    it('should update profile image and delete old image', async () => {
+      prisma.profile.findFirst.mockResolvedValue({
+        ...mockProfile,
+        profile_image: 'old-pic.png',
+      });
+      prisma.profile.update.mockResolvedValue({
+        ...mockProfile,
+        profile_image: 'new-pic.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.updateProfileImage(
+        { profile: [{ path: 'uploads/new-pic.png' }] },
+        1,
+      );
+
+      expect(result).toEqual({
+        message: 'Profile Image Uploaded Successfully',
+      });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith(
+        'profile/profile',
+        'old-pic.png',
+      );
     });
   });
 });
