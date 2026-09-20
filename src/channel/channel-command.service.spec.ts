@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelCommandService } from './channel-command.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
-import { ForbiddenException } from '@nestjs/common';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
 
 describe('ChannelCommandService', () => {
   let service: ChannelCommandService;
@@ -117,7 +117,7 @@ describe('ChannelCommandService', () => {
       expect(result.name).toBe('Updated Tech');
     });
 
-    it('should throw ForbiddenException if channel not found', async () => {
+    it('should throw NotFoundError if channel not found', async () => {
       prisma.channel.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -126,7 +126,7 @@ describe('ChannelCommandService', () => {
           description: 'New desc',
           sellerProfile_id: '1',
         } as any),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 

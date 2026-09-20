@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelQueryService } from './channel-query.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ForbiddenException } from '@nestjs/common';
+import {
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 import { Response } from 'express';
 
 describe('ChannelQueryService', () => {
@@ -74,8 +77,8 @@ describe('ChannelQueryService', () => {
       expect(result).toEqual(mockChannel);
     });
 
-    it('should throw ForbiddenException if id is invalid', async () => {
-      await expect(service.findOne(NaN)).rejects.toThrow(ForbiddenException);
+    it('should throw ValidationError if id is invalid', async () => {
+      await expect(service.findOne(NaN)).rejects.toThrow(ValidationError);
     });
   });
 
@@ -91,12 +94,12 @@ describe('ChannelQueryService', () => {
       expect(result.Meta.Num_Of_Pages).toBe(2);
     });
 
-    it('should throw ForbiddenException if page is out of bounds', async () => {
+    it('should throw NotFoundError if page is out of bounds', async () => {
       prisma.channel.count.mockResolvedValue(10);
 
       await expect(
         service.paginateChannels({ take: 5, page: 5 }),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -106,7 +109,7 @@ describe('ChannelQueryService', () => {
       const res = { sendFile: jest.fn() } as unknown as Response;
 
       await expect(service.showChannelProfile(1, res)).rejects.toThrow(
-        ForbiddenException,
+        NotFoundError,
       );
     });
 

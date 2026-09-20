@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChannelDto } from './dto';
@@ -6,6 +6,11 @@ import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ChannelCommandService {
@@ -21,11 +26,12 @@ export class ChannelCommandService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new ForbiddenException('Credentials Taken');
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
     }
-    throw new ForbiddenException(
-      'There has been an error. Please check the inputs and try again.',
-    );
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
   }
 
   async create(images: UploadedImages, channelDto: ChannelDto) {
@@ -74,8 +80,9 @@ export class ChannelCommandService {
   async update(id: number, channelDto: ChannelDto) {
     const channel = await this.prisma.channel.findFirst({ where: { id } });
     if (!channel) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no channel. Please create a channel first.",
+        'CHANNEL_NOT_FOUND',
       );
     }
 
@@ -100,8 +107,9 @@ export class ChannelCommandService {
       where: { id: channel_id },
     });
     if (!channel) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no channel. Please create a channel first.",
+        'CHANNEL_NOT_FOUND',
       );
     }
 
@@ -150,8 +158,9 @@ export class ChannelCommandService {
       where: { id: channel_id },
     });
     if (!channel) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no channel. Please create a channel first.",
+        'CHANNEL_NOT_FOUND',
       );
     }
 
@@ -196,8 +205,9 @@ export class ChannelCommandService {
     });
 
     if (!channel) {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't delete while there is no channel. Please create a channel first.",
+        'CHANNEL_NOT_FOUND',
       );
     }
 

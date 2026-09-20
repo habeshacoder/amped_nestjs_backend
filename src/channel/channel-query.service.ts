@@ -1,8 +1,14 @@
-import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
+import { Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Response } from 'express';
 import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class ChannelQueryService {
@@ -15,11 +21,12 @@ export class ChannelQueryService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      throw new ForbiddenException('Credentials Taken');
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
     }
-    throw new ForbiddenException(
-      'There has been an error. Please check the inputs and try again.',
-    );
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
   }
 
   async findAll() {
@@ -50,7 +57,7 @@ export class ChannelQueryService {
     if (page >= 0 && page < totalPages) {
       skip = take * page;
     } else {
-      throw new ForbiddenException('Page Not Found');
+      throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
     }
 
     let previousPage: number | null = page - 1;
@@ -112,8 +119,9 @@ export class ChannelQueryService {
         this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new ValidationError(
         'There has been an error. Please check the inputs and try again.',
+        'INVALID_INPUT',
       );
     }
   }
@@ -137,8 +145,9 @@ export class ChannelQueryService {
         this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new ValidationError(
         'There has been an error. Please check the inputs and try again.',
+        'INVALID_INPUT',
       );
     }
   }
@@ -207,7 +216,10 @@ export class ChannelQueryService {
       where: { channel_id: channelId, primary: true },
     });
     if (!channelImage) {
-      throw new ForbiddenException('Channel profile image not found');
+      throw new NotFoundError(
+        'Channel profile image not found',
+        'IMAGE_NOT_FOUND',
+      );
     }
 
     return res.sendFile(
@@ -220,7 +232,10 @@ export class ChannelQueryService {
       where: { channel_id: id, cover: true },
     });
     if (!channelImage) {
-      throw new ForbiddenException('Channel cover image not found');
+      throw new NotFoundError(
+        'Channel cover image not found',
+        'IMAGE_NOT_FOUND',
+      );
     }
 
     return res.sendFile(
@@ -233,7 +248,7 @@ export class ChannelQueryService {
       where: { id },
     });
     if (!channelImage) {
-      throw new ForbiddenException('Channel image not found');
+      throw new NotFoundError('Channel image not found', 'IMAGE_NOT_FOUND');
     }
 
     return res.sendFile(
@@ -253,7 +268,7 @@ export class ChannelQueryService {
       where: { channel_id: id },
     });
     if (!channelPreview) {
-      throw new ForbiddenException('Channel preview not found');
+      throw new NotFoundError('Channel preview not found', 'PREVIEW_NOT_FOUND');
     }
 
     return res.sendFile(
