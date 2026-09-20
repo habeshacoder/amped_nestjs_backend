@@ -1,21 +1,98 @@
 # AMPED NestJS Backend
 
 [![CI](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/ci.yml/badge.svg)](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/ci.yml)
+[![Release](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/release.yml/badge.svg)](https://github.com/habeshacoder/amped_nestjs_backend/actions/workflows/release.yml)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-AMPED is a robust backend REST API built with [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/), powering digital publishing, media streaming, channel subscriptions, and content monetization. It supports publications, audiobooks, podcasts, user profiles, creator channels, subscription plans, and secure payment processing via the Chapa payment gateway.
+AMPED is a high-performance backend REST API built with [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/), powering digital publishing, media streaming, creator channel subscriptions, and content monetization. It supports publications, audiobooks, podcasts, user profiles, creator channels, subscription plans, and secure payment processing via the Chapa payment gateway.
 
 ---
 
-## Architecture Overview
+## Architecture Diagram
 
-- **Framework**: NestJS (TypeScript, modular service-oriented architecture)
-- **Database & ORM**: PostgreSQL via Prisma ORM
-- **Authentication**: JWT access tokens + refresh tokens with Passport & Argon2 password hashing
-- **Payment Processing**: Chapa Payment Gateway integration with secure webhook verification
-- **File Storage**: Local Multer file storage pipeline for materials, covers, and previews
-- **Code Quality**: ESLint, Prettier, TypeScript strict type checking, Jest unit & E2E integration test suites
+```mermaid
+graph TD
+    Client["Clients (Web / Mobile Apps)"]
+    
+    subgraph "NestJS Application Layer"
+        Security["Security Middleware\n(Helmet, Throttler Rate Limiting, CORS)"]
+        Validation["ValidationPipe & FileFieldsValidationPipe"]
+        AuthGuards["Auth Guards\n(JwtGuard, RefreshGuard)"]
+        Filters["AllExceptionsFilter\n(Standard Error Envelope)"]
+        Logging["LoggerModule\n(Structured Pino with Request IDs)"]
+        
+        subgraph "Feature Modules"
+            AuthMod["AuthModule"]
+            UserMod["UserModule"]
+            ChannelMod["ChannelModule\n(Query & Command)"]
+            MaterialMod["MaterialModule\n(Query & Storage)"]
+            ProfilesMod["ProfilesModule & SellerProfilesModule"]
+            PurchaseMod["ChannelPurchase & MaterialPurchase\n(Chapa Webhooks)"]
+            HealthMod["HealthModule\n(Terminus + DB Ping)"]
+        end
+        
+        Services["Common Services\n(FileStorageService, SentryService)"]
+    end
+
+    subgraph "Data & External Infrastructure"
+        Prisma["Prisma ORM Client"]
+        Postgres[("PostgreSQL Database")]
+        Storage[("Local File Storage / Uploads")]
+        Chapa["Chapa Payment Gateway API"]
+        Sentry["Sentry Monitoring (Optional)"]
+    end
+
+    Client --> Security
+    Security --> Validation
+    Validation --> AuthGuards
+    AuthGuards --> FeatureModules
+    FeatureModules --> Services
+    FeatureModules --> Prisma
+    FeatureModules --> Filters
+    FeatureModules --> Logging
+    Services --> Storage
+    PurchaseMod --> Chapa
+    Prisma --> Postgres
+    Services --> Sentry
+```
+
+---
+
+## Module Map
+
+| Module | Location | Purpose | Key Endpoints / Capabilities |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `src/auth/` | Authentication & token lifecycle | `/auth/signup`, `/auth/signin`, `/auth/refresh`, JWT & Argon2 |
+| **User** | `src/user/` | User account management | `/users/me` (current authenticated user profile) |
+| **Profiles** | `src/profiles/` | Consumer user profiles | Profile details, avatars, covers, password change |
+| **SellerProfiles** | `src/seller-profiles/` | Creator / publisher profiles | Store identity, creator avatars, social links |
+| **Channel** | `src/channel/` | Creator channels | Paginated channel discovery, channel creation, command/query split |
+| **Material** | `src/material/` | Digital content management | Books, podcasts, audiobooks, previews, pagination |
+| **ChannelMaterial** | `src/channel-material/` | Channel-bound materials | Tiered content linked directly to channels |
+| **MaterialPurchase** | `src/material-purchase/` | Pay-per-content processing | Checkout initiation, webhook verification |
+| **ChannelPurchase** | `src/channel-purchase/` | Subscription monetization | Channel subscription billing, Chapa webhooks |
+| **SubscriptionPlan** | `src/subscription-plan/` | Channel tier plans | Pricing, duration, plan entitlements |
+| **SubscribedUser** | `src/subscribed-user/` | Active subscribers | Subscriber access controls & validation |
+| **Favorite** | `src/favorite/` | Bookmarking | User saved items & personal library |
+| **Rating** | `src/rating/` | User reviews & ratings | Rating submissions and aggregated scores |
+| **Replays** | `src/replays/` | Streaming replays | Recorded content playback sessions |
+| **Reports** | `src/reports/` | Moderation & safety | User violation reporting |
+| **Search** | `src/search/` | Content discovery | Multi-model search catalog queries |
+| **Health** | `src/health/` | Liveness & readiness | `/health` endpoint with Terminus and database health ping |
+| **Prisma** | `src/prisma/` | Relational persistence | Database connection lifecycle and query execution |
+| **Common** | `src/common/` | Shared infrastructure | Domain exceptions, error filter, file storage, logging, pipes |
+
+---
+
+## API Documentation (Swagger)
+
+In non-production environments (`NODE_ENV !== 'production'`), interactive OpenAPI/Swagger documentation is automatically served at:
+```
+http://localhost:3007/docs
+```
+It provides complete interactive documentation of request bodies, response schemas, and authentication headers.
 
 ---
 
@@ -24,9 +101,9 @@ AMPED is a robust backend REST API built with [NestJS](https://nestjs.com/) and 
 | Requirement | Supported Version | Notes |
 | :--- | :--- | :--- |
 | **Node.js** | `>= 20.0.0` (Active LTS / v20 or v22) | Recommended: use `.nvmrc` (`nvm use`) |
-| **npm** | `>= 10.0.0` | Included with Node LTS |
-| **PostgreSQL** | `>= 14.0` | Required for migrations and relational persistence |
-| **Git** | `>= 2.30.0` | For version control and branch management |
+| **npm** | `>= 10.0.0` | Bundled with Node LTS |
+| **PostgreSQL** | `>= 14.0` | Relational database persistence |
+| **Docker** | `>= 24.0` | For containerized execution and local database |
 
 ---
 
@@ -49,7 +126,7 @@ npm ci
 ```
 
 ### 4. Configure Environment Variables
-Copy the template configuration and fill in the required credentials:
+Copy `.env.example` and set required secrets:
 ```bash
 cp .env.example .env
 ```
@@ -70,33 +147,19 @@ npm run migration:run
 # Development mode with hot-reload
 npm run start:dev
 
-# Production build and run
+# Production build and start
 npm run build
 npm run start:prod
 ```
 
-### 8. Run via Docker (Optional)
+### 8. Run via Docker
 ```bash
-# Build the production container image
+# Build multi-stage production container
 docker build -t amped-backend:latest .
 
-# Run the container with environment variables
+# Run container
 docker run -p 3007:3007 --env-file .env amped-backend:latest
 ```
-
----
-
-## Database Architecture & Migration Workflow
-
-See [docs/data-model.md](docs/data-model.md) for the complete Mermaid Entity-Relationship Diagram (ERD), Data Dictionary, and Data Flow architecture.
-
-### Migration Commands
-- **Run migrations**: `npm run migration:run` (`prisma migrate deploy`)
-- **Inspect migration status**: `npm run migration:status` (`prisma migrate status`)
-- **Generate a new migration**: `npm run migration:generate` (`prisma migrate dev --create-only`)
-- **Schema drift check**: `npm run migration:check` (diffs committed migrations against the Prisma schema datamodel)
-
-> **Important**: Never run migrations or data-changing commands against a shared, staging, or production database without prior review. Applied migrations are immutable once merged—always author a new timestamped migration file.
 
 ---
 
@@ -106,91 +169,94 @@ See [docs/data-model.md](docs/data-model.md) for the complete Mermaid Entity-Rel
 | :--- | :--- | :--- | :--- | :--- |
 | `NODE_ENV` | `string` | No | `development` | Application environment (`development`, `test`, `production`) |
 | `PORT` | `number` | No | `3007` | HTTP server port |
-| `DATABASE_URL` | `string` | **Yes** | `postgresql://user:pass@localhost:5432/amped?schema=public` | PostgreSQL connection string |
+| `DATABASE_URL` | `string` | **Yes** | `postgresql://user:pass@localhost:5432/amped?schema=public` | PostgreSQL database connection URL |
 | `JWT_SECRET` | `string` | **Yes** | `min-16-char-secret-key` | Secret key used to sign access JWTs |
 | `JWT_REFRESH_SECRET` | `string` | **Yes** | `min-16-char-refresh-secret-key` | Secret key used to sign refresh JWTs |
 | `CHAPA_SECRET_KEY` | `string` | No | `CHASECK_TEST-...` | Chapa Payment Gateway API secret key |
 | `CHAPA_WEBHOOK_HASH_KEY` | `string` | No | `webhook-secret-hash` | Secret hash for Chapa webhook verification |
 | `CHAPA_WEBHOOK_URL` | `string` | No | `https://api.example.com/payment/webhook` | Webhook callback URL registered with Chapa |
+| `THROTTLE_TTL` | `number` | No | `60000` | Rate limiter time window in milliseconds (1 minute) |
+| `THROTTLE_LIMIT` | `number` | No | `100` | Maximum requests permitted per rate limiter time window |
+| `CORS_ORIGIN` | `string` | No | `*` | Allowed CORS origins (comma-separated or `*` for all) |
+| `LOG_LEVEL` | `string` | No | `info` | Pino logging level (`trace`, `debug`, `info`, `warn`, `error`) |
+| `SENTRY_DSN` | `string` | No | `https://...` | Optional Sentry DSN for exception monitoring |
 
 ---
 
-## Available Scripts & Quality Gates
+## Testing Guide
 
-### Code Quality
+All tests are verified before every commit and in continuous integration.
+
 ```bash
-# Check code formatting with Prettier
-npm run format:check
+# Run all unit tests (in-memory mocks, zero database required)
+npm test
 
-# Format files automatically
-npm run format
-
-# Run ESLint analysis
-npm run lint
-
-# Run TypeScript typecheck without emitting files
-npm run typecheck
-```
-
-### Testing
-```bash
-# Run all unit tests
-npm run test
-
-# Run unit tests in watch mode
-npm run test:watch
-
-# Run unit tests with coverage report and threshold gate
+# Run unit tests with coverage report and threshold enforcement
 npm run test:cov
 
-# Run end-to-end integration tests
+# Run end-to-end integration tests (uses isolated mock or live test DB)
 npm run test:e2e
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+### Coverage Thresholds
+Coverage thresholds are enforced via Jest in `package.json`. A pull request that drops coverage below the ratchet thresholds will fail CI:
+- **Statements**: `>= 50%`
+- **Branches**: `>= 50%`
+- **Lines**: `>= 50%`
+- **Functions**: `>= 35%`
+
+---
+
+## Code Quality & Verification Gates
+
+Run the full quality gate locally:
+```bash
+# Format check
+npm run format:check
+
+# ESLint analysis
+npm run lint
+
+# TypeScript strict type checking
+npm run typecheck
+
+# Code duplication analysis (< 10% threshold)
+npm run dup
+
+# Production build
+npm run build
 ```
 
 ---
 
-## Project Structure
+## Troubleshooting
 
-```
-amped_nestjs_backend/
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # Automated CI pipeline (lint, format, typecheck, test, build)
-├── prisma/
-│   ├── schema.prisma            # Relational database schema
-│   └── migrations/              # Database migration history
-├── src/
-│   ├── auth/                    # Authentication, JWT strategies, guards, decorators
-│   ├── channel/                 # Channel management & creator channels
-│   ├── channel-material/        # Channel digital materials (books, audio, podcasts)
-│   ├── channel-purchase/        # Channel monetization & Chapa webhooks
-│   ├── common/                  # Shared utilities, filters, and middleware
-│   ├── favorite/                # User favorites management
-│   ├── material/                # Direct digital materials
-│   ├── material-purchase/       # Material purchases & Chapa webhooks
-│   ├── prisma/                  # Prisma service provider
-│   ├── profiles/                # User profile management
-│   ├── rating/                  # Material & content ratings
-│   ├── replays/                 # Video/audio replay sessions
-│   ├── reports/                 # Content violation reports
-│   ├── search/                  # Full-text / catalog search
-│   ├── seller-profiles/         # Creator/seller store profiles
-│   ├── subscribed-user/         # Active channel subscribers
-│   ├── subscription-plan/       # Subscription tier management
-│   ├── user/                    # User accounts & identity
-│   ├── app.module.ts            # Root module & config validation schema
-│   └── main.ts                  # Application bootstrap
-├── test/
-│   ├── app.e2e-spec.ts          # End-to-end integration suite
-│   └── jest-e2e.json            # Jest E2E configuration
-├── .editorconfig                # Consistent editor configuration
-├── .env.example                 # Environment variables template
-├── .nvmrc                       # Node version lockfile
-└── package.json                 # Dependencies, scripts, and coverage thresholds
-```
+### 1. Database Connection Failed
+- Ensure PostgreSQL container is active: `docker compose ps`
+- Verify `DATABASE_URL` matches credentials in `docker-compose.yml`.
+- Run health check: `curl http://localhost:3007/health`
+
+### 2. Migration Drift or Out-of-Sync Schema
+- Inspect migration status: `npm run migration:status`
+- Apply pending migrations: `npm run migration:run`
+- Check schema drift: `npx prisma migrate diff --from-schema-datamodel prisma/schema.prisma --to-schema-datasource prisma/schema.prisma --exit-code`
+
+### 3. Port 3007 Already in Use
+- Change `PORT=3008` in your `.env` file or terminate conflicting process: `lsof -i :3007`.
+
+---
+
+## Deployment
+
+The repository uses automated GitHub Actions workflows:
+- **CI Pipeline (`.github/workflows/ci.yml`)**: Runs on every push and pull request. Validates formatting, linting, typechecking, unit tests across Node 20.x and 22.x, PostgreSQL-backed E2E tests, migration drift, production build, and Docker image build.
+- **Release Pipeline (`.github/workflows/release.yml`)**: Triggers on Git tags `v*.*.*`. Automatically publishes multi-arch container images to GitHub Container Registry (`ghcr.io/habeshacoder/amped_nestjs_backend`), generates GitHub Release notes, and executes gated deployment hooks.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
