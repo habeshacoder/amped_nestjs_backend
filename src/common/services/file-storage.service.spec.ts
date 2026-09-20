@@ -166,4 +166,121 @@ describe('FileStorageService', () => {
       unlinkSpy.mockRestore();
     });
   });
+
+  describe('sendUploadedFile', () => {
+    it('should throw ForbiddenException if filename is empty or null', () => {
+      const res = { sendFile: jest.fn() } as any;
+      expect(() =>
+        service.sendUploadedFile(res, 'material', null, 'Not found'),
+      ).toThrow();
+    });
+
+    it('should send file with resolved path when filename is valid', () => {
+      const res = { sendFile: jest.fn() } as any;
+      service.sendUploadedFile(res, 'material', 'doc.epub');
+      expect(res.sendFile).toHaveBeenCalledWith(
+        path.join(process.cwd(), 'uploads', 'material', 'doc.epub'),
+      );
+    });
+  });
+
+  describe('updateRelatedFileRecord', () => {
+    it('should return success message early if field file is not present', async () => {
+      const result = await service.updateRelatedFileRecord(
+        {},
+        'profile',
+        'Profile Updated',
+        'material',
+        jest.fn(),
+        jest.fn(),
+        jest.fn(),
+      );
+      expect(result).toEqual({ message: 'Profile Updated' });
+    });
+
+    it('should create record if existing is null', async () => {
+      const createFn = jest.fn().mockResolvedValue({ id: 2 });
+      const updateFn = jest.fn();
+      const files = { profile: [{ filename: 'new.png' }] };
+
+      const result = await service.updateRelatedFileRecord(
+        files,
+        'profile',
+        'Profile Updated',
+        'material',
+        jest.fn().mockResolvedValue(null),
+        createFn,
+        updateFn,
+      );
+
+      expect(createFn).toHaveBeenCalledWith('new.png');
+      expect(updateFn).not.toHaveBeenCalled();
+      expect(result).toEqual({ message: 'Profile Updated' });
+    });
+
+    it('should update record and delete old file if existing exists', async () => {
+      const createFn = jest.fn();
+      const updateFn = jest.fn().mockResolvedValue({ id: 1 });
+      const deleteSpy = jest
+        .spyOn(service, 'deleteFile')
+        .mockResolvedValue(true);
+      const files = { profile: [{ filename: 'new.png' }] };
+
+      const result = await service.updateRelatedFileRecord(
+        files,
+        'profile',
+        'Profile Updated',
+        'material',
+        jest.fn().mockResolvedValue({ id: 1, image: 'old.png' }),
+        createFn,
+        updateFn,
+      );
+
+      expect(updateFn).toHaveBeenCalledWith(1, 'new.png');
+      expect(deleteSpy).toHaveBeenCalledWith('material', 'old.png');
+      expect(result).toEqual({ message: 'Profile Updated' });
+      deleteSpy.mockRestore();
+    });
+  });
+
+  describe('uploadRelatedFileRecord', () => {
+    it('should create record if not existing', async () => {
+      const createFn = jest.fn().mockResolvedValue({ id: 1, image: 'pic.jpg' });
+      const updateFn = jest.fn();
+      const file = { filename: 'pic.jpg' } as Express.Multer.File;
+
+      const result = await service.uploadRelatedFileRecord(
+        file,
+        'material',
+        jest.fn().mockResolvedValue(null),
+        createFn,
+        updateFn,
+      );
+
+      expect(createFn).toHaveBeenCalledWith('pic.jpg');
+      expect(result).toEqual({ id: 1, image: 'pic.jpg' });
+    });
+
+    it('should update record and delete old file if existing', async () => {
+      const createFn = jest.fn();
+      const updateFn = jest.fn().mockResolvedValue({ id: 1, image: 'new.jpg' });
+      const deleteSpy = jest
+        .spyOn(service, 'deleteFile')
+        .mockResolvedValue(true);
+      const file = { filename: 'new.jpg' } as Express.Multer.File;
+
+      const result = await service.uploadRelatedFileRecord(
+        file,
+        'material',
+        jest.fn().mockResolvedValue({ id: 1, image: 'old.jpg' }),
+        createFn,
+        updateFn,
+      );
+
+      expect(updateFn).toHaveBeenCalledWith(1, 'new.jpg');
+      expect(deleteSpy).toHaveBeenCalledWith('material', 'old.jpg');
+      expect(result).toEqual({ id: 1, image: 'new.jpg' });
+      deleteSpy.mockRestore();
+    });
+  });
 });

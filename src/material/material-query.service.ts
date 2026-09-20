@@ -93,94 +93,67 @@ export class MaterialQueryService {
     return mat;
   }
 
-  async paginateMaterialByType(
-    materialType: Type,
-    params: { take?: number; page?: number },
+  private computePagination(
+    count: number,
+    take: number,
+    page: number,
+    baseUrl?: string,
   ) {
-    const { take, page } = params;
-
-    let skip = null;
-    const getMaterial = await this.prisma.material.findMany({
-      where: {
-        type: materialType,
-      },
-    });
-    const num_of_material = getMaterial.length;
-    const totalPages = Math.ceil(num_of_material / take);
-
-    if (page >= 0 && page < totalPages) {
-      skip = take * page;
-    } else {
+    const totalPages = Math.ceil(count / take);
+    if (page < 0 || page >= totalPages) {
       throw new ForbiddenException('Page Not Found');
     }
 
-    let previousPage = page - 1;
-    let nextPage = page + 1;
+    const previousPage = page === 0 ? null : page - 1;
+    const nextPage = page + 1 >= totalPages ? null : page + 1;
     const lastPage = totalPages - 1;
-
-    let material_in_last_page = num_of_material % take;
+    let material_in_last_page = count % take;
     if (material_in_last_page === 0) material_in_last_page = take;
 
-    if (page === 0) previousPage = null;
-    if (nextPage >= totalPages) nextPage = null;
-
-    const meta = {
-      Num_Of_Materials: num_of_material,
-      Num_Of_Pages: totalPages,
-      Per_Page: take,
-      Materials_In_last_page: material_in_last_page,
+    const meta: Record<string, any> = {
       self: page,
       prev: previousPage,
       next: nextPage,
       last: lastPage,
-      Links: [
-        {
-          first:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            0,
-        },
-        {
-          self:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            page,
-        },
-        {
-          prev:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            previousPage,
-        },
-        {
-          next:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            nextPage,
-        },
-        {
-          last:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            lastPage,
-        },
-      ],
     };
+
+    if (baseUrl) {
+      meta.Num_Of_Materials = count;
+      meta.Num_Of_Pages = totalPages;
+      meta.Per_Page = take;
+      meta.Materials_In_last_page = material_in_last_page;
+      meta.Links = [
+        { first: `${baseUrl}?take=${take}&page=0` },
+        { self: `${baseUrl}?take=${take}&page=${page}` },
+        { prev: `${baseUrl}?take=${take}&page=${previousPage}` },
+        { next: `${baseUrl}?take=${take}&page=${nextPage}` },
+        { last: `${baseUrl}?take=${take}&page=${lastPage}` },
+      ];
+    }
+
+    return { skip: take * page, meta };
+  }
+
+  async paginateMaterialByType(
+    materialType: Type,
+    params: { take?: number; page?: number },
+  ) {
+    const { take = 10, page = 0 } = params;
+    const numOfMaterial = await this.prisma.material.count({
+      where: { type: materialType },
+    });
+    const { skip, meta } = this.computePagination(
+      numOfMaterial,
+      take,
+      page,
+      'http://localhost:3007/material/materials_web',
+    );
 
     const materials = await this.prisma.material.findMany({
       take,
       skip,
-      where: {
-        type: materialType,
-      },
-      orderBy: {
-        id: 'desc',
-      },
+      where: { type: materialType },
+      orderBy: { id: 'desc' },
       include: {
         material_image: true,
         material_preview: true,
@@ -194,82 +167,19 @@ export class MaterialQueryService {
   }
 
   async getMaterialsWeb(params: { take?: number; page?: number }) {
-    const { take, page } = params;
-
-    let skip = null;
-    const num_of_material = await this.prisma.material.count();
-    const totalPages = Math.ceil(num_of_material / take);
-
-    if (page >= 0 && page < totalPages) {
-      skip = take * page;
-    } else {
-      throw new ForbiddenException('Page Not Found');
-    }
-
-    let previousPage = page - 1;
-    let nextPage = page + 1;
-    const lastPage = totalPages - 1;
-
-    let material_in_last_page = num_of_material % take;
-    if (material_in_last_page === 0) material_in_last_page = take;
-
-    if (page === 0) previousPage = null;
-    if (nextPage >= totalPages) nextPage = null;
-
-    const meta = {
-      Num_Of_Materials: num_of_material,
-      Num_Of_Pages: totalPages,
-      Per_Page: take,
-      Materials_In_last_page: material_in_last_page,
-      self: page,
-      prev: previousPage,
-      next: nextPage,
-      last: lastPage,
-      Links: [
-        {
-          first:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            0,
-        },
-        {
-          self:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            page,
-        },
-        {
-          prev:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            previousPage,
-        },
-        {
-          next:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            nextPage,
-        },
-        {
-          last:
-            'http://localhost:3007/material/materials_web?take=' +
-            take +
-            '&page=' +
-            lastPage,
-        },
-      ],
-    };
+    const { take = 10, page = 0 } = params;
+    const numOfMaterial = await this.prisma.material.count();
+    const { skip, meta } = this.computePagination(
+      numOfMaterial,
+      take,
+      page,
+      'http://localhost:3007/material/materials_web',
+    );
 
     const materials = await this.prisma.material.findMany({
       take,
       skip,
-      orderBy: {
-        id: 'desc',
-      },
+      orderBy: { id: 'desc' },
     });
 
     return { Materials: materials, Meta: meta };
@@ -338,39 +248,11 @@ export class MaterialQueryService {
     seller_id: number,
     params: { take?: number; page?: number },
   ) {
-    const { take, page } = params;
-
-    let skip = null;
-    const getMaterial = await this.prisma.material.findMany({
-      where: {
-        sellerProfile_id: seller_id,
-      },
+    const { take = 10, page = 0 } = params;
+    const numOfMaterial = await this.prisma.material.count({
+      where: { sellerProfile_id: seller_id },
     });
-    const num_of_material = getMaterial.length;
-    const totalPages = Math.ceil(num_of_material / take);
-
-    if (page >= 0 && page < totalPages) {
-      skip = take * page;
-    } else {
-      throw new ForbiddenException('Page Not Found');
-    }
-
-    let previousPage = page - 1;
-    let nextPage = page + 1;
-    const lastPage = totalPages - 1;
-
-    let material_in_last_page = num_of_material % take;
-    if (material_in_last_page === 0) material_in_last_page = take;
-
-    if (page === 0) previousPage = null;
-    if (nextPage >= totalPages) nextPage = null;
-
-    const meta = {
-      self: page,
-      prev: previousPage,
-      next: nextPage,
-      last: lastPage,
-    };
+    const { skip, meta } = this.computePagination(numOfMaterial, take, page);
 
     const sellerMaterials = await this.prisma.material.findMany({
       take,

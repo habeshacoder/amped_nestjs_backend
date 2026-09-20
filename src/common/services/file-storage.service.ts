@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -25,6 +26,12 @@ export interface ExtractedFiles {
   preview?: string;
   image?: string;
   [key: string]: string | undefined;
+}
+
+export interface NamedFileRecord {
+  id: number;
+  image?: string | null;
+  preview?: string | null;
 }
 
 @Injectable()
@@ -162,5 +169,68 @@ export class FileStorageService {
       );
       return false;
     }
+  }
+
+  sendUploadedFile(
+    res: Response,
+    subDirectory: string,
+    fileName?: string | null,
+    notFoundMsg = 'File not found',
+  ) {
+    if (!fileName) {
+      throw new ForbiddenException(notFoundMsg);
+    }
+    return res.sendFile(
+      path.join(process.cwd(), 'uploads', subDirectory, fileName),
+    );
+  }
+
+  async updateRelatedFileRecord<T extends NamedFileRecord>(
+    files: UploadedImages,
+    field: string,
+    successMessage: string,
+    subDirectory: string,
+    findRecord: () => Promise<T | null>,
+    createRecord: (fileName: string) => Promise<unknown>,
+    updateRecord: (id: number, fileName: string) => Promise<unknown>,
+  ) {
+    const fileName = this.extractFieldFileName(files, field);
+    if (!fileName) {
+      return { message: successMessage };
+    }
+
+    const existing = await findRecord();
+    if (existing) {
+      await updateRecord(existing.id, fileName);
+      const oldFile = existing.image || existing.preview;
+      if (oldFile) {
+        await this.deleteFile(subDirectory, oldFile);
+      }
+    } else {
+      await createRecord(fileName);
+    }
+    return { message: successMessage };
+  }
+
+  async uploadRelatedFileRecord<T extends NamedFileRecord>(
+    file: Express.Multer.File,
+    subDirectory: string,
+    findRecord: () => Promise<T | null>,
+    createRecord: (fileName: string) => Promise<T>,
+    updateRecord: (id: number, fileName: string) => Promise<T>,
+  ) {
+    const fileName = this.extractFileName(file?.filename || file?.path);
+    const existing = await findRecord();
+
+    if (!existing) {
+      return await createRecord(fileName);
+    }
+
+    const updated = await updateRecord(existing.id, fileName);
+    const oldFile = existing.image || existing.preview;
+    if (oldFile && oldFile !== 'null') {
+      await this.deleteFile(subDirectory, oldFile);
+    }
+    return updated;
   }
 }

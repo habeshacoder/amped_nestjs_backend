@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Response } from 'express';
-import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   FileStorageService,
@@ -27,6 +26,140 @@ export class ChannelMaterialStorageService {
     throw new ForbiddenException(
       'There has been an error. Please check the inputs and try again.',
     );
+  }
+
+  private async updateImageField(
+    id: number,
+    files: UploadedImages,
+    field: 'profile' | 'cover' | 'preview',
+  ) {
+    const material = await this.prisma.channelMaterial.findFirst({
+      where: { id },
+    });
+    if (!material) {
+      throw new ForbiddenException(
+        "Can't update while there is no material. Please create a material first.",
+      );
+    }
+
+    const isProfile = field === 'profile';
+    const isCover = field === 'cover';
+    const successMsg = `Material ${
+      field.charAt(0).toUpperCase() + field.slice(1)
+    } Updated Successfully`;
+
+    try {
+      if (field === 'preview') {
+        return await this.fileStorage.updateRelatedFileRecord(
+          files,
+          'preview',
+          successMsg,
+          'channel',
+          () =>
+            this.prisma.channelPreviewMaterial.findFirst({
+              where: { channel_material_id: id },
+            }),
+          (preview) =>
+            this.prisma.channelPreviewMaterial.create({
+              data: { preview, channel_material_id: id },
+            }),
+          (recId, preview) =>
+            this.prisma.channelPreviewMaterial.update({
+              where: { id: recId },
+              data: { preview },
+            }),
+        );
+      }
+
+      return await this.fileStorage.updateRelatedFileRecord(
+        files,
+        field,
+        successMsg,
+        'channel',
+        () =>
+          this.prisma.channelMaterialImage.findFirst({
+            where: {
+              channel_material_id: id,
+              ...(isProfile ? { primary: true } : { cover: true }),
+            },
+          }),
+        (image) =>
+          this.prisma.channelMaterialImage.create({
+            data: {
+              image,
+              primary: isProfile,
+              cover: isCover,
+              channel_material_id: id,
+            },
+          }),
+        (recId, image) =>
+          this.prisma.channelMaterialImage.update({
+            where: { id: recId },
+            data: { image },
+          }),
+      );
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
+  private async uploadImageField(
+    file: Express.Multer.File,
+    id: number,
+    field: 'profile' | 'cover' | 'preview',
+  ) {
+    const isProfile = field === 'profile';
+    const isCover = field === 'cover';
+
+    try {
+      if (field === 'preview') {
+        return await this.fileStorage.uploadRelatedFileRecord(
+          file,
+          'channel',
+          () =>
+            this.prisma.channelPreviewMaterial.findFirst({
+              where: { channel_material_id: id },
+            }),
+          (preview) =>
+            this.prisma.channelPreviewMaterial.create({
+              data: { preview, channel_material_id: id },
+            }),
+          (recId, preview) =>
+            this.prisma.channelPreviewMaterial.update({
+              where: { id: recId },
+              data: { preview },
+            }),
+        );
+      }
+
+      return await this.fileStorage.uploadRelatedFileRecord(
+        file,
+        'channel',
+        () =>
+          this.prisma.channelMaterialImage.findFirst({
+            where: {
+              channel_material_id: id,
+              ...(isProfile ? { primary: true } : { cover: true }),
+            },
+          }),
+        (image) =>
+          this.prisma.channelMaterialImage.create({
+            data: {
+              image,
+              primary: isProfile,
+              cover: isCover,
+              channel_material_id: id,
+            },
+          }),
+        (recId, image) =>
+          this.prisma.channelMaterialImage.update({
+            where: { id: recId },
+            data: { image },
+          }),
+      );
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
   }
 
   async createFile(images: UploadedImages, id: number) {
@@ -132,134 +265,15 @@ export class ChannelMaterialStorageService {
   }
 
   async updateMaterialProfile(materialProfile: UploadedImages, id: number) {
-    const material = await this.prisma.channelMaterial.findFirst({
-      where: { id },
-    });
-    if (!material) {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-
-    const fileName = this.fileStorage.extractFieldFileName(
-      materialProfile,
-      'profile',
-    );
-    if (!fileName) {
-      return { message: 'Material Profile Updated Successfully' };
-    }
-
-    const matImg = await this.prisma.channelMaterialImage.findFirst({
-      where: { channel_material_id: material.id, primary: true },
-    });
-
-    try {
-      if (matImg) {
-        await this.prisma.channelMaterialImage.update({
-          where: { id: matImg.id },
-          data: { image: fileName },
-        });
-        await this.fileStorage.deleteFile('channel', matImg.image);
-      } else {
-        await this.prisma.channelMaterialImage.create({
-          data: {
-            image: fileName,
-            primary: true,
-            channel_material_id: material.id,
-          },
-        });
-      }
-      return { message: 'Material Profile Updated Successfully' };
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.updateImageField(id, materialProfile, 'profile');
   }
 
   async updateMaterialCover(materialCover: UploadedImages, id: number) {
-    const material = await this.prisma.channelMaterial.findFirst({
-      where: { id },
-    });
-    if (!material) {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-
-    const fileName = this.fileStorage.extractFieldFileName(
-      materialCover,
-      'cover',
-    );
-    if (!fileName) {
-      return { message: 'Material Cover Updated Successfully' };
-    }
-
-    const matImg = await this.prisma.channelMaterialImage.findFirst({
-      where: { channel_material_id: material.id, cover: true },
-    });
-
-    try {
-      if (matImg) {
-        await this.prisma.channelMaterialImage.update({
-          where: { id: matImg.id },
-          data: { image: fileName },
-        });
-        await this.fileStorage.deleteFile('channel', matImg.image);
-      } else {
-        await this.prisma.channelMaterialImage.create({
-          data: {
-            image: fileName,
-            cover: true,
-            channel_material_id: material.id,
-          },
-        });
-      }
-      return { message: 'Material Cover Updated Successfully' };
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.updateImageField(id, materialCover, 'cover');
   }
 
   async updateMaterialPreview(materialPreview: UploadedImages, id: number) {
-    const material = await this.prisma.channelMaterial.findFirst({
-      where: { id },
-    });
-    if (!material) {
-      throw new ForbiddenException(
-        "Can't update while there is no material. Please create a material first.",
-      );
-    }
-
-    const fileName = this.fileStorage.extractFieldFileName(
-      materialPreview,
-      'preview',
-    );
-    if (!fileName) {
-      return { message: 'Material Preview Updated Successfully' };
-    }
-
-    const matPrv = await this.prisma.channelPreviewMaterial.findFirst({
-      where: { channel_material_id: material.id },
-    });
-
-    try {
-      if (matPrv) {
-        await this.prisma.channelPreviewMaterial.update({
-          where: { id: matPrv.id },
-          data: { preview: fileName },
-        });
-        await this.fileStorage.deleteFile('channel', matPrv.preview);
-      } else {
-        await this.prisma.channelPreviewMaterial.create({
-          data: {
-            preview: fileName,
-            channel_material_id: material.id,
-          },
-        });
-      }
-      return { message: 'Material Preview Updated Successfully' };
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.updateImageField(id, materialPreview, 'preview');
   }
 
   async updateMaterialImage(materialImages: UploadedImages, id: number) {
@@ -280,31 +294,29 @@ export class ChannelMaterialStorageService {
       return { message: 'Material Image Updated Successfully' };
     }
 
+    const matImg = await this.prisma.channelMaterialImage.findFirst({
+      where: {
+        channel_material_id: material.id,
+        primary: false,
+        cover: false,
+      },
+    });
+
     try {
-      const existingImages = await this.prisma.channelMaterialImage.findMany({
-        where: {
-          channel_material_id: material.id,
-          primary: false,
-          cover: false,
-        },
-      });
-
-      await this.prisma.channelMaterialImage.create({
-        data: {
-          image: fileName,
-          channel_material_id: material.id,
-        },
-      });
-
-      if (existingImages.length > 0) {
-        for (const img of existingImages) {
-          await this.prisma.channelMaterialImage.delete({
-            where: { id: img.id },
-          });
-          await this.fileStorage.deleteFile('channel', img.image);
-        }
+      if (matImg) {
+        await this.prisma.channelMaterialImage.update({
+          where: { id: matImg.id },
+          data: { image: fileName },
+        });
+        await this.fileStorage.deleteFile('channel', matImg.image);
+      } else {
+        await this.prisma.channelMaterialImage.create({
+          data: {
+            image: fileName,
+            channel_material_id: material.id,
+          },
+        });
       }
-
       return { message: 'Material Image Updated Successfully' };
     } catch (error) {
       this.handlePrismaError(error);
@@ -343,102 +355,43 @@ export class ChannelMaterialStorageService {
     const material = await this.prisma.channelMaterial.findUnique({
       where: { id },
     });
-    if (!material || !material.material) {
-      throw new ForbiddenException('Material not found');
-    }
-
-    return res.sendFile(
-      join(process.cwd(), 'uploads/channel', material.material),
+    return this.fileStorage.sendUploadedFile(
+      res,
+      'channel',
+      material?.material,
+      'Material not found',
     );
   }
 
   async uploadMaterialProfile(file: Express.Multer.File, id: number) {
-    const fileName = this.fileStorage.extractFileName(
-      file?.filename || file?.path,
-    );
-
-    const existingImage = await this.prisma.channelMaterialImage.findFirst({
-      where: { channel_material_id: id, primary: true },
-    });
-
-    try {
-      if (!existingImage) {
-        return await this.prisma.channelMaterialImage.create({
-          data: {
-            image: fileName,
-            primary: true,
-            channel_material_id: id,
-          },
-        });
-      }
-
-      const updated = await this.prisma.channelMaterialImage.update({
-        where: { id: existingImage.id },
-        data: { image: fileName },
-      });
-
-      await this.fileStorage.deleteFile('channel', existingImage.image);
-      return updated;
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.uploadImageField(file, id, 'profile');
   }
 
   async showMaterialProfile(id: number, @Res() res: Response) {
     const materialImage = await this.prisma.channelMaterialImage.findFirst({
       where: { channel_material_id: id, primary: true },
     });
-    if (!materialImage) {
-      throw new ForbiddenException('Material profile not found');
-    }
-
-    return res.sendFile(
-      join(process.cwd(), 'uploads/channel', materialImage.image),
+    return this.fileStorage.sendUploadedFile(
+      res,
+      'channel',
+      materialImage?.image,
+      'Material profile not found',
     );
   }
 
   async uploadMaterialCover(file: Express.Multer.File, id: number) {
-    const fileName = this.fileStorage.extractFileName(
-      file?.filename || file?.path,
-    );
-
-    const existingCover = await this.prisma.channelMaterialImage.findFirst({
-      where: { channel_material_id: id, cover: true },
-    });
-
-    try {
-      if (!existingCover) {
-        return await this.prisma.channelMaterialImage.create({
-          data: {
-            image: fileName,
-            cover: true,
-            channel_material_id: id,
-          },
-        });
-      }
-
-      const updated = await this.prisma.channelMaterialImage.update({
-        where: { id: existingCover.id },
-        data: { image: fileName },
-      });
-
-      await this.fileStorage.deleteFile('channel', existingCover.image);
-      return updated;
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.uploadImageField(file, id, 'cover');
   }
 
   async showMaterialCover(id: number, @Res() res: Response) {
     const materialImage = await this.prisma.channelMaterialImage.findFirst({
       where: { channel_material_id: id, cover: true },
     });
-    if (!materialImage) {
-      throw new ForbiddenException('Material cover not found');
-    }
-
-    return res.sendFile(
-      join(process.cwd(), 'uploads/channel', materialImage.image),
+    return this.fileStorage.sendUploadedFile(
+      res,
+      'channel',
+      materialImage?.image,
+      'Material cover not found',
     );
   }
 
@@ -469,59 +422,27 @@ export class ChannelMaterialStorageService {
     const materialImage = await this.prisma.channelMaterialImage.findFirst({
       where: { id },
     });
-    if (!materialImage) {
-      throw new ForbiddenException('Material image not found');
-    }
-
-    return res.sendFile(
-      join(process.cwd(), 'uploads/channel', materialImage.image),
+    return this.fileStorage.sendUploadedFile(
+      res,
+      'channel',
+      materialImage?.image,
+      'Material image not found',
     );
   }
 
   async uploadMaterialPreview(file: Express.Multer.File, id: number) {
-    const fileName = this.fileStorage.extractFileName(
-      file?.filename || file?.path,
-    );
-
-    const preview = await this.prisma.channelPreviewMaterial.findFirst({
-      where: { channel_material_id: id },
-    });
-
-    try {
-      if (!preview) {
-        return await this.prisma.channelPreviewMaterial.create({
-          data: {
-            channel_material_id: id,
-            preview: fileName,
-          },
-        });
-      }
-
-      const updated = await this.prisma.channelPreviewMaterial.update({
-        where: { id: preview.id },
-        data: { preview: fileName },
-      });
-
-      if (preview.preview && preview.preview !== 'null') {
-        await this.fileStorage.deleteFile('channel', preview.preview);
-      }
-
-      return updated;
-    } catch (error) {
-      this.handlePrismaError(error);
-    }
+    return this.uploadImageField(file, id, 'preview');
   }
 
   async showMaterialPreview(id: number, @Res() res: Response) {
     const preview = await this.prisma.channelPreviewMaterial.findUnique({
       where: { id },
     });
-    if (!preview) {
-      throw new ForbiddenException('Material preview not found');
-    }
-
-    return res.sendFile(
-      join(process.cwd(), 'uploads/channel', preview.preview),
+    return this.fileStorage.sendUploadedFile(
+      res,
+      'channel',
+      preview?.preview,
+      'Material preview not found',
     );
   }
 }
