@@ -104,6 +104,32 @@ export class MaterialQueryService {
     page: number,
     baseUrl?: string,
   ) {
+    if (count === 0) {
+      if (page !== 0) {
+        throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
+      }
+      const meta: Record<string, any> = {
+        self: 0,
+        prev: null,
+        next: null,
+        last: 0,
+      };
+      if (baseUrl) {
+        meta.Num_Of_Materials = 0;
+        meta.Num_Of_Pages = 0;
+        meta.Per_Page = take;
+        meta.Materials_In_last_page = 0;
+        meta.Links = [
+          { first: `${baseUrl}?take=${take}&page=0` },
+          { self: `${baseUrl}?take=${take}&page=0` },
+          { prev: `${baseUrl}?take=${take}&page=null` },
+          { next: `${baseUrl}?take=${take}&page=null` },
+          { last: `${baseUrl}?take=${take}&page=0` },
+        ];
+      }
+      return { skip: 0, meta };
+    }
+
     const totalPages = Math.ceil(count / take);
     if (page < 0 || page >= totalPages) {
       throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
