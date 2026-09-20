@@ -5,7 +5,7 @@ import { RegisterDto, LoginDto, ResetDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config/dist/config.service';
+import { ConfigService } from '@nestjs/config';
 // import { MailService } from "../mail/mail.service";
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '@prisma/client';

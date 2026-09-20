@@ -1,7 +1,7 @@
 import { Body, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config/dist/config.service';
+import { ConfigService } from '@nestjs/config';
 import { Channel_PurchaseDto } from './dto';
 import { ChapaService } from 'chapa-nestjs';
 import * as request from 'request';

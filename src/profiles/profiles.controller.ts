@@ -12,6 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
   Res,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { ProfileDto, UpdateDto } from './dto';
@@ -19,7 +20,6 @@ import { JwtGuard } from '../auth/guard';
 import { GetUser } from 'src/auth/decorator';
 import { User } from '@prisma/client';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { UploadedFiles } from '@nestjs/common/decorators';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import {

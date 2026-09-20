@@ -12,6 +12,8 @@ import {
   HttpStatus,
   UseInterceptors,
   Res,
+  UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import { SellerProfilesService } from './seller-profiles.service';
 import { SellerProfileDto } from './dto';
@@ -22,7 +24,6 @@ import {
   FileFieldsInterceptor,
   FileInterceptor,
 } from '@nestjs/platform-express';
-import { UploadedFile, UploadedFiles } from '@nestjs/common/decorators';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import {

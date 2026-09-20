@@ -7,9 +7,11 @@ import {
   HttpStatus,
   Post,
   Patch,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { Query, Req, UseGuards } from '@nestjs/common/decorators';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, ResetDto } from './dto';
 import { JwtGuard, RefreshTokenGuard } from './guard';
