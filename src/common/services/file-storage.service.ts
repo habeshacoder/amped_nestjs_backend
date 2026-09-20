@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
+import { NotFoundError } from '../exceptions/domain-exceptions';
 
 export interface UploadedFileDescriptor {
   path?: string;
@@ -178,7 +179,7 @@ export class FileStorageService {
     notFoundMsg = 'File not found',
   ) {
     if (!fileName) {
-      throw new ForbiddenException(notFoundMsg);
+      throw new NotFoundError(notFoundMsg, 'FILE_NOT_FOUND');
     }
     return res.sendFile(
       path.join(process.cwd(), 'uploads', subDirectory, fileName),

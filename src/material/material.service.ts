@@ -1,21 +1,39 @@
 /* eslint-disable prefer-const */
-import { ForbiddenException, Injectable, Logger, Res } from '@nestjs/common';
+import { Injectable, Logger, Res } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { MaterialDto } from './dto';
 import { Catagory, Material, Parent, Type, User } from '@prisma/client';
 import { MaterialQueryService } from './material-query.service';
 import { MaterialStorageService } from './material-storage.service';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class MaterialService {
   private readonly logger = new Logger(MaterialService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private queryService: MaterialQueryService,
-    private storageService: MaterialStorageService,
+    private readonly prisma: PrismaService,
+    private readonly queryService: MaterialQueryService,
+    private readonly storageService: MaterialStorageService,
   ) {}
+
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
+    }
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
+  }
 
   async create(materialDto: MaterialDto) {
     try {
@@ -28,13 +46,13 @@ export class MaterialService {
           title: materialDto.title,
           description: materialDto.description,
           price: materialDto.price,
-          material: 'null',
           author: materialDto.author,
           reader: materialDto.reader,
           translator: materialDto.translator,
           length_minute: materialDto.length_minute,
           length_page: materialDto.length_page,
-          first_published_at: materialDto.first_published_at.toString(),
+          material: 'null',
+          first_published_at: materialDto.first_published_at?.toString(),
           language: materialDto.language,
           publisher: materialDto.publisher,
           episode: materialDto.episode,
@@ -45,103 +63,70 @@ export class MaterialService {
 
       return material;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
   async update(id: number, materialDto: MaterialDto) {
     const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (material) {
-      try {
-        const newMaterial = await this.prisma.material.update({
-          where: {
-            id: id,
-          },
-          data: {
-            parent: materialDto.parent,
-            type: materialDto.type,
-            genere: materialDto.genere,
-            catagory: materialDto.catagory,
-            title: materialDto.title,
-            description: materialDto.description,
-            price: materialDto.price,
-            author: materialDto.author,
-            reader: materialDto.reader,
-            translator: materialDto.translator,
-            length_minute: materialDto.length_minute,
-            length_page: materialDto.length_page,
-            first_published_at: materialDto.first_published_at.toString(),
-            language: materialDto.language,
-            publisher: materialDto.publisher,
-            episode: materialDto.episode,
-            continues_from: materialDto.continues_from,
-            sellerProfile_id: materialDto.sellerProfile_id,
-          },
-        });
-
-        if (newMaterial) {
-          return newMaterial;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
-      } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
-    } else {
-      throw new ForbiddenException(
+    if (!material) {
+      throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
+        'MATERIAL_NOT_FOUND',
       );
+    }
+
+    try {
+      return await this.prisma.material.update({
+        where: { id },
+        data: {
+          parent: materialDto.parent,
+          type: materialDto.type,
+          genere: materialDto.genere,
+          catagory: materialDto.catagory,
+          title: materialDto.title,
+          description: materialDto.description,
+          price: materialDto.price,
+          author: materialDto.author,
+          reader: materialDto.reader,
+          translator: materialDto.translator,
+          length_minute: materialDto.length_minute,
+          length_page: materialDto.length_page,
+          first_published_at: materialDto.first_published_at?.toString(),
+          language: materialDto.language,
+          publisher: materialDto.publisher,
+          episode: materialDto.episode,
+          continues_from: materialDto.continues_from,
+          sellerProfile_id: materialDto.sellerProfile_id,
+        },
+      });
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 
   async remove(id: number) {
     const material = await this.prisma.material.findFirst({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
-    if (material) {
-      try {
-        const deletedMaterial = await this.prisma.material.delete({
-          where: {
-            id: id,
-          },
-        });
-
-        if (deletedMaterial) {
-          return { message: 'Material deleted successfully' };
-        }
-      } catch (error) {
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
-      }
-    } else {
-      throw new ForbiddenException(
+    if (!material) {
+      throw new NotFoundError(
         "Can't delete while there is no material. Please create a material first.",
+        'MATERIAL_NOT_FOUND',
       );
+    }
+
+    try {
+      await this.prisma.material.delete({
+        where: { id },
+      });
+      return { message: 'Material deleted successfully' };
+    } catch (error) {
+      this.handlePrismaError(error);
     }
   }
 

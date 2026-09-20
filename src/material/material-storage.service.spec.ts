@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MaterialStorageService } from './material-storage.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
-import { ForbiddenException } from '@nestjs/common';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { Response } from 'express';
 
 describe('MaterialStorageService', () => {
@@ -66,12 +66,12 @@ describe('MaterialStorageService', () => {
   });
 
   describe('createFile', () => {
-    it('should throw ForbiddenException if material not found', async () => {
+    it('should throw NotFoundError if material not found', async () => {
       prisma.material.findFirst.mockResolvedValue(null);
 
       await expect(
         service.createFile({ material: [{ path: 'uploads/book.epub' }] }, 999),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should extract filenames and update material + related entities', async () => {
@@ -123,7 +123,7 @@ describe('MaterialStorageService', () => {
 
       await expect(
         service.updateMaterial({ material: [{ path: 'uploads/new.epub' }] }, 1),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should update material file and delete previous file', async () => {
@@ -161,7 +161,7 @@ describe('MaterialStorageService', () => {
           { path: 'uploads/file.epub' } as Express.Multer.File,
           1,
         ),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should update material file and clean up previous file', async () => {
@@ -187,13 +187,11 @@ describe('MaterialStorageService', () => {
   });
 
   describe('showMaterial', () => {
-    it('should throw ForbiddenException if material or file missing', async () => {
+    it('should throw NotFoundError if material or file missing', async () => {
       prisma.material.findUnique.mockResolvedValue(null);
       const res = { sendFile: jest.fn() } as unknown as Response;
 
-      await expect(service.showMaterial(1, res)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.showMaterial(1, res)).rejects.toThrow(NotFoundError);
     });
 
     it('should send file when material exists', async () => {

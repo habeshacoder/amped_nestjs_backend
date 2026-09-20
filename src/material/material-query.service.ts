@@ -1,7 +1,13 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { Catagory, Material, Parent, Prisma, Type, User } from '@prisma/client';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class MaterialQueryService {
@@ -101,7 +107,7 @@ export class MaterialQueryService {
   ) {
     const totalPages = Math.ceil(count / take);
     if (page < 0 || page >= totalPages) {
-      throw new ForbiddenException('Page Not Found');
+      throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
     }
 
     const previousPage = page === 0 ? null : page - 1;
@@ -233,14 +239,16 @@ export class MaterialQueryService {
         return { message: 'Material Not Found' };
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Wrong link');
-        }
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictError('Wrong link', 'CONFLICT');
       }
-      throw new ForbiddenException(
-        'There has been an error. Please check the link and try again.',
-      );
+      if (error instanceof DomainException) {
+        throw error;
+      }
+      throw error;
     }
   }
 

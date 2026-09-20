@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FileStorageService, UploadedImages } from './file-storage.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { NotFoundError } from '../exceptions/domain-exceptions';
 
 describe('FileStorageService', () => {
   let service: FileStorageService;
@@ -168,11 +169,11 @@ describe('FileStorageService', () => {
   });
 
   describe('sendUploadedFile', () => {
-    it('should throw ForbiddenException if filename is empty or null', () => {
+    it('should throw NotFoundError if filename is empty or null', () => {
       const res = { sendFile: jest.fn() } as any;
       expect(() =>
         service.sendUploadedFile(res, 'material', null, 'Not found'),
-      ).toThrow();
+      ).toThrow(NotFoundError);
     });
 
     it('should send file with resolved path when filename is valid', () => {

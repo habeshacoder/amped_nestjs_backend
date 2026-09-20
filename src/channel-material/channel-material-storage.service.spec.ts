@@ -3,6 +3,7 @@ import { ChannelMaterialStorageService } from './channel-material-storage.servic
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
 import { ForbiddenException } from '@nestjs/common';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { Response } from 'express';
 
 describe('ChannelMaterialStorageService', () => {
@@ -160,13 +161,11 @@ describe('ChannelMaterialStorageService', () => {
   });
 
   describe('showMaterial', () => {
-    it('should throw ForbiddenException if channel material not found', async () => {
+    it('should throw NotFoundError if channel material not found', async () => {
       prisma.channelMaterial.findUnique.mockResolvedValue(null);
       const res = { sendFile: jest.fn() } as unknown as Response;
 
-      await expect(service.showMaterial(1, res)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.showMaterial(1, res)).rejects.toThrow(NotFoundError);
     });
 
     it('should send file if channel material exists', async () => {
