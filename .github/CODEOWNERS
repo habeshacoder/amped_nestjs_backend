@@ -1,0 +1,10 @@
+# Global code owners for AMPED NestJS Backend
+* @habeshacoder
+
+# Core configuration & workflows
+/.github/ @habeshacoder
+/prisma/ @habeshacoder
+package.json @habeshacoder
+package-lock.json @habeshacoder
+Dockerfile @habeshacoder
+docker-compose.yml @habeshacoder

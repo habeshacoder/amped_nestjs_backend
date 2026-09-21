@@ -35,6 +35,7 @@ All commit messages must adhere to the [Conventional Commits](https://www.conven
 ```
 
 ### Allowed Types:
+
 - `feat`: A new feature or endpoint
 - `fix`: A bug fix
 - `test`: Adding or correcting tests
@@ -46,12 +47,14 @@ All commit messages must adhere to the [Conventional Commits](https://www.conven
 - `chore`: Maintenance tasks, dependency updates, configuration adjustments
 
 ### Examples:
+
 - `feat(channel): add pagination to channel material listings`
 - `fix(auth): await refresh token update during logout`
 - `test: add unit test suite for ChannelMaterialService`
 - `chore: enforce jest coverage threshold`
 
 ### Rule: Tests Ship With The Change
+
 Every feature, fix, or refactoring commit **must include its corresponding tests in the exact same commit**. Never defer tests to a follow-up commit. Commits are validated with `commitlint` via husky git hooks before acceptance.
 
 ---
@@ -115,4 +118,23 @@ Every PR must maintain or increase the Jest test coverage thresholds specified i
 1. Ensure all CI workflow checks pass in GitHub Actions.
 2. Ensure PR titles follow Conventional Commits format (e.g. `feat(auth): support session revocation`).
 3. Keep PRs focused on a single logical change or feature.
-4. Request reviews from code owners before merging.
+4. Request reviews from code owners before merging (see `.github/CODEOWNERS`).
+
+---
+
+## 7. Branch Protection Rules
+
+To maintain production stability and auditability, the `main` branch is protected by the following repository rules:
+
+1. **Require Pull Request Before Merging**: Direct pushes to `main` are strictly blocked. All code must enter via pull requests.
+2. **Require Approvals**: Pull requests require at least 1 approving review from designated code owners specified in `.github/CODEOWNERS`.
+3. **Require Status Checks to Pass**:
+   - `lint` (ESLint analysis)
+   - `format:check` (Prettier code styling)
+   - `typecheck` (`tsc --noEmit`)
+   - `unit-test (20.x)` & `unit-test (22.x)` (all unit tests + Jest coverage thresholds)
+   - `e2e` (PostgreSQL service container smoke tests)
+   - `audit` (`npm audit --omit=dev --audit-level=critical`)
+   - `build` (NestJS production bundle compilation)
+4. **Require Linear History**: Pull requests are merged using Squash & Merge or Rebase & Merge to preserve a clean, mineable git history.
+5. **No Force Pushing**: Force pushes (`git push --force`) and branch deletions are disabled on `main`.
