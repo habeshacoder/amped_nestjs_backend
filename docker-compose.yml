@@ -19,6 +19,26 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: amped_app
+    restart: unless-stopped
+    ports:
+      - '3007:3007'
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-amped_db}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-supersecrettestjwtkey1234567890}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-supersecrettestjwtrefreshkey1234567890}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["node", "dist/main"]
+
 volumes:
   postgres_data:
     driver: local

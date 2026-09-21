@@ -8,16 +8,23 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci
 
-# Stage 2: Build
+# Stage 2: Build & Test environment
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 RUN npm run build
-RUN npm prune --production
+CMD ["node", "dist/main"]
 
-# Stage 3: Production Runtime
+# Stage 3: Production Dependencies
+FROM node:20-alpine AS prod-deps
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN npm ci --omit=dev && npx prisma generate
+
+# Stage 4: Production Runtime
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -30,7 +37,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 # Copy built application and required production dependencies
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 

@@ -109,6 +109,17 @@ It provides complete interactive documentation of request bodies, response schem
 
 ## Quick Start & Setup
 
+### Quick Start (Fresh Clone)
+
+To verify the codebase immediately after a fresh clone with zero extra setup:
+```bash
+npm ci && npx prisma generate && npm run build && npm test
+```
+Or using the Makefile shortcut:
+```bash
+make verify
+```
+
 ### 1. Clone the repository
 ```bash
 git clone git@github.com:habeshacoder/amped_nestjs_backend.git
@@ -131,9 +142,13 @@ Copy `.env.example` and set required secrets:
 cp .env.example .env
 ```
 
-### 5. Start Local PostgreSQL via Docker Compose
+### 5. Start Services via Docker Compose
 ```bash
+# Start PostgreSQL database and application
 docker compose up -d
+
+# Run tests in Docker container
+docker compose run --rm app npm test
 ```
 
 ### 6. Generate Prisma Client & Run Migrations
