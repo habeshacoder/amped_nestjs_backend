@@ -136,6 +136,66 @@ describe('RatingService', () => {
     });
   });
 
+  describe('getMyReview', () => {
+    it('should return reviews for current user', async () => {
+      prisma.rate.findMany.mockResolvedValue([mockRate]);
+      const result = await service.getMyReview(mockUser);
+      expect(result).toEqual([mockRate]);
+    });
+
+    it('should return message when no reviews found', async () => {
+      prisma.rate.findMany.mockResolvedValue(null);
+      const result = await service.getMyReview(mockUser);
+      expect(result).toEqual({ message: 'No review found.' });
+    });
+  });
+
+  describe('getByRatingNo', () => {
+    it('should return ratings matching number', async () => {
+      prisma.rate.findMany.mockResolvedValue([mockRate]);
+      const result = await service.getByRatingNo(mockUser, 5);
+      expect(result).toEqual([mockRate]);
+    });
+
+    it('should return message when no reviews found for rating', async () => {
+      prisma.rate.findMany.mockResolvedValue(null);
+      const result = await service.getByRatingNo(mockUser, 5);
+      expect(result).toEqual({ message: 'No review found.' });
+    });
+  });
+
+  describe('getMyMaterialReview', () => {
+    it('should return user review for material', async () => {
+      prisma.rate.findFirst.mockResolvedValue(mockRate);
+      const result = await service.getMyMaterialReview(10, mockUser);
+      expect(result).toEqual(mockRate);
+    });
+
+    it('should return false if no review found', async () => {
+      prisma.rate.findFirst.mockResolvedValue(null);
+      const result = await service.getMyMaterialReview(10, mockUser);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getMyChannelReview', () => {
+    it('should return user review for channel', async () => {
+      prisma.rate.findFirst.mockResolvedValue(mockRate);
+      const result = await service.getMyChannelReview(20, mockUser);
+      expect(result).toEqual(mockRate);
+    });
+
+    it('should return false if channel review not found', async () => {
+      prisma.rate.findFirst.mockResolvedValue(null);
+      const result = await service.getMyChannelReview(20, mockUser);
+      expect(result).toBe(false);
+    });
+
+    it('should return false if channel_id is invalid', async () => {
+      expect(await service.getMyChannelReview(NaN, mockUser)).toBe(false);
+    });
+  });
+
   describe('materialRating', () => {
     it('should return ratings for a specific material', async () => {
       prisma.rate.findMany.mockResolvedValue([mockRate]);
@@ -143,6 +203,12 @@ describe('RatingService', () => {
       const result = await service.materialRating(10);
       expect(result).toHaveProperty('rate');
       expect(result).toHaveProperty('rating');
+    });
+
+    it('should return default rating if empty', async () => {
+      prisma.rate.findMany.mockResolvedValue([]);
+      const result = await service.materialRating(10);
+      expect(result).toBe(0);
     });
 
     it('should handle Prisma P2002 error in materialRating', async () => {
@@ -165,9 +231,37 @@ describe('RatingService', () => {
       expect(result).toHaveProperty('rating');
     });
 
+    it('should return default rating if empty', async () => {
+      prisma.rate.findMany.mockResolvedValue([]);
+      const result = await service.channelRating(10);
+      expect(result).toBe(0);
+    });
+
     it('should return 0 if channel_id is null', async () => {
       const result = await service.channelRating(null as any);
       expect(result).toBe(0);
+    });
+  });
+
+  describe('noOfMaterialRating', () => {
+    it('should return count of ratings for material', async () => {
+      prisma.rate.findMany.mockResolvedValue([mockRate, mockRate]);
+      const result = await service.noOfMaterialRating({
+        rating: 5,
+        material_id: 10,
+      });
+      expect(result).toBe(2);
+    });
+  });
+
+  describe('noOfChannelRating', () => {
+    it('should return count of ratings for channel', async () => {
+      prisma.rate.findMany.mockResolvedValue([mockRate]);
+      const result = await service.noOfChannelRating({
+        rating: 5,
+        channel_id: 20,
+      });
+      expect(result).toBe(1);
     });
   });
 
