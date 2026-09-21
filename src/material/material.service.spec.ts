@@ -5,6 +5,7 @@ import { Parent, Type } from '@prisma/client';
 import { MaterialQueryService } from './material-query.service';
 import { MaterialStorageService } from './material-storage.service';
 import { FileStorageService } from '../common/services/file-storage.service';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
 import {
   ConflictError,
   NotFoundError,
@@ -48,6 +49,7 @@ describe('MaterialService', () => {
         MaterialQueryService,
         MaterialStorageService,
         FileStorageService,
+        EntityFileManagerService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();

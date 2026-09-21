@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -10,32 +9,22 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  UseInterceptors,
-  UploadedFile,
   Res,
-  ParseFilePipeBuilder,
   UploadedFiles,
-  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { ChannelMaterialService } from './channel-material.service';
 import { Response } from 'express';
 import { ChannelMaterialDto } from './dto';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import {
-  editFileName,
-  fileFilter,
-  imageFileFilter,
-} from '../common/utils/file-upload.utils';
-import { Material, Type } from '@prisma/client';
+import { Type } from '@prisma/client';
 import { join } from 'path';
-import { FileFieldsValidationPipe } from '../common/pipes/file-fields-validation.pipe';
+import {
+  MaterialFilesUploadInterceptor,
+  SingleFileUploadInterceptor,
+  createMaterialFilesValidationPipe,
+  createSingleFileValidationPipe,
+} from '../common/decorators/entity-upload.decorator';
 
 @Controller('channel-material')
 export class ChannelMaterialController {
@@ -53,48 +42,10 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('files/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'material', maxCount: 1 },
-        { name: 'profile', maxCount: 1 },
-        { name: 'cover', maxCount: 1 },
-        { name: 'images', maxCount: 10 },
-        { name: 'preview', maxCount: 1 },
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @MaterialFilesUploadInterceptor('channel/material')
   createFile(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          material: { required: false, maxSizeBytes: 200 * 1024 * 1024 },
-          profile: {
-            required: false,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-          cover: {
-            required: false,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-          images: {
-            required: false,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-          preview: { required: false, maxSizeBytes: 50 * 1024 * 1024 },
-        },
-      }),
-    )
+    @UploadedFiles(createMaterialFilesValidationPipe())
     files: {
       material?: Express.Multer.File[];
       profile?: Express.Multer.File[];
@@ -121,16 +72,6 @@ export class ChannelMaterialController {
     return this.channelMaterialService.getMaterialByType(materialType);
   }
 
-  @Get('/seller/:id')
-  findForSeller(@Param('id') id: string) {
-    return this.channelMaterialService.findForSeller(+id);
-  }
-
-  // @Get('/channel/:id')
-  // findForChannel(@Param('id') id: number) {
-  //     return this.materialService.findForChannel(+id);
-  // }
-
   @UseGuards(JwtGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() materialDto: ChannelMaterialDto) {
@@ -140,30 +81,12 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('updateMaterial/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'material', maxCount: 1 },
-        // {name: 'profile', maxCount: 1},
-        // {name: 'cover', maxCount: 1},
-        // {name: 'images', maxCount: 10},
-        // {name: 'preview', maxCount: 1}
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @SingleFileUploadInterceptor('material', 'channel/material')
   updateMaterial(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          material: { required: true, maxSizeBytes: 200 * 1024 * 1024 },
-        },
+      createSingleFileValidationPipe('material', {
+        maxSizeBytes: 200 * 1024 * 1024,
       }),
     )
     files: { material?: Express.Multer.File[] },
@@ -174,34 +97,12 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('updateMaterialProfile/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'material', maxCount: 1 },
-        { name: 'profile', maxCount: 1 },
-        { name: 'cover', maxCount: 1 },
-        { name: 'images', maxCount: 10 },
-        { name: 'preview', maxCount: 1 },
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @SingleFileUploadInterceptor('profile', 'channel/material')
   updateMaterialProfile(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          profile: {
-            required: true,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-        },
+      createSingleFileValidationPipe('profile', {
+        allowedMimeTypes: ['image/*'],
       }),
     )
     files: { profile?: Express.Multer.File[] },
@@ -212,34 +113,12 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('updateMaterialCover/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'material', maxCount: 1 },
-        { name: 'profile', maxCount: 1 },
-        { name: 'cover', maxCount: 1 },
-        { name: 'images', maxCount: 10 },
-        { name: 'preview', maxCount: 1 },
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @SingleFileUploadInterceptor('cover', 'channel/material')
   updateMaterialCover(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          cover: {
-            required: true,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-        },
+      createSingleFileValidationPipe('cover', {
+        allowedMimeTypes: ['image/*'],
       }),
     )
     files: { cover?: Express.Multer.File[] },
@@ -250,34 +129,12 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('updateMaterialImage/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        // {name: 'material', maxCount: 1},
-        // {name: 'profile', maxCount: 1},
-        // {name: 'cover', maxCount: 1},
-        { name: 'images', maxCount: 10 },
-        // {name: 'preview', maxCount: 1}
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @SingleFileUploadInterceptor('images', 'channel/material', 10)
   updateMaterialImage(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          images: {
-            required: true,
-            maxSizeBytes: 10 * 1024 * 1024,
-            allowedMimeTypes: ['image/*'],
-          },
-        },
+      createSingleFileValidationPipe('images', {
+        allowedMimeTypes: ['image/*'],
       }),
     )
     files: { images?: Express.Multer.File[] },
@@ -288,30 +145,12 @@ export class ChannelMaterialController {
   @UseGuards(JwtGuard)
   @Post('updateMaterialCover/:id')
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        // {name: 'material', maxCount: 1},
-        // {name: 'profile', maxCount: 1},
-        // {name: 'cover', maxCount: 1},
-        // {name: 'images', maxCount: 10},
-        { name: 'preview', maxCount: 1 },
-      ],
-      {
-        storage: diskStorage({
-          destination: './uploads/channel/material/',
-          filename: editFileName,
-        }),
-      },
-    ),
-  )
+  @SingleFileUploadInterceptor('preview', 'channel/material')
   updateMaterialPreview(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(
-      new FileFieldsValidationPipe({
-        fields: {
-          preview: { required: true, maxSizeBytes: 50 * 1024 * 1024 },
-        },
+      createSingleFileValidationPipe('preview', {
+        maxSizeBytes: 50 * 1024 * 1024,
       }),
     )
     files: { preview?: Express.Multer.File[] },
@@ -319,26 +158,10 @@ export class ChannelMaterialController {
     return this.channelMaterialService.updateMaterialPreview(files as any, id);
   }
 
-  // @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.channelMaterialService.remove(+id);
   }
-
-  //material upload and retrival
-  // @Post('upload/material')
-  // @UseInterceptors(FileInterceptor('material', {
-  //     storage: diskStorage({
-  //         destination: './uploads/material/file',
-  //         filename: editFileName,
-  //     }),
-  //     fileFilter: fileFilter,
-  // }))
-  // //add validators for dimension
-  // @HttpCode(HttpStatus.CREATED)
-  // createMaterial(@UploadedFile() file: Express.Multer.File, @Body('id') id: string) {
-  //     return this.materialService.uploadMaterial(file, +id);
-  // }
 
   @HttpCode(HttpStatus.OK)
   @Get('material/:fileName')
@@ -347,7 +170,7 @@ export class ChannelMaterialController {
       join(process.cwd(), 'uploads/channel/material/' + fileName),
     );
   }
-  //add purchased middleware here
+
   @HttpCode(HttpStatus.OK)
   @Get('material/:id')
   findMaterial(@Param('id') id: string, @Res() res: Response) {

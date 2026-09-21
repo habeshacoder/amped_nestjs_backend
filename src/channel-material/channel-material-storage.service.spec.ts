@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
 import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { Response } from 'express';
 
@@ -57,6 +58,7 @@ describe('ChannelMaterialStorageService', () => {
       providers: [
         ChannelMaterialStorageService,
         FileStorageService,
+        EntityFileManagerService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();

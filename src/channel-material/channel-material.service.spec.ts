@@ -7,6 +7,7 @@ import { Parent, Type } from '@prisma/client';
 import { ChannelMaterialQueryService } from './channel-material-query.service';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
 import { FileStorageService } from '../common/services/file-storage.service';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
 
 describe('ChannelMaterialService', () => {
   let service: ChannelMaterialService;
@@ -45,6 +46,7 @@ describe('ChannelMaterialService', () => {
         ChannelMaterialQueryService,
         ChannelMaterialStorageService,
         FileStorageService,
+        EntityFileManagerService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
