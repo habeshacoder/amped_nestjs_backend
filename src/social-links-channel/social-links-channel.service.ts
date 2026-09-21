@@ -7,11 +7,22 @@ import { SocialLinksChannelDto } from './dto';
 export class SocialLinksChannelService {
   constructor(private prisma: PrismaService) {}
 
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
   async create(socialLinksChannelDto: SocialLinksChannelDto) {
     try {
       const link = await this.prisma.socialLinksChannel.create({
         data: {
-          // name: socialLinksChannelDto.name,
           // description: socialLinksChannelDto.description,
           link: socialLinksChannelDto.link,
           channel_id: socialLinksChannelDto.channel_id,
@@ -22,14 +33,7 @@ export class SocialLinksChannelService {
         return link;
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
     return 'This action adds a new socialLinksProfile';
   }
@@ -75,14 +79,7 @@ export class SocialLinksChannelService {
         );
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 

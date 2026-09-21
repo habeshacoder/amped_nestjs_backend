@@ -1,8 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RatingService } from './rating.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ForbiddenException } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 describe('RatingService', () => {
   let service: RatingService;
@@ -66,7 +71,7 @@ describe('RatingService', () => {
       expect(result).toEqual(mockRate);
     });
 
-    it('should throw ForbiddenException if user already rated', async () => {
+    it('should throw ConflictError if user already rated', async () => {
       prisma.rate.findFirst.mockResolvedValue(mockRate);
 
       const dto = {
@@ -76,11 +81,11 @@ describe('RatingService', () => {
       };
 
       await expect(service.create(dto as any, mockUser)).rejects.toThrow(
-        ForbiddenException,
+        ConflictError,
       );
     });
 
-    it('should throw ForbiddenException if both material_id and channel_id are missing or present', async () => {
+    it('should throw ValidationError if both material_id and channel_id are missing or present', async () => {
       prisma.rate.findFirst.mockResolvedValue(null);
 
       const dto = {
@@ -89,7 +94,26 @@ describe('RatingService', () => {
       };
 
       await expect(service.create(dto as any, mockUser)).rejects.toThrow(
-        ForbiddenException,
+        ValidationError,
+      );
+    });
+
+    it('should throw ConflictError on Prisma P2002 error', async () => {
+      prisma.rate.findFirst.mockResolvedValue(null);
+      const p2002 = new PrismaClientKnownRequestError('Unique error', {
+        code: 'P2002',
+        clientVersion: '4.16.2',
+      });
+      prisma.rate.create.mockRejectedValue(p2002);
+
+      const dto = {
+        rating: 5,
+        remark: 'Great',
+        material_id: 10,
+      };
+
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ConflictError,
       );
     });
   });
@@ -120,6 +144,49 @@ describe('RatingService', () => {
       expect(result).toHaveProperty('rate');
       expect(result).toHaveProperty('rating');
     });
+
+    it('should handle Prisma P2002 error in materialRating', async () => {
+      const p2002 = new PrismaClientKnownRequestError('Unique error', {
+        code: 'P2002',
+        clientVersion: '4.16.2',
+      });
+      prisma.rate.findMany.mockRejectedValue(p2002);
+
+      await expect(service.materialRating(10)).rejects.toThrow(ConflictError);
+    });
+  });
+
+  describe('channelRating', () => {
+    it('should return ratings for a specific channel', async () => {
+      prisma.rate.findMany.mockResolvedValue([mockRate]);
+
+      const result = await service.channelRating(10);
+      expect(result).toHaveProperty('rate');
+      expect(result).toHaveProperty('rating');
+    });
+
+    it('should return 0 if channel_id is null', async () => {
+      const result = await service.channelRating(null as any);
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('update', () => {
+    it('should update rating successfully', async () => {
+      prisma.rate.findFirst.mockResolvedValue(mockRate);
+      prisma.rate.update.mockResolvedValue({ ...mockRate, rating: 4 });
+
+      const result = await service.update(1, { rating: 4, remark: 'Updated' });
+      expect(result).toEqual({ ...mockRate, rating: 4 });
+    });
+
+    it('should throw NotFoundError if rating to update not found', async () => {
+      prisma.rate.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.update(999, { rating: 4, remark: 'Updated' }),
+      ).rejects.toThrow(NotFoundError);
+    });
   });
 
   describe('remove', () => {
@@ -131,10 +198,10 @@ describe('RatingService', () => {
       expect(result).toEqual({ message: 'Rate deleted successfully' });
     });
 
-    it('should throw ForbiddenException if rating not found', async () => {
+    it('should throw NotFoundError if rating not found', async () => {
       prisma.rate.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove(999)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(999)).rejects.toThrow(NotFoundError);
     });
   });
 });

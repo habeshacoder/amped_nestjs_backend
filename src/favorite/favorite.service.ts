@@ -9,15 +9,29 @@ import { User } from '@prisma/client';
 export class FavoriteService {
   constructor(private prisma: PrismaService) {}
 
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
   async create(favoriteDto: FavoriteDto, user: User) {
     try {
-      const favoriteMaterial = await this.prisma.favorite.findFirst({
+      const isExist = await this.prisma.favorite.findFirst({
         where: {
+          user_id: user.id,
           material_id: favoriteDto.material_id,
+          channel_id: favoriteDto.channel_id,
         },
       });
 
-      if (!favoriteMaterial) {
+      if (!isExist) {
         const favorite = await this.prisma.favorite.create({
           data: {
             user_id: user.id,
@@ -33,14 +47,7 @@ export class FavoriteService {
         return { message: 'Material already added in Favorite' };
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
@@ -101,14 +108,7 @@ export class FavoriteService {
           );
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

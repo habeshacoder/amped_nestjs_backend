@@ -7,17 +7,32 @@ import { UpdateSubscribedUserDto } from './dto/update-subscribed-user.dto';
 
 @Injectable()
 export class SubscribedUserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
+
+  private handlePrismaError(
+    error: unknown,
+    conflictMsg = 'Credentials Taken',
+  ): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException(conflictMsg);
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
 
   async create(subscribedUserDto: SubscribedUserDto, user: User) {
-    const foundSubscribedUser = await this.prisma.subscribedUser.findFirst({
+    const subscribedUser = await this.prisma.subscribedUser.findFirst({
       where: {
-        user_id: user.id,
         subscription_id: subscribedUserDto.subscription_id,
+        user_id: user.id,
       },
     });
 
-    if (!foundSubscribedUser) {
+    if (!subscribedUser) {
       try {
         const subscribedUser = await this.prisma.subscribedUser.create({
           data: {
@@ -31,14 +46,7 @@ export class SubscribedUserService {
           return subscribedUser;
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('ForbiddenException');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error, 'ForbiddenException');
       }
     } else {
       throw new ForbiddenException(
@@ -97,14 +105,7 @@ export class SubscribedUserService {
           );
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

@@ -7,7 +7,19 @@ import { UpdateReplayDto } from './dto/update-replay.dto';
 
 @Injectable()
 export class ReplayService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
+
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
 
   async create(replayDto: ReplayDto) {
     const foundReplay = await this.prisma.replay.findFirst({
@@ -29,14 +41,7 @@ export class ReplayService {
           return repaly;
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(
@@ -144,14 +149,7 @@ export class ReplayService {
           );
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

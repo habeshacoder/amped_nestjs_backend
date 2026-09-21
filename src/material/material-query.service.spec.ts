@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MaterialQueryService } from './material-query.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Parent, Type } from '@prisma/client';
-import { NotFoundError } from '../common/exceptions/domain-exceptions';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import {
+  ConflictError,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 
 describe('MaterialQueryService', () => {
   let service: MaterialQueryService;
@@ -243,6 +247,16 @@ describe('MaterialQueryService', () => {
       prisma.material.findUnique.mockResolvedValue(null);
       const result = await service.findOne(999);
       expect(result).toEqual({ message: 'Material Not Found' });
+    });
+
+    it('should throw ConflictError on Prisma P2002', async () => {
+      const p2002 = new PrismaClientKnownRequestError('Unique error', {
+        code: 'P2002',
+        clientVersion: '4.16.2',
+      });
+      prisma.material.findUnique.mockRejectedValue(p2002);
+
+      await expect(service.findOne(1)).rejects.toThrow(ConflictError);
     });
   });
 

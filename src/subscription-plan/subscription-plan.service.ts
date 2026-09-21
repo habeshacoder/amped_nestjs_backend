@@ -8,9 +8,20 @@ import { SubscriptionPlanDto, UpdateDto } from './dto';
 export class SubscriptionPlanService {
   constructor(private prisma: PrismaService) {}
 
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
   async create(subscriptionPlanDto: SubscriptionPlanDto) {
-    for await (const [i, sub] of subscriptionPlanDto.channel_id.entries()) {
-      //let sub of subscriptionPlanDto.channel_id) {
+    for (let i = 0; i < subscriptionPlanDto.name.length; i++) {
       try {
         const subscriptionPlan = await this.prisma.subscriptionPlan.create({
           data: {
@@ -21,14 +32,7 @@ export class SubscriptionPlanService {
           },
         });
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     }
 
@@ -144,14 +148,7 @@ export class SubscriptionPlanService {
           );
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

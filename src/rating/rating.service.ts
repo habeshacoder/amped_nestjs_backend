@@ -1,14 +1,32 @@
-/* eslint-disable prettier/prettier */
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RatingDto } from './dto';
 import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UpdateRatingDto } from './dto/update-rating.dto';
+import {
+  ConflictError,
+  DomainException,
+  NotFoundError,
+  ValidationError,
+} from '../common/exceptions/domain-exceptions';
 
 @Injectable()
 export class RatingService {
   constructor(private prisma: PrismaService) {}
+
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
+    }
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
+  }
 
   async create(ratingDto: RatingDto, user: User) {
     const rating = await this.prisma.rate.findFirst({
@@ -35,24 +53,15 @@ export class RatingService {
             },
           });
 
-          if (rate) {
-            return rate;
-          }
+          return rate;
         } catch (error) {
-          if (error instanceof PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
-              throw new ForbiddenException('Credentials Taken');
-            }
-          }
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
+          this.handlePrismaError(error);
         }
       } else {
-        throw new ForbiddenException('Please input material or channel.');
+        throw new ValidationError('Please input material or channel.');
       }
     } else {
-      throw new ForbiddenException(
+      throw new ConflictError(
         "Can't rate on the same material or channel multiple times. Please try edit the rating.",
       );
     }
@@ -163,7 +172,7 @@ export class RatingService {
         },
       });
 
-      if (rate) {
+      if (rate && rate.length > 0) {
         for (const x of rate) {
           rating += x['rating'];
           num_of_rate++;
@@ -176,14 +185,7 @@ export class RatingService {
         return default_rating;
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
@@ -204,7 +206,7 @@ export class RatingService {
           },
         });
 
-        if (rate) {
+        if (rate && rate.length > 0) {
           for (const x of rate) {
             rating += x['rating'];
             num_of_rate++;
@@ -218,14 +220,7 @@ export class RatingService {
           return default_rating;
         }
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
       return 0;
@@ -287,25 +282,12 @@ export class RatingService {
           },
         });
 
-        if (rating) {
-          return rating;
-        } else {
-          throw new ForbiddenException(
-            'There has been an error. Please check the inputs and try again.',
-          );
-        }
+        return rating;
       } catch (error) {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials Taken');
-          }
-        }
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't update while there is no rating and remark. Please fill the nessessory input first.",
       );
     }
@@ -320,22 +302,18 @@ export class RatingService {
 
     if (rate) {
       try {
-        const rating = await this.prisma.rate.delete({
+        await this.prisma.rate.delete({
           where: {
             id: id,
           },
         });
 
-        if (rating) {
-          return { message: 'Rate deleted successfully' };
-        }
+        return { message: 'Rate deleted successfully' };
       } catch (error) {
-        throw new ForbiddenException(
-          'There has been an error. Please check the inputs and try again.',
-        );
+        this.handlePrismaError(error);
       }
     } else {
-      throw new ForbiddenException(
+      throw new NotFoundError(
         "Can't delete while there is no rating. Please rate a material or channel first.",
       );
     }

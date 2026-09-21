@@ -41,6 +41,19 @@ export class ChannelMaterialQueryService {
     });
   }
 
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ConflictError('Wrong link', 'CONFLICT');
+    }
+    if (error instanceof DomainException) {
+      throw error;
+    }
+    throw error;
+  }
+
   async findOne(id: number) {
     try {
       const material = await this.prisma.channelMaterial.findUnique({
@@ -62,16 +75,7 @@ export class ChannelMaterialQueryService {
         return { message: 'Material Not Found' };
       }
     } catch (error) {
-      if (
-        error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictError('Wrong link', 'CONFLICT');
-      }
-      if (error instanceof DomainException) {
-        throw error;
-      }
-      throw error;
+      this.handlePrismaError(error);
     }
   }
 

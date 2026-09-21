@@ -8,6 +8,18 @@ import { SocialLinksProfileDto } from './dto';
 export class SocialLinksProfileService {
   constructor(private prisma: PrismaService) {}
 
+  private handlePrismaError(error: unknown): never {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new ForbiddenException('Credentials Taken');
+    }
+    throw new ForbiddenException(
+      'There has been an error. Please check the inputs and try again.',
+    );
+  }
+
   async create(socialLinksProfileDto: SocialLinksProfileDto) {
     try {
       const link = await this.prisma.socialLinksProfile.create({
@@ -23,14 +35,7 @@ export class SocialLinksProfileService {
         return link;
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
     return 'This action adds a new socialLinksProfile';
   }
@@ -87,14 +92,7 @@ export class SocialLinksProfileService {
         );
       }
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials Taken');
-        }
-      }
-      throw new ForbiddenException(
-        'There has been an error. Please check the inputs and try again.',
-      );
+      this.handlePrismaError(error);
     }
   }
 
