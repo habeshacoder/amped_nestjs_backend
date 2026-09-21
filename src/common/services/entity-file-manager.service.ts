@@ -39,6 +39,12 @@ export class EntityFileManagerService {
 
   /**
    * Generic handler to update a single image or preview field on a parent entity.
+   * Cleans up the previous file on disk and updates the relational record.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the parent entity
+   * @param files Uploaded files map from Multer
+   * @param field Target field name ('profile', 'cover', or 'preview')
+   * @returns Updated entity or confirmation message
    */
   async updateImageField(
     config: EntityFileManagerConfig,
@@ -114,6 +120,11 @@ export class EntityFileManagerService {
 
   /**
    * Generic handler to upload a single image or preview file for a parent entity.
+   * @param config Delegate and path configuration for the entity type
+   * @param file Single uploaded Multer file
+   * @param id Identifier of the parent entity
+   * @param field Target field name ('profile', 'cover', or 'preview')
+   * @returns Success response object
    */
   async uploadImageField(
     config: EntityFileManagerConfig,
@@ -173,6 +184,11 @@ export class EntityFileManagerService {
 
   /**
    * Creates files and child records for an entity when multiple files are uploaded.
+   * Handles main material, profile image, cover image, preview file, and gallery image creation.
+   * @param config Delegate and path configuration for the entity type
+   * @param images Map of uploaded Multer files
+   * @param id Identifier of the parent entity
+   * @returns Updated parent entity record
    */
   async createFile(
     config: EntityFileManagerConfig,
@@ -243,7 +259,11 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Updates the primary content material file.
+   * Updates the primary content material file and deletes the previously stored file from disk.
+   * @param config Delegate and path configuration for the entity type
+   * @param materialFile Map of uploaded Multer files containing 'material'
+   * @param id Identifier of the parent entity
+   * @returns Confirmation message object
    */
   async updateMainFile(
     config: EntityFileManagerConfig,
@@ -280,7 +300,11 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Uploads primary content material file and deletes the old one.
+   * Uploads primary content material file from a single file field and deletes the old one.
+   * @param config Delegate and path configuration for the entity type
+   * @param file Single uploaded Multer file
+   * @param id Identifier of the parent entity
+   * @returns Updated entity record
    */
   async uploadMainFile(
     config: EntityFileManagerConfig,
@@ -316,7 +340,12 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Updates secondary non-primary, non-cover images.
+   * Updates or creates secondary non-primary, non-cover gallery images for an entity.
+   * Cleans up the previous file on disk if an existing gallery record is updated.
+   * @param config Delegate and path configuration for the entity type
+   * @param materialImages Uploaded files map containing images
+   * @param id Identifier of the parent entity
+   * @returns Confirmation message object
    */
   async updateAdditionalImage(
     config: EntityFileManagerConfig,
@@ -368,7 +397,11 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Uploads multiple additional images.
+   * Uploads multiple additional images and attaches them to the parent entity.
+   * @param config Delegate and path configuration for the entity type
+   * @param files Array of uploaded Multer file objects
+   * @param id Identifier of the parent entity
+   * @returns Array of newly created image records
    */
   async uploadMultipleImages(
     config: EntityFileManagerConfig,
@@ -394,7 +427,10 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Streams the main content file.
+   * Streams the main content file directly to the client response.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the parent entity
+   * @param res Express HTTP response object
    */
   async showMainFile(
     config: EntityFileManagerConfig,
@@ -415,7 +451,10 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Streams the primary profile image.
+   * Streams the primary profile image to the client response.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the parent entity
+   * @param res Express HTTP response object
    */
   async showProfileImage(
     config: EntityFileManagerConfig,
@@ -434,7 +473,10 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Streams the cover image.
+   * Streams the cover image to the client response.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the parent entity
+   * @param res Express HTTP response object
    */
   async showCoverImage(
     config: EntityFileManagerConfig,
@@ -454,6 +496,9 @@ export class EntityFileManagerService {
 
   /**
    * Streams an image by image record ID.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the image entity record
+   * @param res Express HTTP response object
    */
   async showImageById(
     config: EntityFileManagerConfig,
@@ -472,7 +517,10 @@ export class EntityFileManagerService {
   }
 
   /**
-   * Streams a preview by preview record ID.
+   * Streams a preview file by preview record ID.
+   * @param config Delegate and path configuration for the entity type
+   * @param id Identifier of the preview entity record
+   * @param res Express HTTP response object
    */
   async showPreviewById(
     config: EntityFileManagerConfig,

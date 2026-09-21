@@ -109,15 +109,33 @@ It provides complete interactive documentation of request bodies, response schem
 
 ## Quick Start & Setup
 
-### Quick Start (Fresh Clone)
+### Quick start (fresh clone)
 
-To verify the codebase immediately after a fresh clone with zero extra setup:
+To go from a clean clone to a running app and passing tests in one command sequence:
+
 ```bash
-npm ci && npx prisma generate && npm run build && npm test
+# 1. Install dependencies & generate Prisma client
+npm ci && npx prisma generate
+
+# 2. Copy environment configuration
+cp .env.example .env
+
+# 3. Start PostgreSQL container
+docker compose up -d postgres
+
+# 4. Run database migrations
+npm run migration:run
+
+# 5. Run tests (unit & e2e)
+npm test && npm run test:e2e
+
+# 6. Start development server
+npm run start:dev
 ```
-Or using the Makefile shortcut:
+
+Or run the complete verification one-liner:
 ```bash
-make verify
+npm ci && npx prisma generate && cp -n .env.example .env && docker compose up -d postgres && npm run migration:run && npm test && npm run test:e2e
 ```
 
 ### 1. Clone the repository
@@ -202,26 +220,33 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 
 All tests are verified before every commit and in continuous integration.
 
+| Command | Description | Prerequisites / Needs |
+| :--- | :--- | :--- |
+| `npm test` | Executes all unit test suites (services, controllers, guards, filters, pipes) | **No external services required** (all DB calls use in-memory Prisma mocks) |
+| `npm run test:cov` | Executes all unit tests with coverage reporting and threshold enforcement | **No external services required** (enforces `>=65%` stmts/branches/lines, `>=50%` funcs) |
+| `npm run test:e2e` | End-to-end integration tests (`test/app.e2e-spec.ts`) validating HTTP pipelines, auth errors, and filters | **No live DB required** for smoke tests (uses mocked Prisma provider; CI tests also validate with Postgres service container) |
+
+### Test Commands
 ```bash
-# Run all unit tests (in-memory mocks, zero database required)
+# Run all unit tests
 npm test
 
 # Run unit tests with coverage report and threshold enforcement
 npm run test:cov
 
-# Run end-to-end integration tests (uses isolated mock or live test DB)
+# Run end-to-end integration tests
 npm run test:e2e
 
-# Run tests in watch mode
+# Run tests in watch mode during development
 npm run test:watch
 ```
 
 ### Coverage Thresholds
-Coverage thresholds are enforced via Jest in `package.json`. A pull request that drops coverage below the ratchet thresholds will fail CI:
-- **Statements**: `>= 50%`
-- **Branches**: `>= 50%`
-- **Lines**: `>= 50%`
-- **Functions**: `>= 35%`
+Coverage thresholds are enforced via Jest in `package.json`. A pull request that drops coverage below these thresholds will fail CI:
+- **Statements**: `>= 65%`
+- **Branches**: `>= 65%`
+- **Lines**: `>= 65%`
+- **Functions**: `>= 50%`
 
 ---
 

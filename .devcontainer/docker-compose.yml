@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/amped_db?schema=public"
+      NODE_ENV: "development"
+      PORT: 3007
+      JWT_SECRET: "devcontainersecretjwtkey1234567890"
+      JWT_REFRESH_SECRET: "devcontainersecretrefreshkey1234567890"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: amped_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

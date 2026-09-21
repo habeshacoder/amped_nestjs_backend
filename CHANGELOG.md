@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-09-21
+
+### Added
+- **Developer Onboarding & Devcontainer**:
+  - Added `.devcontainer/devcontainer.json` and `.devcontainer/docker-compose.yml` with Node 20 and PostgreSQL container services.
+  - Added comprehensive JSDoc documentation to all public methods of `BaseEntityStorageService` and `EntityFileManagerService`.
+  - Added quick start verification commands and testing guide prerequisites matrix in `README.md`.
+- **Code Deduplication & Architecture**:
+  - Extracted shared `EntityFileManagerService`, `BaseEntityStorageService`, and `entity-upload.decorator.ts`, driving code duplication down from 13.9% to 4.85%.
+  - Standardized error handling on `DomainException` subclasses (`NotFoundError`, `ConflictError`, `ValidationError`).
+- **Test Coverage Expansion**:
+  - Added 5 new controller unit test suites (`rating.controller.spec.ts`, `reports.controller.spec.ts`, `search.controller.spec.ts`, `channel.controller.spec.ts`, `favorite.controller.spec.ts`).
+  - Elevated Jest coverage thresholds in `package.json` to 65% statements, 65% branches, 65% lines, and 50% functions (41 suites / 424 tests).
+
+### Changed
+- **Dependency & Security Hardening**:
+  - Upgraded `@prisma/client` and `prisma` CLI from `4.16.2` to `6.19.3` via `5.22.0`.
+  - Removed deprecated `request` and `@types/request` dependencies in favor of native Node.js `fetch`.
+  - Upgraded `argon2` to `0.45.1` and overridden `deepmerge-ts` to `8.0.2`, eliminating critical vulnerabilities (0 critical remaining).
+  - Applied `@Throttle` rate limiting to authentication routes and file upload endpoints.
+  - Enforced non-wildcard CORS in production environments.
+  - Replaced test fixture passwords with dynamic entropy in E2E test specs.
+
 ## [1.0.0] - 2026-09-20
 
 ### Added
