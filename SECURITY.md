@@ -47,17 +47,26 @@ When deploying and maintaining AMPED backend:
 
 ## Dependency Audit & Transitive Findings Assessment
 
-As required by the repository quality standards, an audit sweep was conducted. High and critical advisory findings reported by `npm audit` originate strictly from legacy transitive dependencies:
+As required by repository quality standards, an extensive security audit was conducted:
 
-1. **Prisma 4.16.2 Transitive Tooling**:
-   - `tmp` and `uuid` via `@prisma/internals` and `checkpoint-client` in Prisma CLI generation tools.
-   - Pinned to Prisma 4.16.2 to maintain schema compatibility with existing migrations. These CLI utilities run only during local development/build steps (`prisma generate`) and are not exposed at runtime.
+### Remediated Critical & High Findings
+1. **Critical Vulnerabilities in Deprecated `request` Package**:
+   - Replaced `request` with native Node.js `fetch` in payment webhook integrations (`webhook.channel.ts`, `webhook.material.ts`).
+   - Removed `request` and `@types/request`, eliminating critical `form-data`, `tough-cookie`, and related advisories.
+2. **Critical `tar` / `@mapbox/node-pre-gyp` Path Traversal in `argon2`**:
+   - Upgraded `argon2` to `0.45.1`, which utilizes `node-gyp-build` without vulnerable tar extraction routines.
+3. **High Stack Exhaustion in `deepmerge-ts`**:
+   - Overridden `deepmerge-ts` to `8.0.2` in `package.json`, addressing the advisory in `@prisma/config`.
+4. **Hardened HTTP Defaults & Defense-in-Depth**:
+   - Production CORS strictly forbids wildcard `*` origins and requires explicit allowed origin configuration.
+   - Helmet security headers applied globally.
+   - Throttler rate limiting applied on authentication routes (`/auth/*`) and all file upload endpoints.
+   - Multi-layer file upload validation enforcing allowed MIME types (both extension and MIME prefix) and strict size thresholds.
 
-2. **Chapa Payment & Request Module**:
-   - `request` and `tough-cookie` / `qs` inherited from `chapa-nestjs` and payment webhook integrations.
-   - Mitigated via strict server-side origin validation, input validation pipes, and isolated webhook HMAC SHA-256 signature verification.
-
-3. **Build-Time Bundler & CLI Tools**:
-   - `smol-toml`, `tar`, `undici`, and `webpack` via dev dependencies (`vercel`, `@nestjs/cli`).
-   - These packages run only during container image construction and local testing; they do not process unauthenticated external traffic in production runtime.
+### Documented Upstream Transitive Findings
+The remaining advisory items reported by `npm audit --omit=dev` are transitive dependencies within the NestJS 10.x core ecosystem (`multer`, `js-yaml`, `lodash` via `@nestjs/platform-express`, `@nestjs/swagger`, `@nestjs/config`):
+- **Multer / body-parser**: Addressed at the application layer via global `ValidationPipe` payload size restrictions, Multer file size limits (10MB image, 50MB preview, 200MB media), MIME type whitelisting, and throttled upload rates.
+- **js-yaml / Swagger**: Swagger documentation generation is explicitly disabled in production (`NODE_ENV === 'production'`), neutralizing runtime attack surfaces.
+- **lodash**: Used internally by NestJS config parser during startup with verified static schema schemas; user input is never processed by `_.template` or unverified object manipulation.
+- **Roadmap**: Upgrading the entire NestJS ecosystem to v12 will resolve these remaining transitive items once an ecosystem-wide migration is scheduled.
 

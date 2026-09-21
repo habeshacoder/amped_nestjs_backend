@@ -50,7 +50,8 @@
     "chapa-nestjs": {
       "@nestjs/common": "$@nestjs/common",
       "@nestjs/axios": "^3.0.0"
-    }
+    },
+    "deepmerge-ts": "^8.0.2"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.0",
@@ -64,7 +65,7 @@
     "@nestjs/throttler": "^6.7.0",
     "@prisma/client": "6.19.3",
     "@sentry/node": "^10.75.0",
-    "argon2": "^0.30.2",
+    "argon2": "0.45.1",
     "chapa-nestjs": "^1.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -77,7 +78,6 @@
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "reflect-metadata": "^0.1.13",
-    "request": "^2.88.2",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
@@ -92,7 +92,6 @@
     "@types/multer": "^1.4.7",
     "@types/node": "^16.0.0",
     "@types/passport-jwt": "^3.0.8",
-    "@types/request": "^2.48.13",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

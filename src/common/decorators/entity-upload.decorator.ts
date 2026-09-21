@@ -1,5 +1,6 @@
-import { UseInterceptors } from '@nestjs/common';
+import { applyDecorators, UseInterceptors } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { diskStorage } from 'multer';
 import { editFileName } from '../utils/file-upload.utils';
 import { FileFieldsValidationPipe } from '../pipes/file-fields-validation.pipe';
@@ -13,7 +14,17 @@ export const MATERIAL_FILE_FIELDS = [
 ];
 
 export const MATERIAL_VALIDATION_SCHEMA = {
-  material: { required: false, maxSizeBytes: 200 * 1024 * 1024 },
+  material: {
+    required: false,
+    maxSizeBytes: 200 * 1024 * 1024,
+    allowedMimeTypes: [
+      'audio/*',
+      'video/*',
+      'application/epub+zip',
+      'application/pdf',
+      'application/octet-stream',
+    ],
+  },
   profile: {
     required: false,
     maxSizeBytes: 10 * 1024 * 1024,
@@ -29,7 +40,11 @@ export const MATERIAL_VALIDATION_SCHEMA = {
     maxSizeBytes: 10 * 1024 * 1024,
     allowedMimeTypes: ['image/*'],
   },
-  preview: { required: false, maxSizeBytes: 50 * 1024 * 1024 },
+  preview: {
+    required: false,
+    maxSizeBytes: 50 * 1024 * 1024,
+    allowedMimeTypes: ['audio/*', 'video/*', 'image/*'],
+  },
 };
 
 function normalizeDestination(destination: string): string {
@@ -41,34 +56,48 @@ function normalizeDestination(destination: string): string {
 }
 
 /**
- * Creates a FileFieldsInterceptor decorator configured for material/channel-material multi-field uploads.
+ * Creates a FileFieldsInterceptor decorator configured for material/channel-material multi-field uploads
+ * with rate limiting (20 req / min) and size limits.
  */
 export function MaterialFilesUploadInterceptor(destinationFolder: string) {
-  return UseInterceptors(
-    FileFieldsInterceptor(MATERIAL_FILE_FIELDS, {
-      storage: diskStorage({
-        destination: normalizeDestination(destinationFolder),
-        filename: editFileName,
+  return applyDecorators(
+    UseInterceptors(
+      FileFieldsInterceptor(MATERIAL_FILE_FIELDS, {
+        storage: diskStorage({
+          destination: normalizeDestination(destinationFolder),
+          filename: editFileName,
+        }),
+        limits: {
+          fileSize: 200 * 1024 * 1024,
+        },
       }),
-    }),
+    ),
+    Throttle({ default: { limit: 20, ttl: 60000 } }),
   );
 }
 
 /**
- * Creates a FileFieldsInterceptor decorator configured for a single file/field upload.
+ * Creates a FileFieldsInterceptor decorator configured for a single file/field upload
+ * with rate limiting (20 req / min) and size limits.
  */
 export function SingleFileUploadInterceptor(
   fieldName: string,
   destinationFolder: string,
   maxCount = 1,
 ) {
-  return UseInterceptors(
-    FileFieldsInterceptor([{ name: fieldName, maxCount }], {
-      storage: diskStorage({
-        destination: normalizeDestination(destinationFolder),
-        filename: editFileName,
+  return applyDecorators(
+    UseInterceptors(
+      FileFieldsInterceptor([{ name: fieldName, maxCount }], {
+        storage: diskStorage({
+          destination: normalizeDestination(destinationFolder),
+          filename: editFileName,
+        }),
+        limits: {
+          fileSize: 200 * 1024 * 1024,
+        },
       }),
-    }),
+    ),
+    Throttle({ default: { limit: 20, ttl: 60000 } }),
   );
 }
 

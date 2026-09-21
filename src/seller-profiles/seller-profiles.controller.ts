@@ -27,11 +27,13 @@ import {
   editFileName,
   imageFileFilter,
 } from 'src/common/utils/file-upload.utils';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('seller-profiles')
 export class SellerProfilesController {
   constructor(private readonly sellerProfilesService: SellerProfilesService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -46,6 +48,9 @@ export class SellerProfilesController {
           destination: './uploads/sellerProfile/image',
           filename: editFileName,
         }),
+        limits: {
+          fileSize: 10 * 1024 * 1024,
+        },
         fileFilter: imageFileFilter,
       },
     ),
@@ -84,6 +89,7 @@ export class SellerProfilesController {
     return this.sellerProfilesService.updateProfileInfo(+id, sellerProfileDto);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('/update_profile-image/:id')
   @UseInterceptors(
@@ -92,6 +98,9 @@ export class SellerProfilesController {
         destination: './uploads/sellerProfile/image',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )
@@ -102,6 +111,7 @@ export class SellerProfilesController {
     return this.sellerProfilesService.updateProfileImage(files, +id);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('/update_cover-image/:id')
   @UseInterceptors(
@@ -110,6 +120,9 @@ export class SellerProfilesController {
         destination: './uploads/sellerProfile/image',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )

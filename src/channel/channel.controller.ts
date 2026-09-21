@@ -32,11 +32,13 @@ import { ChannelService } from './channel.service';
 import { Response } from 'express';
 import { ChannelDto } from './dto';
 import { join } from 'path';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('channel')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -51,6 +53,9 @@ export class ChannelController {
           destination: './uploads/channel/',
           filename: editFileName,
         }),
+        limits: {
+          fileSize: 10 * 1024 * 1024,
+        },
         fileFilter: imageFileFilter,
       },
     ),
@@ -110,6 +115,7 @@ export class ChannelController {
     return this.channelService.update(+id, channelDto);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('channel_profile-image/:channel_id')
   @HttpCode(HttpStatus.CREATED)
@@ -119,6 +125,9 @@ export class ChannelController {
         destination: './uploads/channel/',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )
@@ -129,6 +138,7 @@ export class ChannelController {
     return this.channelService.updateChannelProfileImage(files, +channel_id);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('channel_cover-image/:channel_id')
   @HttpCode(HttpStatus.CREATED)
@@ -138,6 +148,9 @@ export class ChannelController {
         destination: './uploads/channel/',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )
@@ -210,6 +223,7 @@ export class ChannelController {
   }
 
   //multiple images upload
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Post('upload/channel/images')
   @UseInterceptors(
@@ -218,6 +232,9 @@ export class ChannelController {
         destination: './uploads/channel/images',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )
@@ -241,6 +258,7 @@ export class ChannelController {
   }
 
   //channel preview upload
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Post('upload/preview')
   @UseInterceptors(
     FileInterceptor('preview', {
@@ -248,6 +266,9 @@ export class ChannelController {
         destination: './uploads/channel/preview',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 50 * 1024 * 1024,
+      },
       fileFilter: fileFilter,
     }),
   )

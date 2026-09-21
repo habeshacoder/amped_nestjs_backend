@@ -27,11 +27,13 @@ import {
   editFileName,
   imageFileFilter,
 } from 'src/common/utils/file-upload.utils';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('profiles')
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -46,6 +48,9 @@ export class ProfilesController {
           destination: './uploads/profile/profile',
           filename: editFileName,
         }),
+        limits: {
+          fileSize: 10 * 1024 * 1024,
+        },
         fileFilter: imageFileFilter,
       },
     ),
@@ -93,6 +98,7 @@ export class ProfilesController {
     return this.profilesService.updateProfile(+id, profileDto);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('profile_image/:id')
   @UseInterceptors(
@@ -101,6 +107,9 @@ export class ProfilesController {
         destination: './uploads/profile/profile',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )
@@ -111,6 +120,7 @@ export class ProfilesController {
     return this.profilesService.updateProfileImage(profileImage, +id);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtGuard)
   @Patch('cover_imege/:id')
   @UseInterceptors(
@@ -119,6 +129,9 @@ export class ProfilesController {
         destination: './uploads/profile/profile',
         filename: editFileName,
       }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
       fileFilter: imageFileFilter,
     }),
   )

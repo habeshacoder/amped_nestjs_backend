@@ -21,13 +21,31 @@ async function bootstrap() {
     }),
   );
 
-  const rawCorsOrigin = configService.get<string>('CORS_ORIGIN') || '*';
-  const corsOrigin =
-    rawCorsOrigin === '*'
-      ? '*'
-      : rawCorsOrigin.includes(',')
+  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  const rawCorsOrigin = configService.get<string>('CORS_ORIGIN');
+  let corsOrigin: boolean | string | string[];
+
+  if (isProduction) {
+    if (
+      !rawCorsOrigin ||
+      rawCorsOrigin.trim() === '*' ||
+      rawCorsOrigin.trim() === ''
+    ) {
+      throw new Error(
+        'CORS_ORIGIN must be explicitly configured with non-wildcard origin(s) in production',
+      );
+    }
+    corsOrigin = rawCorsOrigin.includes(',')
       ? rawCorsOrigin.split(',').map((origin) => origin.trim())
-      : rawCorsOrigin;
+      : rawCorsOrigin.trim();
+  } else {
+    corsOrigin =
+      !rawCorsOrigin || rawCorsOrigin.trim() === '*'
+        ? '*'
+        : rawCorsOrigin.includes(',')
+        ? rawCorsOrigin.split(',').map((origin) => origin.trim())
+        : rawCorsOrigin.trim();
+  }
 
   app.enableCors({
     origin: corsOrigin,

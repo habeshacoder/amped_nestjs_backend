@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { Material_PurchaseDto } from './dto';
 import { ChapaService } from 'chapa-nestjs';
-import * as request from 'request';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -24,28 +23,31 @@ export class ChapaWebHook {
     const secret = this.config.get('CHAPA_WEBHOOK_HASH_KEY');
     const webhook_URL = this.config.get('CHAPA_WEBHOOK_URL');
 
-    const options = {
-      method: 'POST',
-      url: webhook_URL,
-      body: JSON.stringify({
-        amount: dto.total.toString(),
-        currency: dto.currency,
-        email: dto.email,
-        first_name: dto.first_name,
-        last_name: dto.last_name,
-        phone_number: dto.phone_no,
-        tx_ref: secret,
-        callback_url: 'http://localhost:3000/material-purchase/verify',
-        return_url: 'http://localhost:3000/material-purchase/cart',
-        'customization[title]': 'Payment from AratKillo',
-        'customization[description]': 'add the list of bought items here',
-      }),
-    };
-
-    request(options, (error: any, response: any) => {
-      if (error) throw new Error(error);
-      this.logger.log(response.body);
+    const body = JSON.stringify({
+      amount: dto.total.toString(),
+      currency: dto.currency,
+      email: dto.email,
+      first_name: dto.first_name,
+      last_name: dto.last_name,
+      phone_number: dto.phone_no,
+      tx_ref: secret,
+      callback_url: 'http://localhost:3000/material-purchase/verify',
+      return_url: 'http://localhost:3000/material-purchase/cart',
+      'customization[title]': 'Payment from AratKillo',
+      'customization[description]': 'add the list of bought items here',
     });
+
+    try {
+      const response = await fetch(webhook_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+      const data = await response.text();
+      this.logger.log(data);
+    } catch (error: any) {
+      throw new Error(error);
+    }
   }
 
   async verify(user: User) {

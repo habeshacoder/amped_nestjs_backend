@@ -94,7 +94,12 @@ import * as Joi from 'joi';
     PrismaModule,
     CommonModule,
     ProfilesModule,
-    MulterModule.register({ dest: './uploads' }),
+    MulterModule.register({
+      dest: './uploads',
+      limits: {
+        fileSize: 200 * 1024 * 1024,
+      },
+    }),
     SellerProfilesModule,
     MaterialModule,
     ChannelMaterialModule,

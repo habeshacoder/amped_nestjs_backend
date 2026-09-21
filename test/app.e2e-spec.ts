@@ -1,10 +1,14 @@
+import { randomBytes } from 'crypto';
+
+const dynamicSecret = randomBytes(32).toString('hex');
+const dynamicPassword = `TestPass_${randomBytes(8).toString('hex')}!`;
+
 process.env.DATABASE_URL =
   process.env.DATABASE_URL ||
   'postgresql://postgres:postgres@localhost:5432/amped_test?schema=public';
-process.env.JWT_SECRET =
-  process.env.JWT_SECRET || 'supersecrettestjwtkey1234567890';
+process.env.JWT_SECRET = process.env.JWT_SECRET || dynamicSecret;
 process.env.JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET || 'supersecrettestjwtrefreshkey1234567890';
+  process.env.JWT_REFRESH_SECRET || randomBytes(32).toString('hex');
 process.env.NODE_ENV = 'test';
 
 import { Test, TestingModule } from '@nestjs/testing';
@@ -91,7 +95,7 @@ describe('App End-to-End Tests', () => {
   it('POST /auth/signin should reject invalid email format with 400', () => {
     return request(app.getHttpServer())
       .post('/auth/signin')
-      .send({ email: 'not-an-email', password: 'password123' })
+      .send({ email: 'not-an-email', password: dynamicPassword })
       .expect(400)
       .expect((res) => {
         expect(res.body.statusCode).toBe(400);

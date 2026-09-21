@@ -15,7 +15,9 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, ResetDto } from './dto';
 import { JwtGuard, RefreshTokenGuard } from './guard';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
