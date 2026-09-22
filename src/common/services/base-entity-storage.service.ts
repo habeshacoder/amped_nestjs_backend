@@ -1,16 +1,12 @@
 import { Res } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadedImages } from './file-storage.service';
 import {
-  ConflictError,
-  DomainException,
-} from '../exceptions/domain-exceptions';
-import {
   EntityFileManagerConfig,
   EntityFileManagerService,
 } from './entity-file-manager.service';
+import { handlePrismaError } from './prisma-error.util';
 
 /**
  * Base abstract class providing reusable storage operations for material and channel-material entities.
@@ -30,16 +26,7 @@ export abstract class BaseEntityStorageService {
    * @throws ConflictError when a unique constraint violation (P2002) occurs
    */
   protected handlePrismaError(error: unknown): never {
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
-    }
-    if (error instanceof DomainException) {
-      throw error;
-    }
-    throw error;
+    handlePrismaError(error);
   }
 
   /**
