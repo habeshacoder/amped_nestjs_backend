@@ -111,31 +111,29 @@ It provides complete interactive documentation of request bodies, response schem
 
 ### Quick start (fresh clone)
 
-To go from a clean clone to a running app and passing tests in one command sequence:
+To go from a clean clone to a verified build and passing test suites in one command sequence:
 
 ```bash
 # 1. Install dependencies & generate Prisma client
 npm ci && npx prisma generate
 
-# 2. Copy environment configuration
-cp .env.example .env
+# 2. Build the application
+npm run build
 
-# 3. Start PostgreSQL container
+# 3. Run unit tests with coverage enforcement
+npm run test:cov
+
+# 4. (Optional for local full-stack) Start PostgreSQL & run integration tests
 docker compose up -d postgres
+npm run test:e2e
 
-# 4. Run database migrations
-npm run migration:run
-
-# 5. Run tests (unit & e2e)
-npm test && npm run test:e2e
-
-# 6. Start development server
+# 5. Start development server
 npm run start:dev
 ```
 
 Or run the complete verification one-liner:
 ```bash
-npm ci && npx prisma generate && cp -n .env.example .env && docker compose up -d postgres && npm run migration:run && npm test && npm run test:e2e
+npm ci && npx prisma generate && npm run build && npm run test:cov
 ```
 
 ### 1. Clone the repository
@@ -224,7 +222,7 @@ All tests are verified before every commit and in continuous integration.
 | :--- | :--- | :--- |
 | `npm test` | Executes all unit test suites (services, controllers, guards, filters, pipes) | **No external services required** (all DB calls use in-memory Prisma mocks) |
 | `npm run test:cov` | Executes all unit tests with coverage reporting and threshold enforcement | **No external services required** (enforces `>=65%` stmts/branches/lines, `>=50%` funcs) |
-| `npm run test:e2e` | End-to-end integration tests (`test/app.e2e-spec.ts`) validating HTTP pipelines, auth errors, and filters | **No live DB required** for smoke tests (uses mocked Prisma provider; CI tests also validate with Postgres service container) |
+| `npm run test:e2e` | End-to-end and real Prisma integration tests (`test/app.e2e-spec.ts` & `src/*/*.integration.spec.ts`) | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI |
 
 ### Test Commands
 ```bash
