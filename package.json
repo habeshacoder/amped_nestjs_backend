@@ -136,7 +136,8 @@
       "!**/*.dto.ts",
       "!**/*.entity.ts",
       "!**/migrations/**",
-      "!**/index.ts"
+      "!**/index.ts",
+      "!**/*.spec.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
