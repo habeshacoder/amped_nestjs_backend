@@ -21,7 +21,7 @@ export const prisma = new PrismaClient();
 export async function cleanDatabase(): Promise<void> {
   // Truncate all tables in dependency order with CASCADE to ensure clean state
   const tablenames = await prisma.$queryRaw<Array<{ tablename: string }>>`
-    SELECT tablename FROM pg_tables 
+    SELECT tablename FROM pg_tables
     WHERE schemaname='public' AND tablename NOT LIKE '_prisma_%';
   `;
 

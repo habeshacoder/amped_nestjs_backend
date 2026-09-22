@@ -15,4 +15,3 @@
   "setupFilesAfterEnv": ["<rootDir>/test/setup-e2e.ts"],
   "maxWorkers": 1
 }
-
