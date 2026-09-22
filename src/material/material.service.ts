@@ -1,16 +1,14 @@
 /* eslint-disable prefer-const */
 import { Injectable, Logger, Res } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { MaterialDto } from './dto';
 import { Catagory, Material, Parent, Type, User } from '@prisma/client';
 import { MaterialQueryService } from './material-query.service';
 import { MaterialStorageService } from './material-storage.service';
-import {
-  ConflictError,
-  DomainException,
-  NotFoundError,
-} from '../common/exceptions/domain-exceptions';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
+import { UploadedImages } from '../common/services/file-storage.service';
+import { handlePrismaError } from '../common/services/prisma-error.util';
 
 @Injectable()
 export class MaterialService {
@@ -21,19 +19,6 @@ export class MaterialService {
     private readonly queryService: MaterialQueryService,
     private readonly storageService: MaterialStorageService,
   ) {}
-
-  private handlePrismaError(error: unknown): never {
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
-    }
-    if (error instanceof DomainException) {
-      throw error;
-    }
-    throw error;
-  }
 
   async create(materialDto: MaterialDto) {
     try {
@@ -63,7 +48,7 @@ export class MaterialService {
 
       return material;
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -104,7 +89,7 @@ export class MaterialService {
         },
       });
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -126,7 +111,7 @@ export class MaterialService {
       });
       return { message: 'Material deleted successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -202,35 +187,35 @@ export class MaterialService {
   }
 
   // Delegated Storage Methods
-  async createFile(images: any, id: number) {
+  async createFile(images: UploadedImages, id: number) {
     return this.storageService.createFile(images, id);
   }
 
-  async updateMaterial(materialFile: any, id: number) {
+  async updateMaterial(materialFile: UploadedImages, id: number) {
     return this.storageService.updateMaterial(materialFile, id);
   }
 
-  async updateMaterialProfile(materialProfile: any, id: number) {
+  async updateMaterialProfile(materialProfile: UploadedImages, id: number) {
     return this.storageService.updateMaterialProfile(materialProfile, id);
   }
 
-  async updateMaterialCover(materialCover: any, id: number) {
+  async updateMaterialCover(materialCover: UploadedImages, id: number) {
     return this.storageService.updateMaterialCover(materialCover, id);
   }
 
-  async updateMaterialPreview(materialPreview: any, id: number) {
+  async updateMaterialPreview(materialPreview: UploadedImages, id: number) {
     return this.storageService.updateMaterialPreview(materialPreview, id);
   }
 
-  async updateMaterialImage(materialPreview: any, id: number) {
-    return this.storageService.updateMaterialImage(materialPreview, id);
+  async updateMaterialImage(materialImages: UploadedImages, id: number) {
+    return this.storageService.updateMaterialImage(materialImages, id);
   }
 
   async uploadMaterial(file: Express.Multer.File, id: number) {
     return this.storageService.uploadMaterial(file, id);
   }
 
-  async showMaterial(id: number, @Res() res: any) {
+  async showMaterial(id: number, @Res() res: Response) {
     return this.storageService.showMaterial(id, res);
   }
 
@@ -238,7 +223,7 @@ export class MaterialService {
     return this.storageService.uploadMaterialProfile(file, id);
   }
 
-  async showMaterialProfile(id: number, @Res() res: any) {
+  async showMaterialProfile(id: number, @Res() res: Response) {
     return this.storageService.showMaterialProfile(id, res);
   }
 
@@ -246,7 +231,7 @@ export class MaterialService {
     return this.storageService.uploadMaterialCover(file, id);
   }
 
-  async showMaterialCover(id: number, @Res() res: any) {
+  async showMaterialCover(id: number, @Res() res: Response) {
     return this.storageService.showMaterialCover(id, res);
   }
 
@@ -254,7 +239,7 @@ export class MaterialService {
     return this.storageService.uploadMaterialImage(files, id);
   }
 
-  async showMaterialImage(id: number, @Res() res: any) {
+  async showMaterialImage(id: number, @Res() res: Response) {
     return this.storageService.showMaterialImage(id, res);
   }
 
@@ -262,7 +247,7 @@ export class MaterialService {
     return this.storageService.uploadMaterialPreview(file, id);
   }
 
-  async showMaterialPreview(id: number, @Res() res: any) {
+  async showMaterialPreview(id: number, @Res() res: Response) {
     return this.storageService.showMaterialPreview(id, res);
   }
 }
