@@ -2,31 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RatingDto } from './dto';
 import { User } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UpdateRatingDto } from './dto/update-rating.dto';
 import {
   ConflictError,
-  DomainException,
   NotFoundError,
   ValidationError,
 } from '../common/exceptions/domain-exceptions';
+import { handlePrismaError } from '../common/services/prisma-error.util';
 
 @Injectable()
 export class RatingService {
   constructor(private prisma: PrismaService) {}
-
-  private handlePrismaError(error: unknown): never {
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
-    }
-    if (error instanceof DomainException) {
-      throw error;
-    }
-    throw error;
-  }
 
   async create(ratingDto: RatingDto, user: User) {
     const rating = await this.prisma.rate.findFirst({
@@ -55,7 +41,7 @@ export class RatingService {
 
           return rate;
         } catch (error) {
-          this.handlePrismaError(error);
+          handlePrismaError(error);
         }
       } else {
         throw new ValidationError('Please input material or channel.');
@@ -70,10 +56,10 @@ export class RatingService {
   async findAll() {
     const rating = await this.prisma.rate.findMany();
 
-    if (rating) {
+    if (rating && rating.length > 0) {
       return rating;
     } else {
-      return { message: 'No rating found.' };
+      throw new NotFoundError('No rating found.', 'RATING_NOT_FOUND');
     }
   }
 
@@ -87,7 +73,7 @@ export class RatingService {
     if (rating) {
       return rating;
     } else {
-      return { message: 'No rating found.' };
+      throw new NotFoundError('No rating found.', 'RATING_NOT_FOUND');
     }
   }
 
@@ -98,10 +84,10 @@ export class RatingService {
       },
     });
 
-    if (rating) {
+    if (rating && rating.length > 0) {
       return rating;
     } else {
-      return { message: 'No review found.' };
+      throw new NotFoundError('No review found.', 'REVIEW_NOT_FOUND');
     }
   }
 
@@ -112,10 +98,10 @@ export class RatingService {
       },
     });
 
-    if (myReviews) {
+    if (myReviews && myReviews.length > 0) {
       return myReviews;
     } else {
-      return { message: 'No review found.' };
+      throw new NotFoundError('No review found.', 'REVIEW_NOT_FOUND');
     }
   }
 
@@ -185,7 +171,7 @@ export class RatingService {
         return default_rating;
       }
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -220,7 +206,7 @@ export class RatingService {
           return default_rating;
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        handlePrismaError(error);
       }
     } else {
       return 0;
@@ -284,7 +270,7 @@ export class RatingService {
 
         return rating;
       } catch (error) {
-        this.handlePrismaError(error);
+        handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(
@@ -310,7 +296,7 @@ export class RatingService {
 
         return { message: 'Rate deleted successfully' };
       } catch (error) {
-        this.handlePrismaError(error);
+        handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(

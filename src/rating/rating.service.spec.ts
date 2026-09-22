@@ -125,6 +125,11 @@ describe('RatingService', () => {
       const result = await service.findAll();
       expect(result).toEqual([mockRate]);
     });
+
+    it('should throw NotFoundError when no ratings found', async () => {
+      prisma.rate.findMany.mockResolvedValue([]);
+      await expect(service.findAll()).rejects.toThrow(NotFoundError);
+    });
   });
 
   describe('findOne', () => {
@@ -133,6 +138,11 @@ describe('RatingService', () => {
 
       const result = await service.findOne(1);
       expect(result).toEqual(mockRate);
+    });
+
+    it('should throw NotFoundError when rating not found', async () => {
+      prisma.rate.findUnique.mockResolvedValue(null);
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -143,10 +153,11 @@ describe('RatingService', () => {
       expect(result).toEqual([mockRate]);
     });
 
-    it('should return message when no reviews found', async () => {
-      prisma.rate.findMany.mockResolvedValue(null);
-      const result = await service.getMyReview(mockUser);
-      expect(result).toEqual({ message: 'No review found.' });
+    it('should throw NotFoundError when no reviews found', async () => {
+      prisma.rate.findMany.mockResolvedValue([]);
+      await expect(service.getMyReview(mockUser)).rejects.toThrow(
+        NotFoundError,
+      );
     });
   });
 
@@ -157,10 +168,11 @@ describe('RatingService', () => {
       expect(result).toEqual([mockRate]);
     });
 
-    it('should return message when no reviews found for rating', async () => {
-      prisma.rate.findMany.mockResolvedValue(null);
-      const result = await service.getByRatingNo(mockUser, 5);
-      expect(result).toEqual({ message: 'No review found.' });
+    it('should throw NotFoundError when no reviews found for rating', async () => {
+      prisma.rate.findMany.mockResolvedValue([]);
+      await expect(service.getByRatingNo(mockUser, 5)).rejects.toThrow(
+        NotFoundError,
+      );
     });
   });
 

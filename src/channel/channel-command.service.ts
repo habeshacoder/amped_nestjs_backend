@@ -1,16 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChannelDto } from './dto';
 import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
-import {
-  ConflictError,
-  DomainException,
-  NotFoundError,
-} from '../common/exceptions/domain-exceptions';
+import { NotFoundError } from '../common/exceptions/domain-exceptions';
+import { handlePrismaError } from '../common/services/prisma-error.util';
 
 @Injectable()
 export class ChannelCommandService {
@@ -20,19 +16,6 @@ export class ChannelCommandService {
     private readonly prisma: PrismaService,
     private readonly fileStorage: FileStorageService,
   ) {}
-
-  private handlePrismaError(error: unknown): never {
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      throw new ConflictError('Credentials Taken', 'CREDENTIALS_TAKEN');
-    }
-    if (error instanceof DomainException) {
-      throw error;
-    }
-    throw error;
-  }
 
   async create(images: UploadedImages, channelDto: ChannelDto) {
     const profileName = this.fileStorage.extractFieldFileName(
@@ -73,7 +56,7 @@ export class ChannelCommandService {
 
       return channel;
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -95,7 +78,7 @@ export class ChannelCommandService {
         },
       });
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -146,7 +129,7 @@ export class ChannelCommandService {
 
       return { message: 'Channel Profile Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -194,7 +177,7 @@ export class ChannelCommandService {
 
       return { message: 'Channel Cover Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -227,7 +210,7 @@ export class ChannelCommandService {
 
       return { message: 'Channel Deleted Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -262,7 +245,7 @@ export class ChannelCommandService {
 
       return updated;
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -297,7 +280,7 @@ export class ChannelCommandService {
 
       return updated;
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -318,7 +301,7 @@ export class ChannelCommandService {
           uploadedImages.push(newChannelImage);
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        handlePrismaError(error);
       }
     }
     return uploadedImages;
@@ -354,7 +337,7 @@ export class ChannelCommandService {
 
       return updated;
     } catch (error) {
-      this.handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 }
