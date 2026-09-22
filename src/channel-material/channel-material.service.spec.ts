@@ -1,8 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelMaterialService } from './channel-material.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundError } from '../common/exceptions/domain-exceptions';
+import {
+  ConflictError,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 import { Parent, Type } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Response } from 'express';
 
 import { ChannelMaterialQueryService } from './channel-material-query.service';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
@@ -11,6 +16,7 @@ import { EntityFileManagerService } from '../common/services/entity-file-manager
 
 describe('ChannelMaterialService', () => {
   let service: ChannelMaterialService;
+  let storageService: ChannelMaterialStorageService;
   let prisma: {
     channelMaterial: {
       create: jest.Mock;
@@ -52,6 +58,9 @@ describe('ChannelMaterialService', () => {
     }).compile();
 
     service = module.get<ChannelMaterialService>(ChannelMaterialService);
+    storageService = module.get<ChannelMaterialStorageService>(
+      ChannelMaterialStorageService,
+    );
   });
 
   it('should be defined', () => {
@@ -104,6 +113,18 @@ describe('ChannelMaterialService', () => {
       const result = await service.create(dto);
       expect(result).toHaveProperty('id', 102);
       expect(prisma.materialInSubscriptionPlan.create).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw ConflictError on unique constraint violation (P2002)', async () => {
+      const p2002 = new PrismaClientKnownRequestError('Unique error', {
+        code: 'P2002',
+        clientVersion: '5.x',
+      });
+      prisma.channelMaterial.create.mockRejectedValue(p2002);
+
+      await expect(
+        service.create({ title: 'Duplicate' } as any),
+      ).rejects.toThrow(ConflictError);
     });
   });
 
@@ -178,6 +199,40 @@ describe('ChannelMaterialService', () => {
     });
   });
 
+  describe('update', () => {
+    it('should throw NotFoundError if material does not exist', async () => {
+      prisma.channelMaterial.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.update(99, { title: 'Updated' } as any),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should update channel material successfully', async () => {
+      prisma.channelMaterial.findFirst.mockResolvedValue({ id: 10 });
+      prisma.channelMaterial.update.mockResolvedValue({
+        id: 10,
+        title: 'Updated',
+      });
+
+      const result = await service.update(10, { title: 'Updated' } as any);
+      expect(result).toEqual({ id: 10, title: 'Updated' });
+    });
+
+    it('should throw ConflictError on P2002 during update', async () => {
+      prisma.channelMaterial.findFirst.mockResolvedValue({ id: 10 });
+      const p2002 = new PrismaClientKnownRequestError('Duplicate error', {
+        code: 'P2002',
+        clientVersion: '5.x',
+      });
+      prisma.channelMaterial.update.mockRejectedValue(p2002);
+
+      await expect(
+        service.update(10, { title: 'Duplicate' } as any),
+      ).rejects.toThrow(ConflictError);
+    });
+  });
+
   describe('remove', () => {
     it('should throw NotFoundError if material does not exist', async () => {
       prisma.channelMaterial.findFirst.mockResolvedValue(null);
@@ -191,6 +246,177 @@ describe('ChannelMaterialService', () => {
 
       const result = await service.remove(10);
       expect(result).toEqual({ message: 'Material deleted successfully' });
+    });
+  });
+
+  describe('Delegated Storage Methods', () => {
+    const mockItem = { id: 10, title: 'Test' };
+
+    it('should delegate createFile to storageService', async () => {
+      jest
+        .spyOn(storageService, 'createFile')
+        .mockResolvedValue(mockItem as any);
+      const result = await service.createFile({}, 10);
+      expect(storageService.createFile).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual(mockItem);
+    });
+
+    it('should delegate updateMaterial to storageService', async () => {
+      jest
+        .spyOn(storageService, 'updateMaterial')
+        .mockResolvedValue({ message: 'Updated' } as any);
+      const result = await service.updateMaterial({}, 10);
+      expect(storageService.updateMaterial).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual({ message: 'Updated' });
+    });
+
+    it('should delegate updateMaterialProfile to storageService', async () => {
+      jest
+        .spyOn(storageService, 'updateMaterialProfile')
+        .mockResolvedValue({ message: 'Profile Updated' } as any);
+      const result = await service.updateMaterialProfile({}, 10);
+      expect(storageService.updateMaterialProfile).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual({ message: 'Profile Updated' });
+    });
+
+    it('should delegate updateMaterialCover to storageService', async () => {
+      jest
+        .spyOn(storageService, 'updateMaterialCover')
+        .mockResolvedValue({ message: 'Cover Updated' } as any);
+      const result = await service.updateMaterialCover({}, 10);
+      expect(storageService.updateMaterialCover).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual({ message: 'Cover Updated' });
+    });
+
+    it('should delegate updateMaterialPreview to storageService', async () => {
+      jest
+        .spyOn(storageService, 'updateMaterialPreview')
+        .mockResolvedValue({ message: 'Preview Updated' } as any);
+      const result = await service.updateMaterialPreview({}, 10);
+      expect(storageService.updateMaterialPreview).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual({ message: 'Preview Updated' });
+    });
+
+    it('should delegate updateMaterialImage to storageService', async () => {
+      jest
+        .spyOn(storageService, 'updateMaterialImage')
+        .mockResolvedValue({ message: 'Image Updated' } as any);
+      const result = await service.updateMaterialImage({}, 10);
+      expect(storageService.updateMaterialImage).toHaveBeenCalledWith({}, 10);
+      expect(result).toEqual({ message: 'Image Updated' });
+    });
+
+    it('should delegate uploadMaterial to storageService', async () => {
+      const mockFile = { filename: 'test.pdf' } as Express.Multer.File;
+      jest
+        .spyOn(storageService, 'uploadMaterial')
+        .mockResolvedValue(mockItem as any);
+      const result = await service.uploadMaterial(mockFile, 10);
+      expect(storageService.uploadMaterial).toHaveBeenCalledWith(mockFile, 10);
+      expect(result).toEqual(mockItem);
+    });
+
+    it('should delegate showMaterial to storageService', async () => {
+      const mockRes = {} as Response;
+      jest.spyOn(storageService, 'showMaterial').mockResolvedValue(undefined);
+      await service.showMaterial(10, mockRes);
+      expect(storageService.showMaterial).toHaveBeenCalledWith(10, mockRes);
+    });
+
+    it('should delegate uploadMaterialProfile to storageService', async () => {
+      const mockFile = { filename: 'profile.jpg' } as Express.Multer.File;
+      jest
+        .spyOn(storageService, 'uploadMaterialProfile')
+        .mockResolvedValue({ message: 'Success' } as any);
+      await service.uploadMaterialProfile(mockFile, 10);
+      expect(storageService.uploadMaterialProfile).toHaveBeenCalledWith(
+        mockFile,
+        10,
+      );
+    });
+
+    it('should delegate showMaterialProfile to storageService', async () => {
+      const mockRes = {} as Response;
+      jest
+        .spyOn(storageService, 'showMaterialProfile')
+        .mockResolvedValue(undefined);
+      await service.showMaterialProfile(10, mockRes);
+      expect(storageService.showMaterialProfile).toHaveBeenCalledWith(
+        10,
+        mockRes,
+      );
+    });
+
+    it('should delegate uploadMaterialCover to storageService', async () => {
+      const mockFile = { filename: 'cover.jpg' } as Express.Multer.File;
+      jest
+        .spyOn(storageService, 'uploadMaterialCover')
+        .mockResolvedValue({ message: 'Success' } as any);
+      await service.uploadMaterialCover(mockFile, 10);
+      expect(storageService.uploadMaterialCover).toHaveBeenCalledWith(
+        mockFile,
+        10,
+      );
+    });
+
+    it('should delegate showMaterialCover to storageService', async () => {
+      const mockRes = {} as Response;
+      jest
+        .spyOn(storageService, 'showMaterialCover')
+        .mockResolvedValue(undefined);
+      await service.showMaterialCover(10, mockRes);
+      expect(storageService.showMaterialCover).toHaveBeenCalledWith(
+        10,
+        mockRes,
+      );
+    });
+
+    it('should delegate uploadMaterialImage to storageService', async () => {
+      const mockFiles = [{ filename: 'img.jpg' }] as Express.Multer.File[];
+      jest
+        .spyOn(storageService, 'uploadMaterialImage')
+        .mockResolvedValue([{ id: 1 }] as any);
+      await service.uploadMaterialImage(mockFiles, 10);
+      expect(storageService.uploadMaterialImage).toHaveBeenCalledWith(
+        mockFiles,
+        10,
+      );
+    });
+
+    it('should delegate showMaterialImage to storageService', async () => {
+      const mockRes = {} as Response;
+      jest
+        .spyOn(storageService, 'showMaterialImage')
+        .mockResolvedValue(undefined);
+      await service.showMaterialImage(10, mockRes);
+      expect(storageService.showMaterialImage).toHaveBeenCalledWith(
+        10,
+        mockRes,
+      );
+    });
+
+    it('should delegate uploadMaterialPreview to storageService', async () => {
+      const mockFile = { filename: 'prev.mp3' } as Express.Multer.File;
+      jest
+        .spyOn(storageService, 'uploadMaterialPreview')
+        .mockResolvedValue({ id: 1 } as any);
+      await service.uploadMaterialPreview(mockFile, 10);
+      expect(storageService.uploadMaterialPreview).toHaveBeenCalledWith(
+        mockFile,
+        10,
+      );
+    });
+
+    it('should delegate showMaterialPreview to storageService', async () => {
+      const mockRes = {} as Response;
+      jest
+        .spyOn(storageService, 'showMaterialPreview')
+        .mockResolvedValue(undefined);
+      await service.showMaterialPreview(10, mockRes);
+      expect(storageService.showMaterialPreview).toHaveBeenCalledWith(
+        10,
+        mockRes,
+      );
     });
   });
 });
