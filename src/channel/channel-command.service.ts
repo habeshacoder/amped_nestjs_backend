@@ -60,7 +60,6 @@ export class ChannelCommandService {
       return channel;
     } catch (error) {
       handlePrismaError(error);
-      handlePrismaError(error);
     }
   }
 
@@ -82,7 +81,6 @@ export class ChannelCommandService {
         },
       });
     } catch (error) {
-      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
@@ -135,7 +133,6 @@ export class ChannelCommandService {
       return { message: 'Channel Profile Image Uploaded Successfully' };
     } catch (error) {
       handlePrismaError(error);
-      handlePrismaError(error);
     }
   }
 
@@ -184,7 +181,6 @@ export class ChannelCommandService {
       return { message: 'Channel Cover Image Uploaded Successfully' };
     } catch (error) {
       handlePrismaError(error);
-      handlePrismaError(error);
     }
   }
 
@@ -217,7 +213,6 @@ export class ChannelCommandService {
 
       return { message: 'Channel Deleted Successfully' };
     } catch (error) {
-      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
@@ -254,7 +249,6 @@ export class ChannelCommandService {
       return updated;
     } catch (error) {
       handlePrismaError(error);
-      handlePrismaError(error);
     }
   }
 
@@ -290,7 +284,6 @@ export class ChannelCommandService {
       return updated;
     } catch (error) {
       handlePrismaError(error);
-      handlePrismaError(error);
     }
   }
 
@@ -311,7 +304,6 @@ export class ChannelCommandService {
           uploadedImages.push(newChannelImage);
         }
       } catch (error) {
-        handlePrismaError(error);
         handlePrismaError(error);
       }
     }
@@ -348,7 +340,6 @@ export class ChannelCommandService {
 
       return updated;
     } catch (error) {
-      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
