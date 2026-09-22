@@ -1,35 +1,124 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Response } from 'express';
-import { FileStorageService, UploadedImages } from './file-storage.service';
+import {
+  FileStorageService,
+  NamedFileRecord,
+  UploadedImages,
+} from './file-storage.service';
 import { NotFoundError } from '../exceptions/domain-exceptions';
 
-export interface EntityFileManagerConfig<
-  TParent = any,
-  TImage = any,
-  TPreview = any,
-> {
+/**
+ * Minimal structural shape for a parent entity record as used internally by
+ * EntityFileManagerService. Fields are accessed via bracket notation, so the
+ * concrete type only needs to satisfy the structural minimum needed by
+ * FileStorageService helpers. All Prisma-generated model records satisfy this.
+ */
+export interface ParentRecord {
+  id: number;
+  material?: string | null;
+  [key: string]: unknown;
+}
+
+/**
+ * A minimal structural type that captures the operations EntityFileManagerService
+ * actually performs on a "parent" entity delegate (Material or ChannelMaterial).
+ *
+ * Prisma.MaterialDelegate and Prisma.ChannelMaterialDelegate are both structurally
+ * compatible with this interface — all their generated methods accept the same
+ * arg shapes and return at least this much. Using this instead of `any` gives
+ * compile-time safety at every call site without hard-coding a single concrete model.
+ */
+export interface ParentDelegateSlim {
+  findFirst(args?: {
+    where?: Record<string, unknown>;
+    include?: Record<string, unknown>;
+  }): Promise<ParentRecord | null>;
+  findUnique?: (args: {
+    where: Record<string, unknown>;
+  }) => Promise<ParentRecord | null>;
+  update(args: {
+    where: Record<string, unknown>;
+    data: Record<string, unknown>;
+  }): Promise<ParentRecord>;
+}
+
+/**
+ * A minimal structural type covering the operations performed on image delegates
+ * (MaterialImage, ChannelMaterialImage). findFirst returns a NamedFileRecord so
+ * that it is directly passable to FileStorageService.updateRelatedFileRecord
+ * and uploadRelatedFileRecord without casting.
+ */
+export interface ImageDelegateSlim {
+  findFirst(args?: {
+    where?: Record<string, unknown>;
+  }): Promise<NamedFileRecord | null>;
+  create(args: { data: Record<string, unknown> }): Promise<NamedFileRecord>;
+  update(args: {
+    where: Record<string, unknown>;
+    data: Record<string, unknown>;
+  }): Promise<NamedFileRecord>;
+}
+
+/**
+ * A minimal structural type covering the operations performed on preview delegates
+ * (PreviewMaterial, ChannelPreviewMaterial). findFirst returns a NamedFileRecord so
+ * it is directly passable to FileStorageService helpers without casting.
+ */
+export interface PreviewDelegateSlim {
+  findFirst(args?: {
+    where?: Record<string, unknown>;
+  }): Promise<NamedFileRecord | null>;
+  findUnique?: (args: {
+    where: Record<string, unknown>;
+  }) => Promise<NamedFileRecord | null>;
+  create(args: { data: Record<string, unknown> }): Promise<NamedFileRecord>;
+  update(args: {
+    where: Record<string, unknown>;
+    data: Record<string, unknown>;
+  }): Promise<NamedFileRecord>;
+}
+
+/**
+ * Configuration bag passed to EntityFileManagerService. Delegates are typed with
+ * structurally-minimal interfaces that every Prisma-generated delegate satisfies,
+ * eliminating the previous `any`-typed signatures while keeping the service fully
+ * generic. Concrete callers (MaterialStorageService, ChannelMaterialStorageService)
+ * assign prisma.material / prisma.channelMaterial directly — the Prisma-generated
+ * delegates are structurally compatible with these slim interfaces at every call site.
+ *
+ * Note: Prisma.MaterialDelegate is referenced in the JSDoc below to make the
+ * relationship explicit for documentation, but the config itself uses structural
+ * (duck-typed) interfaces for genericity.
+ *
+ * @see Prisma.MaterialDelegate
+ * @see Prisma.ChannelMaterialDelegate
+ */
+export interface EntityFileManagerConfig {
   subDirectory: string;
   foreignKey: string;
   entityName?: string;
   notFoundErrorCode?: string;
   includeRelations?: Record<string, boolean>;
-  parentDelegate: {
-    findFirst: (args: any) => Promise<TParent | null>;
-    findUnique?: (args: any) => Promise<TParent | null>;
-    update: (args: any) => Promise<TParent>;
-  };
-  imageDelegate: {
-    findFirst: (args: any) => Promise<TImage | null>;
-    create: (args: any) => Promise<TImage>;
-    update: (args: any) => Promise<TImage>;
-  };
-  previewDelegate: {
-    findFirst: (args: any) => Promise<TPreview | null>;
-    findUnique?: (args: any) => Promise<TPreview | null>;
-    create: (args: any) => Promise<TPreview>;
-    update: (args: any) => Promise<TPreview>;
-  };
+  /**
+   * Delegate for the root entity (e.g. prisma.material, prisma.channelMaterial).
+   * Structurally satisfies Prisma.MaterialDelegate | Prisma.ChannelMaterialDelegate.
+   */
+  parentDelegate: ParentDelegateSlim;
+  /**
+   * Delegate for the associated image entity (e.g. prisma.materialImage, prisma.channelMaterialImage).
+   * Structurally satisfies Prisma.MaterialImageDelegate | Prisma.ChannelMaterialImageDelegate.
+   */
+  imageDelegate: ImageDelegateSlim;
+  /**
+   * Delegate for the associated preview entity (e.g. prisma.previewMaterial, prisma.channelPreviewMaterial).
+   * Structurally satisfies Prisma.PreviewMaterialDelegate | Prisma.ChannelPreviewMaterialDelegate.
+   */
+  previewDelegate: PreviewDelegateSlim;
 }
+
+// Re-export Prisma namespace so callers can verify delegate compatibility via `Prisma.MaterialDelegate`.
+export { Prisma };
 
 @Injectable()
 export class EntityFileManagerService {
@@ -295,7 +384,10 @@ export class EntityFileManagerService {
       data: { material: fileName },
     });
 
-    await this.fileStorage.deleteFile(config.subDirectory, oldMaterial);
+    await this.fileStorage.deleteFile(
+      config.subDirectory,
+      oldMaterial ?? undefined,
+    );
     return { message: successMsg };
   }
 
@@ -384,7 +476,10 @@ export class EntityFileManagerService {
         where: { id: existing.id },
         data: { image: fileName },
       });
-      await this.fileStorage.deleteFile(config.subDirectory, existing.image);
+      await this.fileStorage.deleteFile(
+        config.subDirectory,
+        existing.image ?? undefined,
+      );
     } else {
       await config.imageDelegate.create({
         data: {
@@ -408,7 +503,7 @@ export class EntityFileManagerService {
     files: Array<Express.Multer.File>,
     id: number,
   ) {
-    const uploadedImages = [];
+    const uploadedImages: NamedFileRecord[] = [];
     for (const file of files) {
       const fileName = this.fileStorage.extractFileName(
         file?.filename || file?.path,
@@ -445,7 +540,7 @@ export class EntityFileManagerService {
     return this.fileStorage.sendUploadedFile(
       res,
       config.subDirectory,
-      parent?.material,
+      parent?.material ?? undefined,
       'Material not found',
     );
   }
@@ -467,7 +562,7 @@ export class EntityFileManagerService {
     return this.fileStorage.sendUploadedFile(
       res,
       config.subDirectory,
-      image?.image,
+      image?.image ?? undefined,
       'Material profile not found',
     );
   }
@@ -489,7 +584,7 @@ export class EntityFileManagerService {
     return this.fileStorage.sendUploadedFile(
       res,
       config.subDirectory,
-      image?.image,
+      image?.image ?? undefined,
       'Material cover not found',
     );
   }
@@ -511,7 +606,7 @@ export class EntityFileManagerService {
     return this.fileStorage.sendUploadedFile(
       res,
       config.subDirectory,
-      image?.image,
+      image?.image ?? undefined,
       'Material image not found',
     );
   }
@@ -535,7 +630,7 @@ export class EntityFileManagerService {
     return this.fileStorage.sendUploadedFile(
       res,
       config.subDirectory,
-      preview?.preview,
+      preview?.preview ?? undefined,
       'Material preview not found',
     );
   }
