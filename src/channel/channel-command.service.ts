@@ -5,7 +5,10 @@ import {
   FileStorageService,
   UploadedImages,
 } from '../common/services/file-storage.service';
-import { NotFoundError } from '../common/exceptions/domain-exceptions';
+import {
+  ConflictError,
+  NotFoundError,
+} from '../common/exceptions/domain-exceptions';
 import { handlePrismaError } from '../common/services/prisma-error.util';
 
 @Injectable()
@@ -57,6 +60,7 @@ export class ChannelCommandService {
       return channel;
     } catch (error) {
       handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -78,6 +82,7 @@ export class ChannelCommandService {
         },
       });
     } catch (error) {
+      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
@@ -130,6 +135,7 @@ export class ChannelCommandService {
       return { message: 'Channel Profile Image Uploaded Successfully' };
     } catch (error) {
       handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -178,6 +184,7 @@ export class ChannelCommandService {
       return { message: 'Channel Cover Image Uploaded Successfully' };
     } catch (error) {
       handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -210,6 +217,7 @@ export class ChannelCommandService {
 
       return { message: 'Channel Deleted Successfully' };
     } catch (error) {
+      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
@@ -246,6 +254,7 @@ export class ChannelCommandService {
       return updated;
     } catch (error) {
       handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -281,6 +290,7 @@ export class ChannelCommandService {
       return updated;
     } catch (error) {
       handlePrismaError(error);
+      handlePrismaError(error);
     }
   }
 
@@ -301,6 +311,7 @@ export class ChannelCommandService {
           uploadedImages.push(newChannelImage);
         }
       } catch (error) {
+        handlePrismaError(error);
         handlePrismaError(error);
       }
     }
@@ -337,6 +348,7 @@ export class ChannelCommandService {
 
       return updated;
     } catch (error) {
+      handlePrismaError(error);
       handlePrismaError(error);
     }
   }
