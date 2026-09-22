@@ -9,6 +9,8 @@ process.env.JWT_SECRET =
   process.env.JWT_SECRET || 'supersecrettestjwtkey1234567890';
 process.env.JWT_REFRESH_SECRET =
   process.env.JWT_REFRESH_SECRET || 'supersecrettestjwtrefreshkey1234567890';
+process.env.THROTTLE_LIMIT = process.env.THROTTLE_LIMIT || '10000';
+process.env.THROTTLE_TTL = process.env.THROTTLE_TTL || '60000';
 
 // Run prisma migrate deploy before integration specs execute
 execSync('npx prisma migrate deploy', {
