@@ -170,6 +170,7 @@ git clone git@github.com:habeshacoder/amped_nestjs_backend.git
 cd amped_nestjs_backend
 ```
 
+### 2. Configure Node version
 ##### 2. Configure Node version
 
 Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
@@ -178,6 +179,7 @@ Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
 nvm use
 ```
 
+### 3. Install dependencies
 ##### 3. Install dependencies
 
 Install dependencies reproducibly using the committed `package-lock.json`. This automatically generates the Prisma Client via the `postinstall` hook:
@@ -186,28 +188,38 @@ Install dependencies reproducibly using the committed `package-lock.json`. This 
 npm ci
 ```
 
+### 4. Configure Environment Variables
 ##### 4. Build the application
 
+Copy `.env.example` and set required secrets:
 Compile the TypeScript application into the `dist/` directory. The `prebuild` hook guarantees Prisma artifacts are up to date:
 
 ```bash
+cp .env.example .env
 npm run build
 ```
 
+### 5. Start Services via Docker Compose
 ##### 5. Run the automated test suite
 
 Execute the unit test suite across all modules, controllers, services, guards, and filters:
 
 ```bash
+# Start PostgreSQL database and application
+docker compose up -d
 npm test
 ```
 
+# Run tests in Docker container
+docker compose run --rm app npm test
+To run with coverage threshold enforcement (`>=65%` statements/branches/lines, `>=50%` functions):
 To run with coverage threshold enforcement (`>= 70%` statements/branches/lines/functions):
 
 ```bash
 npm run test:cov
 ```
 
+### 6. Generate Prisma Client & Run Migrations
 ---
 
 #### Part B: Local Development & Database Setup (PostgreSQL)
@@ -219,6 +231,7 @@ Configuring environment variables and starting PostgreSQL is **only** required w
 Copy `.env.example` to `.env` and adjust secrets if needed:
 
 ```bash
+npx prisma generate
 cp .env.example .env
 ```
 
@@ -238,11 +251,13 @@ Deploy pending schema migrations to your local PostgreSQL instance:
 npm run migration:run
 ```
 
+### 7. Run the Application
 ##### 9. Run End-to-End (E2E) Integration Tests
 
 Run the full HTTP and database integration test suite against the live PostgreSQL database:
 
 ```bash
+# Development mode with hot-reload
 npm run test:e2e
 ```
 
@@ -252,8 +267,13 @@ Start the NestJS application with hot-reload enabled:
 
 ```bash
 npm run start:dev
+
+# Production build and start
+npm run build
+npm run start:prod
 ```
 
+### 8. Run via Docker
 The API will be available at `http://localhost:3007` and interactive Swagger docs at `http://localhost:3007/docs`.
 
 ##### 11. Run via Docker (Optional)
@@ -294,11 +314,12 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 
 All tests are verified before every commit and in continuous integration.
 
-| Command            | Description                                                                                           | Prerequisites / Needs                                                                    |
-| :----------------- | :---------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| `npm test`         | Executes all unit test suites (services, controllers, guards, filters, pipes)                         | **No external services required** (all DB calls use in-memory Prisma mocks)              |
-| `npm run test:cov` | Executes all unit tests with coverage reporting and threshold enforcement                             | **No external services required** (enforces `>=70%` stmts/branches/lines/funcs)           |
-| `npm run test:e2e` | End-to-end and real Prisma integration tests (`test/app.e2e-spec.ts` & `src/*/*.integration.spec.ts`) | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI  |
+| Command                  | Description                                                                                           | Prerequisites / Needs                                                                    |
+| :----------------------- | :---------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| `npm test`               | Executes all unit test suites (services, controllers, guards, filters, pipes)                         | **No external services required** (all DB calls use in-memory Prisma mocks)              |
+| `npm run test:cov`       | Executes all unit tests with coverage reporting and threshold enforcement                             | **No external services required** (enforces `>=70%` stmts/branches/lines/funcs)           |
+| `npm run test:e2e`       | End-to-end and real Prisma integration tests (`test/*.e2e-spec.ts`)                                    | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI  |
+| `npm run test:e2e:local` | Runs full E2E suite against ephemeral PostgreSQL with mocked external payment gateway                 | **Docker required** (runs `docker-compose.test.yml` with tmpfs storage)                   |
 
 ### Test Commands
 
@@ -314,6 +335,9 @@ npm run test:e2e
 
 # Run tests in watch mode during development
 npm run test:watch
+
+# Run E2E tests locally with isolated ephemeral PostgreSQL
+npm run test:e2e:local
 ```
 
 ### Coverage Thresholds
@@ -324,6 +348,32 @@ Coverage thresholds are enforced via Jest in `package.json`. A pull request that
 - **Branches**: `>= 70%`
 - **Lines**: `>= 70%`
 - **Functions**: `>= 70%`
+
+### Running e2e tests offline
+
+All end-to-end test suites (`test/*.e2e-spec.ts`) run completely offline without requiring external network connectivity, live third-party payment accounts, or API keys:
+
+- **Chapa Payment Gateway**: Replaced with an in-memory test double (`mockChapaService` via NestJS `.overrideProvider(ChapaService)`) in test suites exercising payment-adjacent flows (e.g. `seller-profiles.e2e-spec.ts`, `subscribed-users.e2e-spec.ts`, `app.e2e-spec.ts`).
+- **Database Isolation**: Uses an ephemeral PostgreSQL container with `tmpfs` RAM storage defined in `docker-compose.test.yml`, preventing any state bleed or local database contamination.
+
+#### One-command isolated execution:
+
+```bash
+npm run test:e2e:local
+```
+
+#### Manual step-by-step execution:
+
+```bash
+# 1. Spin up ephemeral PostgreSQL test container
+docker compose -f docker-compose.test.yml up -d postgres-test
+
+# 2. Run all e2e test suites
+npm run test:e2e
+
+# 3. Tear down ephemeral test container and volumes
+npm run test:e2e:local:down
+```
 
 ---
 

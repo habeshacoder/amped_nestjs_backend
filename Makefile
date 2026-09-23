@@ -18,6 +18,10 @@ test-cov:
 test-e2e:
 	npm run test:e2e
 
+test-e2e-local:
+	docker compose -f docker-compose.test.yml up -d postgres-test
+	npm run test:e2e
+
 typecheck:
 	npm run typecheck
 

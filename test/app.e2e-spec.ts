@@ -3,7 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { cleanDatabase, prisma } from './setup-e2e';
+import { cleanDatabase, mockChapaService, prisma } from './setup-e2e';
+import { ChapaService } from 'chapa-nestjs';
 
 describe('App End-to-End Tests (Real Database)', () => {
   let app: INestApplication;
@@ -24,7 +25,10 @@ describe('App End-to-End Tests (Real Database)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(ChapaService)
+      .useValue(mockChapaService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalFilters(new AllExceptionsFilter());

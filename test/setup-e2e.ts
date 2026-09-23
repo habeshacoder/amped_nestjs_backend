@@ -12,11 +12,38 @@ process.env.JWT_REFRESH_SECRET =
 process.env.THROTTLE_LIMIT = process.env.THROTTLE_LIMIT || '10000';
 process.env.THROTTLE_TTL = process.env.THROTTLE_TTL || '60000';
 
-// Run prisma migrate deploy before integration specs execute
-execSync('npx prisma migrate deploy', {
-  stdio: 'inherit',
-  env: { ...process.env },
-});
+// Test double for Chapa payment gateway client to ensure zero external calls
+export const mockChapaService = {
+  initialize: jest.fn().mockResolvedValue({
+    status: 'success',
+    message: 'Hosted Link',
+    data: {
+      checkout_url: 'https://checkout.chapa.co/checkout/test-ephemeral-123',
+    },
+  }),
+  verify: jest.fn().mockResolvedValue({
+    status: 'success',
+    message: 'Payment verified',
+    data: { status: 'success' },
+  }),
+};
+
+// Run prisma migrate deploy before integration specs execute with retry for ephemeral containers
+for (let attempt = 1; attempt <= 15; attempt++) {
+  try {
+    execSync('npx prisma migrate deploy', {
+      stdio: 'inherit',
+      env: { ...process.env },
+    });
+    break;
+  } catch (error) {
+    if (attempt === 15) {
+      throw error;
+    }
+    const start = Date.now();
+    while (Date.now() - start < 1000) {}
+  }
+}
 
 export const prisma = new PrismaClient();
 
