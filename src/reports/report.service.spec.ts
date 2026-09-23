@@ -95,7 +95,7 @@ describe('ReportService', () => {
       };
 
       await expect(service.create(dto as any, mockUser)).rejects.toThrow(
-        ForbiddenException,
+        'A report must be associated with either a material or a channel, but not both.',
       );
     });
 
@@ -126,7 +126,7 @@ describe('ReportService', () => {
       };
 
       await expect(service.create(dto as any, mockUser)).rejects.toThrow(
-        ForbiddenException,
+        'A report must be associated with either a material or a channel, but not both.',
       );
     });
 

@@ -50,7 +50,7 @@ export class ReportService {
         }
       } else {
         throw new ForbiddenException(
-          "Can't report on the same material or channel multiple times.",
+          'A report must be associated with either a material or a channel, but not both.',
         );
       }
     } else {
@@ -137,21 +137,21 @@ export class ReportService {
   }
 
   async remove(id: number) {
-    const rate = await this.prisma.report.findFirst({
+    const report = await this.prisma.report.findFirst({
       where: {
         id: id,
       },
     });
 
-    if (rate) {
+    if (report) {
       try {
-        const rating = await this.prisma.report.delete({
+        const deletedReport = await this.prisma.report.delete({
           where: {
             id: id,
           },
         });
 
-        if (rating) {
+        if (deletedReport) {
           return { message: 'Report deleted successfully' };
         }
       } catch (error) {
