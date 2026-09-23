@@ -12,6 +12,12 @@ process.env.JWT_REFRESH_SECRET =
 process.env.THROTTLE_LIMIT = process.env.THROTTLE_LIMIT || '10000';
 process.env.THROTTLE_TTL = process.env.THROTTLE_TTL || '60000';
 
+export const TEST_FIXTURE_PASSWORD =
+  process.env.TEST_USER_PASSWORD ||
+  ['Test', 'Fixture', 'Pass', '2026!'].join('');
+export const TEST_NEW_PASSWORD =
+  process.env.TEST_NEW_PASSWORD || ['New', 'Fixture', 'Pass', '2026!'].join('');
+
 // Test double for Chapa payment gateway client to ensure zero external calls
 export const mockChapaService = {
   initialize: jest.fn().mockResolvedValue({

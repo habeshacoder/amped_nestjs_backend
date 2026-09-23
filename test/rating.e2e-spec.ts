@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { cleanDatabase, prisma } from './setup-e2e';
+import { cleanDatabase, prisma, TEST_FIXTURE_PASSWORD } from './setup-e2e';
 import { Parent, Type, Genere, Catagory } from '@prisma/client';
 
 describe('Rating End-to-End Tests (Real Database)', () => {
@@ -14,8 +14,8 @@ describe('Rating End-to-End Tests (Real Database)', () => {
 
   const testUser = {
     email: 'rating_e2e_user@example.com',
-    password: 'SecurePassword123!',
-    passwordConfirm: 'SecurePassword123!',
+    password: TEST_FIXTURE_PASSWORD,
+    passwordConfirm: TEST_FIXTURE_PASSWORD,
     username: 'rating_e2e_user',
     phoneNo: '+12345678904',
   };

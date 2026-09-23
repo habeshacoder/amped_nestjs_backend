@@ -3,7 +3,12 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { cleanDatabase, prisma } from './setup-e2e';
+import {
+  cleanDatabase,
+  prisma,
+  TEST_FIXTURE_PASSWORD,
+  TEST_NEW_PASSWORD,
+} from './setup-e2e';
 
 describe('Profiles End-to-End Tests (Real Database)', () => {
   let app: INestApplication;
@@ -13,8 +18,8 @@ describe('Profiles End-to-End Tests (Real Database)', () => {
 
   const testUser = {
     email: 'profile_e2e_user@example.com',
-    password: 'SecurePassword123!',
-    passwordConfirm: 'SecurePassword123!',
+    password: TEST_FIXTURE_PASSWORD,
+    passwordConfirm: TEST_FIXTURE_PASSWORD,
     username: 'profile_e2e_user',
     phoneNo: '+12345678910',
   };
@@ -222,9 +227,9 @@ describe('Profiles End-to-End Tests (Real Database)', () => {
       return request(app.getHttpServer())
         .patch('/profiles/update_password')
         .send({
-          oldPassword: 'SecurePassword123!',
-          newPassword: 'NewSecurePassword123!',
-          newPasswordConfirm: 'NewSecurePassword123!',
+          oldPassword: TEST_FIXTURE_PASSWORD,
+          newPassword: TEST_NEW_PASSWORD,
+          newPasswordConfirm: TEST_NEW_PASSWORD,
         })
         .expect(401);
     });

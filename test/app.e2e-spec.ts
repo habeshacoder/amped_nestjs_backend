@@ -3,7 +3,12 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { cleanDatabase, mockChapaService, prisma } from './setup-e2e';
+import {
+  cleanDatabase,
+  mockChapaService,
+  prisma,
+  TEST_FIXTURE_PASSWORD,
+} from './setup-e2e';
 import { ChapaService } from 'chapa-nestjs';
 
 describe('App End-to-End Tests (Real Database)', () => {
@@ -11,8 +16,8 @@ describe('App End-to-End Tests (Real Database)', () => {
 
   const testUser = {
     email: 'e2e_app_user@example.com',
-    password: 'SecurePassword123!',
-    passwordConfirm: 'SecurePassword123!',
+    password: TEST_FIXTURE_PASSWORD,
+    passwordConfirm: TEST_FIXTURE_PASSWORD,
     username: 'e2e_app_user',
     phoneNo: '+12345678901',
   };
