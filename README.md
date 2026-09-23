@@ -81,12 +81,13 @@ graph TD
 | **Reports**          | `src/reports/`           | Moderation & safety              | User violation reporting                                           |
 | **Search**           | `src/search/`            | Content discovery                | Multi-model search catalog queries                                 |
 | **Health**           | `src/health/`            | Liveness & readiness             | `/health` endpoint with Terminus and database health ping          |
+| **Metrics**          | `src/metrics/`           | Telemetry & observability        | `/metrics` Prometheus endpoint with request count & latency histogram |
 | **Prisma**           | `src/prisma/`            | Relational persistence           | Database connection lifecycle and query execution                  |
 | **Common**           | `src/common/`            | Shared infrastructure            | Domain exceptions, error filter, file storage, logging, pipes      |
 
 ---
 
-## API Documentation (Swagger)
+## API Documentation (Swagger) & Observability
 
 In non-production environments (`NODE_ENV !== 'production'`), interactive OpenAPI/Swagger documentation is automatically served at:
 
@@ -95,6 +96,10 @@ http://localhost:3007/docs
 ```
 
 It provides complete interactive documentation of request bodies, response schemas, and authentication headers.
+
+### Health & Metrics Endpoints
+- **Liveness & Readiness**: `GET /health` returns JSON health status of database connectivity and service readiness.
+- **Prometheus Telemetry**: `GET /metrics` exports Prometheus metrics, including runtime process stats, `http_requests_total` counter, and `http_request_duration_seconds` latency histogram.
 
 ---
 

@@ -5,6 +5,10 @@ import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
+
+export { HealthModule, MetricsModule };
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -58,7 +62,13 @@ async function bootstrap() {
       .setTitle('AMPED API')
       .setDescription('AMPED Digital Publishing & Streaming REST API')
       .setVersion('1.0.0')
+      .setVersion('1.2.0')
       .addBearerAuth()
+      .addTag('Health', 'Liveness and readiness probes (HealthModule)')
+      .addTag(
+        'Metrics',
+        'Prometheus telemetry and latency histograms (MetricsModule)',
+      )
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('docs', app, document);
@@ -66,5 +76,9 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT') || 3007;
   await app.listen(port);
+  const logger = app.get(Logger);
+  logger.log(
+    `AMPED API listening on port ${port} (HealthModule: /health, MetricsModule: /metrics)`,
+  );
 }
 void bootstrap();

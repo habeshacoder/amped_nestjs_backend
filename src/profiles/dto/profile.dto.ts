@@ -1,5 +1,5 @@
 import { IsIn, IsNotEmpty, IsString } from 'class-validator';
-import { Sex } from '@prisma/client/';
+import { Sex } from '@prisma/client';
 
 export class ProfileDto {
   @IsNotEmpty({ message: 'First Name cannot be empty' })

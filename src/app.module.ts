@@ -24,6 +24,7 @@ import { ChannelPurchaseModule } from './channel-purchase/channel-purchase.modul
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { CommonModule } from './common/common.module';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
@@ -116,6 +117,7 @@ import * as Joi from 'joi';
     SearchModule,
     ChannelPurchaseModule,
     HealthModule,
+    MetricsModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
