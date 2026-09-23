@@ -1,6 +1,6 @@
 {
   "name": "amped_backend",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "",
   "author": "",
   "private": true,
@@ -9,6 +9,7 @@
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   },
+  "packageManager": "npm@10.8.2",
   "scripts": {
     "deploy": "vercel",
     "postinstall": "prisma generate",

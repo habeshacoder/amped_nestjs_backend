@@ -25,6 +25,10 @@ import {
   createMaterialFilesValidationPipe,
   createSingleFileValidationPipe,
 } from '../common/decorators/entity-upload.decorator';
+import {
+  EntityFilesUploadPayload,
+  SingleFileUploadPayload,
+} from '../common/services/file-storage.service';
 
 @Controller('channel-material')
 export class ChannelMaterialController {
@@ -46,15 +50,9 @@ export class ChannelMaterialController {
   createFile(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(createMaterialFilesValidationPipe())
-    files: {
-      material?: Express.Multer.File[];
-      profile?: Express.Multer.File[];
-      cover?: Express.Multer.File[];
-      images?: Express.Multer.File[];
-      preview?: Express.Multer.File[];
-    },
+    files: EntityFilesUploadPayload,
   ) {
-    return this.channelMaterialService.createFile(files as any, id);
+    return this.channelMaterialService.createFile(files, id);
   }
 
   @Get()
@@ -89,9 +87,9 @@ export class ChannelMaterialController {
         maxSizeBytes: 200 * 1024 * 1024,
       }),
     )
-    files: { material?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.channelMaterialService.updateMaterial(files as any, id);
+    return this.channelMaterialService.updateMaterial(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -105,9 +103,9 @@ export class ChannelMaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { profile?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.channelMaterialService.updateMaterialProfile(files as any, id);
+    return this.channelMaterialService.updateMaterialProfile(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -121,9 +119,9 @@ export class ChannelMaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { cover?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.channelMaterialService.updateMaterialCover(files as any, id);
+    return this.channelMaterialService.updateMaterialCover(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -137,9 +135,9 @@ export class ChannelMaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { images?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.channelMaterialService.updateMaterialImage(files as any, id);
+    return this.channelMaterialService.updateMaterialImage(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -153,9 +151,9 @@ export class ChannelMaterialController {
         maxSizeBytes: 50 * 1024 * 1024,
       }),
     )
-    files: { preview?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.channelMaterialService.updateMaterialPreview(files as any, id);
+    return this.channelMaterialService.updateMaterialPreview(files, id);
   }
 
   @Delete(':id')

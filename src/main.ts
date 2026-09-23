@@ -61,8 +61,7 @@ async function bootstrap() {
     const config = new DocumentBuilder()
       .setTitle('AMPED API')
       .setDescription('AMPED Digital Publishing & Streaming REST API')
-      .setVersion('1.0.0')
-      .setVersion('1.2.0')
+      .setVersion('1.3.0')
       .addBearerAuth()
       .addTag('Health', 'Liveness and readiness probes (HealthModule)')
       .addTag(

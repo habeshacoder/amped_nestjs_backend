@@ -47,8 +47,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       typeof exception === 'object' &&
       exception !== null &&
       'code' in exception &&
-      typeof (exception as any).code === 'string' &&
-      (exception as any).code.startsWith('P')
+      typeof (exception as { code: unknown }).code === 'string' &&
+      (exception as { code: string }).code.startsWith('P')
     ) {
       // Prisma database errors
       const prismaError = exception as { code: string; message: string };
@@ -95,7 +95,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const requestId =
       (request?.headers?.['x-request-id'] as string) ||
-      (request as any)?.id ||
+      (request as unknown as { id?: string })?.id ||
       'unknown';
     const timestamp = new Date().toISOString();
     const path = request?.url || '';

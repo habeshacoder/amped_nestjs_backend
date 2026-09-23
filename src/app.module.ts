@@ -30,6 +30,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
+import { IncomingMessage } from 'http';
 import * as Joi from 'joi';
 
 @Module({
@@ -74,7 +75,7 @@ import * as Joi from 'joi';
                       colorize: true,
                     },
                   },
-            genReqId: (req: any) =>
+            genReqId: (req: IncomingMessage) =>
               (req.headers['x-request-id'] as string) || randomUUID(),
             redact: {
               paths: [

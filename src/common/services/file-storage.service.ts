@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Response } from 'express';
+import 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { NotFoundError } from '../exceptions/domain-exceptions';
@@ -15,10 +16,25 @@ export interface UploadedFileDescriptor {
 export type UploadedFileValue =
   | UploadedFileDescriptor
   | UploadedFileDescriptor[]
-  | any;
+  | Express.Multer.File
+  | Express.Multer.File[]
+  | undefined;
 
 export type UploadedImages = Record<string, UploadedFileValue>;
 export type FileFieldMap = UploadedImages;
+
+export interface EntityFilesUploadPayload {
+  material?: Express.Multer.File[];
+  profile?: Express.Multer.File[];
+  cover?: Express.Multer.File[];
+  images?: Express.Multer.File[];
+  preview?: Express.Multer.File[];
+  [key: string]: Express.Multer.File[] | undefined;
+}
+
+export interface SingleFileUploadPayload {
+  [key: string]: Express.Multer.File[] | undefined;
+}
 
 export interface ExtractedFiles {
   material?: string;

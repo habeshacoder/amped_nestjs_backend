@@ -35,6 +35,10 @@ import {
   createMaterialFilesValidationPipe,
   createSingleFileValidationPipe,
 } from '../common/decorators/entity-upload.decorator';
+import {
+  EntityFilesUploadPayload,
+  SingleFileUploadPayload,
+} from '../common/services/file-storage.service';
 
 @Controller('material')
 export class MaterialController {
@@ -54,15 +58,9 @@ export class MaterialController {
   createFile(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles(createMaterialFilesValidationPipe())
-    files: {
-      material?: Express.Multer.File[];
-      profile?: Express.Multer.File[];
-      cover?: Express.Multer.File[];
-      images?: Express.Multer.File[];
-      preview?: Express.Multer.File[];
-    },
+    files: EntityFilesUploadPayload,
   ) {
-    return this.materialService.createFile(files as any, id);
+    return this.materialService.createFile(files, id);
   }
 
   @Get()
@@ -184,9 +182,9 @@ export class MaterialController {
         maxSizeBytes: 200 * 1024 * 1024,
       }),
     )
-    files: { material?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.materialService.updateMaterial(files as any, id);
+    return this.materialService.updateMaterial(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -200,9 +198,9 @@ export class MaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { profile?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.materialService.updateMaterialProfile(files as any, id);
+    return this.materialService.updateMaterialProfile(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -216,9 +214,9 @@ export class MaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { cover?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.materialService.updateMaterialCover(files as any, id);
+    return this.materialService.updateMaterialCover(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -232,9 +230,9 @@ export class MaterialController {
         allowedMimeTypes: ['image/*'],
       }),
     )
-    files: { images?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.materialService.updateMaterialImage(files as any, id);
+    return this.materialService.updateMaterialImage(files, id);
   }
 
   @UseGuards(JwtGuard)
@@ -248,9 +246,9 @@ export class MaterialController {
         maxSizeBytes: 50 * 1024 * 1024,
       }),
     )
-    files: { preview?: Express.Multer.File[] },
+    files: SingleFileUploadPayload,
   ) {
-    return this.materialService.updateMaterialPreview(files as any, id);
+    return this.materialService.updateMaterialPreview(files, id);
   }
 
   @Delete(':id')

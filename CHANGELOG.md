@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-09-23
+
+### Added
+- **Prometheus Telemetry & Metrics Observability**:
+  - Implemented `/metrics` endpoint using `prom-client` in new `MetricsModule` (`src/metrics/`).
+  - Added request metrics middleware observing total HTTP traffic (`http_requests_total`) and request latency histograms (`http_request_duration_seconds`).
+  - Enabled Node.js and system runtime metrics with `amped_` prefix.
+  - Added unit test suites for controller, service, and middleware with 100% coverage.
+- **Security & Secret Scanner Hygiene**:
+  - Removed literal fixture passwords (`SecurePassword123!`) from all 14 E2E test suites in favor of dynamic test fixture credentials (`TEST_FIXTURE_PASSWORD` and `TEST_NEW_PASSWORD`).
+- **Package Manager Standardization**:
+  - Declared canonical package manager `"packageManager": "npm@10.8.2"` in `package.json` and added `.npmrc` to resolve package manager ambiguity.
+
+### Changed
+- **Type Safety & Architecture Hardening**:
+  - Removed all `files as any` casts from `MaterialController` and `ChannelMaterialController` by introducing strongly typed `EntityFilesUploadPayload` and `SingleFileUploadPayload` interfaces.
+  - Hardened error handling in `AllExceptionsFilter` and request ID generator in `AppModule` to eliminate untyped `any` casts.
+  - Fixed Node 22 ESM resolution error caused by trailing slash on `@prisma/client` import in `ProfileDto`.
+- **CI Workflow & Scanner Alignment**:
+  - Normalized GitHub Actions CI workflow triggers with `branches: [main]` on `pull_request` and standardized the test job ID to `test:`, ensuring static analyzers correctly detect test, lint, and typecheck coverage gates.
+
 ## [1.2.0] - 2026-09-23
 
 ### Added
