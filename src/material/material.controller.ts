@@ -27,7 +27,7 @@ import { JwtGuard } from '../auth/guard/jwt.guard';
 import { Catagory, Material, Parent, Type, User } from '@prisma/client';
 import { join } from 'path';
 import { GetUser } from '../auth/decorator';
-import { statSync, createReadStream } from 'fs';
+import { streamByteRange } from '../common/utils/range-stream.util';
 import { Response } from 'express';
 import {
   MaterialFilesUploadInterceptor,
@@ -79,30 +79,7 @@ export class MaterialController {
     @Res() res: Response,
   ) {
     const audioPath = join(process.cwd(), 'uploads/material/' + fileName);
-    const { size } = statSync(audioPath);
-    if (audioRange) {
-      const parts = audioRange.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
-      const chunksize = end - start + 1;
-      const readStreamfile = createReadStream(audioPath, {
-        start,
-        end,
-        highWaterMark: 60,
-      });
-      const head = {
-        'Content-Range': `bytes ${start}-${end}/${size}`,
-        'Content-Length': chunksize,
-      };
-      res.writeHead(HttpStatus.PARTIAL_CONTENT, head);
-      readStreamfile.pipe(res);
-    } else {
-      const head = {
-        'Content-Length': size,
-      };
-      res.writeHead(HttpStatus.OK, head);
-      createReadStream(audioPath).pipe(res);
-    }
+    streamByteRange(audioPath, audioRange, res);
   }
 
   @Get('/epub-streaming/:fileName')
@@ -114,30 +91,7 @@ export class MaterialController {
     @Res() res: Response,
   ) {
     const audioPath = join(process.cwd(), 'uploads/material/' + fileName);
-    const { size } = statSync(audioPath);
-    if (audioRange) {
-      const parts = audioRange.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
-      const chunksize = end - start + 1;
-      const readStreamfile = createReadStream(audioPath, {
-        start,
-        end,
-        highWaterMark: 60,
-      });
-      const head = {
-        'Content-Range': `bytes ${start}-${end}/${size}`,
-        'Content-Length': chunksize,
-      };
-      res.writeHead(HttpStatus.PARTIAL_CONTENT, head);
-      readStreamfile.pipe(res);
-    } else {
-      const head = {
-        'Content-Length': size,
-      };
-      res.writeHead(HttpStatus.OK, head);
-      createReadStream(audioPath).pipe(res);
-    }
+    streamByteRange(audioPath, audioRange, res);
   }
 
   @Get('/materials_web')
