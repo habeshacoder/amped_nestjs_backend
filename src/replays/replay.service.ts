@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
@@ -30,15 +29,15 @@ export class ReplayService {
 
     if (!foundReplay) {
       try {
-        const repaly = await this.prisma.replay.create({
+        const replay = await this.prisma.replay.create({
           data: {
             remark_id: replayDto.remark_id,
             replay: replayDto.replay,
           },
         });
 
-        if (repaly) {
-          return repaly;
+        if (replay) {
+          return replay;
         }
       } catch (error) {
         this.handlePrismaError(error);
@@ -53,7 +52,7 @@ export class ReplayService {
   async findAll() {
     const replays = await this.prisma.replay.findMany();
 
-    if (replays) {
+    if (replays && replays.length > 0) {
       return replays;
     } else {
       return { message: 'No comment found.' };
@@ -81,12 +80,9 @@ export class ReplayService {
       },
     });
 
-    if (foundReplay) {
-      return true;
-    } else {
-      return false;
-    }
+    return !!foundReplay;
   }
+
   async findByRemarkId(remark_id: number) {
     const foundReplay = await this.prisma.replay.findFirst({
       where: {
@@ -132,7 +128,7 @@ export class ReplayService {
 
     if (foundReplay) {
       try {
-        const replays = await this.prisma.replay.update({
+        const replay = await this.prisma.replay.update({
           where: {
             id: id,
           },
@@ -141,8 +137,8 @@ export class ReplayService {
           },
         });
 
-        if (replays) {
-          return replays;
+        if (replay) {
+          return replay;
         } else {
           throw new ForbiddenException(
             'There has been an error. Please check the inputs and try again.',
@@ -167,16 +163,16 @@ export class ReplayService {
 
     if (foundReplay) {
       try {
-        const replays = await this.prisma.replay.delete({
+        const replay = await this.prisma.replay.delete({
           where: {
             id: id,
           },
         });
 
-        if (replays) {
+        if (replay) {
           return { message: 'Replay deleted successfully' };
         }
-      } catch (error) {
+      } catch {
         throw new ForbiddenException(
           'There has been an error. Please check the id and try again.',
         );
