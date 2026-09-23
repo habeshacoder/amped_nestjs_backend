@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-09-23
+
+### Added
+- **Ephemeral Testing & Offline E2E Isolation**:
+  - Added `docker-compose.test.yml` with RAM-backed `tmpfs` PostgreSQL container for hermetic testing.
+  - Added in-memory Chapa payment gateway test double (`mockChapaService`) across all E2E test suites.
+  - Added one-command scripts `test:e2e:local` and `test:e2e:local:down` in `package.json` and `Makefile`.
+  - Documented offline E2E execution guide under `README.md`.
+- **Shared Byte-Range Streaming Utility**:
+  - Extracted shared `streamByteRange` utility (`src/common/utils/range-stream.util.ts`) to deduplicate audio and epub streaming logic.
+  - Added dedicated unit tests with 100% coverage in `range-stream.util.spec.ts`.
+- **Material Home Items Query**:
+  - Implemented real `getHomeItems()` in `MaterialQueryService` returning top 10 materials with full relations and ordering.
+- **Duplication CI Gate**:
+  - Added `duplication` check job (`jscpd`) in GitHub Actions CI workflow gating PRs above 10% threshold.
+
+### Changed
+- **Architectural Decomposition & Code Size**:
+  - Split `EntityFileManagerService` into service and dedicated `entity-file-manager.types.ts`, bringing all repository source files under 500 LOC.
+  - Elevated Jest global coverage threshold to `>=70%` across statements, branches, lines, and functions in CI.
+- **Replay & Report Module Refinements**:
+  - Standardized error handling and expanded unit test coverage for `ReplayService` to >98%.
+  - Cleaned up entity variable names and refined mutual exclusivity validation messages in `ReportService`.
+
 ## [1.1.0] - 2026-09-21
 
 ### Added
