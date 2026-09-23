@@ -3,6 +3,7 @@ import { ReportService } from './report.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ForbiddenException } from '@nestjs/common';
 import { ReportType, User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 describe('ReportService', () => {
   let service: ReportService;
@@ -128,6 +129,40 @@ describe('ReportService', () => {
         ForbiddenException,
       );
     });
+
+    it('should throw ForbiddenException if prisma throws P2002 duplicate error', async () => {
+      prisma.report.findFirst.mockResolvedValue(null);
+      const p2002 = new PrismaClientKnownRequestError('Duplicate error', {
+        code: 'P2002',
+        clientVersion: '6.19.3',
+      });
+      prisma.report.create.mockRejectedValue(p2002);
+
+      const dto = {
+        report_type: ReportType.HateSpeech,
+        report_desc: 'Spam description',
+        material_id: 10,
+      };
+
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw generic ForbiddenException if prisma throws unknown error', async () => {
+      prisma.report.findFirst.mockResolvedValue(null);
+      prisma.report.create.mockRejectedValue(new Error('Database crash'));
+
+      const dto = {
+        report_type: ReportType.HateSpeech,
+        report_desc: 'Spam description',
+        material_id: 10,
+      };
+
+      await expect(service.create(dto as any, mockUser)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
   });
 
   describe('findAll', () => {
@@ -220,6 +255,13 @@ describe('ReportService', () => {
       prisma.report.findFirst.mockResolvedValue(null);
 
       await expect(service.remove(999)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw ForbiddenException when delete throws an error', async () => {
+      prisma.report.findFirst.mockResolvedValue(mockReport);
+      prisma.report.delete.mockRejectedValue(new Error('Delete error'));
+
+      await expect(service.remove(1)).rejects.toThrow(ForbiddenException);
     });
   });
 });

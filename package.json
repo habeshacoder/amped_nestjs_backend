@@ -22,7 +22,7 @@
     "migration:check": "prisma migrate diff --from-migrations ./prisma/migrations --to-schema-datamodel ./prisma/schema.prisma --exit-code",
     "db:dev:restart": "prisma migrate reset -s -f -v",
     "db:test:restart": "dotenv -e .env.test -- prisma migrate reset -f",
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf dist && prisma generate",
     "build": "nest build",
     "copy-package": "cp package.json dist/package.json",
     "copy-prisma-schema": "cp ./prisma/schema.prisma dist/schema.prisma",
@@ -146,10 +146,10 @@
     },
     "coverageThreshold": {
       "global": {
-        "branches": 65,
-        "functions": 50,
-        "lines": 65,
-        "statements": 65
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
       }
     }
   }

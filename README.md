@@ -112,89 +112,151 @@ It provides complete interactive documentation of request bodies, response schem
 ## Quick Start & Setup
 
 ### Quick start (fresh clone)
+### Quick Start (Fresh Clone)
 
 To go from a clean clone to a verified build and passing test suites in one command sequence:
+A new user can clone the repository into an empty directory, install dependencies reproducibly, compile the build, and execute the complete automated test suite without configuring any environment variables or external services:
 
 ```bash
 # 1. Install dependencies & generate Prisma client
 npm ci && npx prisma generate
+# 1. Clone the repository
+git clone git@github.com:habeshacoder/amped_nestjs_backend.git
+cd amped_nestjs_backend
 
 # 2. Build the application
+# 2. Install dependencies (reproducible from package-lock.json; runs postinstall prisma generate)
+npm ci
+
+# 3. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
 npm run build
 
 # 3. Run unit tests with coverage enforcement
 npm run test:cov
+# 4. Run the automated test suite (43 suites, 483 tests with in-memory mocks; 0 external services needed)
+npm test
+```
 
 # 4. (Optional for local full-stack) Start PostgreSQL & run integration tests
 docker compose up -d postgres
 npm run test:e2e
+Or run the complete verification in one command:
 
 # 5. Start development server
 npm run start:dev
+```bash
+npm ci && npm run build && npm test
 ```
 
 Or run the complete verification one-liner:
+Or using the included `Makefile`:
 
 ```bash
 npm ci && npx prisma generate && npm run build && npm run test:cov
+make verify
 ```
 
 ### 1. Clone the repository
+---
+
+### Step-by-Step Setup Guide
+
+#### Part A: Install, Build & Test (Zero Dependencies Required)
+
+##### 1. Clone the repository
 
 ```bash
 git clone git@github.com:habeshacoder/amped_nestjs_backend.git
 cd amped_nestjs_backend
 ```
 
-### 2. Configure Node version
+##### 2. Configure Node version
+
+Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
 
 ```bash
 nvm use
 ```
 
-### 3. Install dependencies
+##### 3. Install dependencies
+
+Install dependencies reproducibly using the committed `package-lock.json`. This automatically generates the Prisma Client via the `postinstall` hook:
 
 ```bash
 npm ci
 ```
 
-### 4. Configure Environment Variables
+##### 4. Build the application
 
-Copy `.env.example` and set required secrets:
+Compile the TypeScript application into the `dist/` directory. The `prebuild` hook guarantees Prisma artifacts are up to date:
+
+```bash
+npm run build
+```
+
+##### 5. Run the automated test suite
+
+Execute the unit test suite across all modules, controllers, services, guards, and filters:
+
+```bash
+npm test
+```
+
+To run with coverage threshold enforcement (`>= 70%` statements/branches/lines/functions):
+
+```bash
+npm run test:cov
+```
+
+---
+
+#### Part B: Local Development & Database Setup (PostgreSQL)
+
+Configuring environment variables and starting PostgreSQL is **only** required when running the local HTTP server or executing end-to-end integration tests.
+
+##### 6. Configure Environment Variables
+
+Copy `.env.example` to `.env` and adjust secrets if needed:
 
 ```bash
 cp .env.example .env
 ```
 
-### 5. Start Services via Docker Compose
+##### 7. Start Services via Docker Compose
+
+Start the local PostgreSQL container:
 
 ```bash
-# Start PostgreSQL database and application
-docker compose up -d
-
-# Run tests in Docker container
-docker compose run --rm app npm test
+docker compose up -d postgres
 ```
 
-### 6. Generate Prisma Client & Run Migrations
+##### 8. Apply Database Migrations
+
+Deploy pending schema migrations to your local PostgreSQL instance:
 
 ```bash
-npx prisma generate
 npm run migration:run
 ```
 
-### 7. Run the Application
+##### 9. Run End-to-End (E2E) Integration Tests
+
+Run the full HTTP and database integration test suite against the live PostgreSQL database:
 
 ```bash
-# Development mode with hot-reload
-npm run start:dev
-
-# Production build and start
-npm run build
-npm run start:prod
+npm run test:e2e
 ```
 
-### 8. Run via Docker
+##### 10. Start the Development Server
+
+Start the NestJS application with hot-reload enabled:
+
+```bash
+npm run start:dev
+```
+
+The API will be available at `http://localhost:3007` and interactive Swagger docs at `http://localhost:3007/docs`.
+
+##### 11. Run via Docker (Optional)
 
 ```bash
 # Build multi-stage production container
@@ -207,6 +269,8 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 ---
 
 ## Environment Variables Reference
+
+> **Note**: No environment variables are required to install, build (`npm run build`), or run the test suite (`npm test`). Environment variables are only needed when running the live server or executing PostgreSQL-backed E2E tests.
 
 | Variable                 | Type     | Required | Default / Example                                           | Description                                                    |
 | :----------------------- | :------- | :------- | :---------------------------------------------------------- | :------------------------------------------------------------- |
@@ -233,7 +297,7 @@ All tests are verified before every commit and in continuous integration.
 | Command            | Description                                                                                           | Prerequisites / Needs                                                                    |
 | :----------------- | :---------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
 | `npm test`         | Executes all unit test suites (services, controllers, guards, filters, pipes)                         | **No external services required** (all DB calls use in-memory Prisma mocks)              |
-| `npm run test:cov` | Executes all unit tests with coverage reporting and threshold enforcement                             | **No external services required** (enforces `>=65%` stmts/branches/lines, `>=50%` funcs) |
+| `npm run test:cov` | Executes all unit tests with coverage reporting and threshold enforcement                             | **No external services required** (enforces `>=70%` stmts/branches/lines/funcs)           |
 | `npm run test:e2e` | End-to-end and real Prisma integration tests (`test/app.e2e-spec.ts` & `src/*/*.integration.spec.ts`) | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI  |
 
 ### Test Commands
@@ -256,10 +320,10 @@ npm run test:watch
 
 Coverage thresholds are enforced via Jest in `package.json`. A pull request that drops coverage below these thresholds will fail CI:
 
-- **Statements**: `>= 65%`
-- **Branches**: `>= 65%`
-- **Lines**: `>= 65%`
-- **Functions**: `>= 50%`
+- **Statements**: `>= 70%`
+- **Branches**: `>= 70%`
+- **Lines**: `>= 70%`
+- **Functions**: `>= 70%`
 
 ---
 
@@ -303,6 +367,14 @@ npm run build
 ### 3. Port 3007 Already in Use
 
 - Change `PORT=3008` in your `.env` file or terminate conflicting process: `lsof -i :3007`.
+
+### 4. Build or Test Fails on Fresh Clone
+
+- Verify Node.js `>= 20.0.0` and npm `>= 10.0.0`: `node -v && npm -v` (run `nvm use` if using nvm).
+- Ensure a clean dependency installation: `npm ci`.
+- Ensure Prisma client is generated: `npx prisma generate` (this runs automatically during `npm ci` and `npm run build`).
+- Verify no stale compilation artifacts exist: `npm run build`.
+- Remember: `npm test` requires no `.env` file and no running database—all external calls are mocked in memory.
 
 ---
 
