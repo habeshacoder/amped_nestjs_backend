@@ -28,8 +28,20 @@ export class MaterialQueryService {
     });
   }
 
-  async getHomeItems(): Promise<any[]> {
-    return [];
+  async getHomeItems(): Promise<Material[]> {
+    return await this.prisma.material.findMany({
+      take: 10,
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        material_image: true,
+        material_preview: true,
+        rate: true,
+        report: true,
+        SellerProfile: true,
+      },
+    });
   }
 
   async getMaterialByType(materialType: Type) {

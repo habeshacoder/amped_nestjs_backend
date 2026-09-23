@@ -74,9 +74,10 @@ describe('MaterialService', () => {
   });
 
   describe('getHomeItems', () => {
-    it('should return empty list of home items', async () => {
+    it('should delegate getHomeItems to queryService', async () => {
+      prisma.material.findMany.mockResolvedValue([mockMaterial]);
       const result = await service.getHomeItems();
-      expect(Array.isArray(result)).toBe(true);
+      expect(result).toEqual([mockMaterial]);
     });
   });
 

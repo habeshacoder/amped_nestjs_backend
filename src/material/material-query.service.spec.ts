@@ -80,8 +80,23 @@ describe('MaterialQueryService', () => {
   });
 
   describe('getHomeItems', () => {
-    it('should return empty array', async () => {
-      expect(await service.getHomeItems()).toEqual([]);
+    it('should query top 10 materials ordered by id desc with relations', async () => {
+      prisma.material.findMany.mockResolvedValue([mockMaterial]);
+
+      const result = await service.getHomeItems();
+
+      expect(result).toEqual([mockMaterial]);
+      expect(prisma.material.findMany).toHaveBeenCalledWith({
+        take: 10,
+        orderBy: { id: 'desc' },
+        include: {
+          material_image: true,
+          material_preview: true,
+          rate: true,
+          report: true,
+          SellerProfile: true,
+        },
+      });
     });
   });
 
