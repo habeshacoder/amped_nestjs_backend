@@ -7,6 +7,7 @@ import {
   DomainException,
   NotFoundError,
 } from '../common/exceptions/domain-exceptions';
+import { MATERIAL_INCLUDE } from './material-query.constants';
 
 @Injectable()
 export class MaterialQueryService {
@@ -15,11 +16,7 @@ export class MaterialQueryService {
   async findAll() {
     return await this.prisma.material.findMany({
       include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
+        ...MATERIAL_INCLUDE,
         SellerProfile: true,
       },
       orderBy: {
@@ -35,10 +32,7 @@ export class MaterialQueryService {
         id: 'desc',
       },
       include: {
-        material_image: true,
-        material_preview: true,
-        rate: true,
-        report: true,
+        ...MATERIAL_INCLUDE,
         SellerProfile: true,
       },
     });
@@ -49,12 +43,7 @@ export class MaterialQueryService {
       where: {
         type: materialType,
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     const shuffledElements = mat.sort(() => 0.5 - Math.random());
@@ -66,12 +55,7 @@ export class MaterialQueryService {
       where: {
         parent: materialParent,
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
     return mat;
   }
@@ -81,13 +65,7 @@ export class MaterialQueryService {
       where: {
         catagory: catagory,
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     return mat;
@@ -98,13 +76,7 @@ export class MaterialQueryService {
       where: {
         first_published_at: pub_year,
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     return mat;
@@ -197,13 +169,7 @@ export class MaterialQueryService {
       skip,
       where: { type: materialType },
       orderBy: { id: 'desc' },
-      include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     return { Materials: materials, Meta: meta };
@@ -274,13 +240,7 @@ export class MaterialQueryService {
         where: {
           id: id,
         },
-        include: {
-          material_image: true,
-          material_preview: true,
-          material_user: true,
-          rate: true,
-          report: true,
-        },
+        include: MATERIAL_INCLUDE,
       });
 
       if (material) {
@@ -312,13 +272,7 @@ export class MaterialQueryService {
       orderBy: {
         id: 'desc',
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     return { Materials: sellerMaterials, Meta: meta };
@@ -329,13 +283,7 @@ export class MaterialQueryService {
       where: {
         sellerProfile_id: id,
       },
-      include: {
-        material_image: true,
-        material_preview: true,
-        material_user: true,
-        rate: true,
-        report: true,
-      },
+      include: MATERIAL_INCLUDE,
     });
 
     return myMaterials;
@@ -355,13 +303,7 @@ export class MaterialQueryService {
           where: {
             id: purchasedMaterials[i].material_id,
           },
-          include: {
-            material_image: true,
-            material_preview: true,
-            material_user: true,
-            rate: true,
-            report: true,
-          },
+          include: MATERIAL_INCLUDE,
         }),
       );
     }

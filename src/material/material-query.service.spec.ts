@@ -7,6 +7,7 @@ import {
   ConflictError,
   NotFoundError,
 } from '../common/exceptions/domain-exceptions';
+import { MATERIAL_INCLUDE } from './material-query.constants';
 
 describe('MaterialQueryService', () => {
   let service: MaterialQueryService;
@@ -90,10 +91,7 @@ describe('MaterialQueryService', () => {
         take: 10,
         orderBy: { id: 'desc' },
         include: {
-          material_image: true,
-          material_preview: true,
-          rate: true,
-          report: true,
+          ...MATERIAL_INCLUDE,
           SellerProfile: true,
         },
       });
