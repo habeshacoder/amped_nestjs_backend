@@ -62,28 +62,28 @@ graph TD
 
 ## Module Map
 
-| Module               | Location                 | Purpose                          | Key Endpoints / Capabilities                                       |
-| :------------------- | :----------------------- | :------------------------------- | :----------------------------------------------------------------- |
-| **Auth**             | `src/auth/`              | Authentication & token lifecycle | `/auth/signup`, `/auth/signin`, `/auth/refresh`, JWT & Argon2      |
-| **User**             | `src/user/`              | User account management          | `/users/me` (current authenticated user profile)                   |
-| **Profiles**         | `src/profiles/`          | Consumer user profiles           | Profile details, avatars, covers, password change                  |
-| **SellerProfiles**   | `src/seller-profiles/`   | Creator / publisher profiles     | Store identity, creator avatars, social links                      |
-| **Channel**          | `src/channel/`           | Creator channels                 | Paginated channel discovery, channel creation, command/query split |
-| **Material**         | `src/material/`          | Digital content management       | Books, podcasts, audiobooks, previews, pagination                  |
-| **ChannelMaterial**  | `src/channel-material/`  | Channel-bound materials          | Tiered content linked directly to channels                         |
-| **MaterialPurchase** | `src/material-purchase/` | Pay-per-content processing       | Checkout initiation, webhook verification                          |
-| **ChannelPurchase**  | `src/channel-purchase/`  | Subscription monetization        | Channel subscription billing, Chapa webhooks                       |
-| **SubscriptionPlan** | `src/subscription-plan/` | Channel tier plans               | Pricing, duration, plan entitlements                               |
-| **SubscribedUser**   | `src/subscribed-user/`   | Active subscribers               | Subscriber access controls & validation                            |
-| **Favorite**         | `src/favorite/`          | Bookmarking                      | User saved items & personal library                                |
-| **Rating**           | `src/rating/`            | User reviews & ratings           | Rating submissions and aggregated scores                           |
-| **Replays**          | `src/replays/`           | Streaming replays                | Recorded content playback sessions                                 |
-| **Reports**          | `src/reports/`           | Moderation & safety              | User violation reporting                                           |
-| **Search**           | `src/search/`            | Content discovery                | Multi-model search catalog queries                                 |
-| **Health**           | `src/health/`            | Liveness & readiness             | `/health` endpoint with Terminus and database health ping          |
+| Module               | Location                 | Purpose                          | Key Endpoints / Capabilities                                          |
+| :------------------- | :----------------------- | :------------------------------- | :-------------------------------------------------------------------- |
+| **Auth**             | `src/auth/`              | Authentication & token lifecycle | `/auth/signup`, `/auth/signin`, `/auth/refresh`, JWT & Argon2         |
+| **User**             | `src/user/`              | User account management          | `/users/me` (current authenticated user profile)                      |
+| **Profiles**         | `src/profiles/`          | Consumer user profiles           | Profile details, avatars, covers, password change                     |
+| **SellerProfiles**   | `src/seller-profiles/`   | Creator / publisher profiles     | Store identity, creator avatars, social links                         |
+| **Channel**          | `src/channel/`           | Creator channels                 | Paginated channel discovery, channel creation, command/query split    |
+| **Material**         | `src/material/`          | Digital content management       | Books, podcasts, audiobooks, previews, pagination                     |
+| **ChannelMaterial**  | `src/channel-material/`  | Channel-bound materials          | Tiered content linked directly to channels                            |
+| **MaterialPurchase** | `src/material-purchase/` | Pay-per-content processing       | Checkout initiation, webhook verification                             |
+| **ChannelPurchase**  | `src/channel-purchase/`  | Subscription monetization        | Channel subscription billing, Chapa webhooks                          |
+| **SubscriptionPlan** | `src/subscription-plan/` | Channel tier plans               | Pricing, duration, plan entitlements                                  |
+| **SubscribedUser**   | `src/subscribed-user/`   | Active subscribers               | Subscriber access controls & validation                               |
+| **Favorite**         | `src/favorite/`          | Bookmarking                      | User saved items & personal library                                   |
+| **Rating**           | `src/rating/`            | User reviews & ratings           | Rating submissions and aggregated scores                              |
+| **Replays**          | `src/replays/`           | Streaming replays                | Recorded content playback sessions                                    |
+| **Reports**          | `src/reports/`           | Moderation & safety              | User violation reporting                                              |
+| **Search**           | `src/search/`            | Content discovery                | Multi-model search catalog queries                                    |
+| **Health**           | `src/health/`            | Liveness & readiness             | `/health` endpoint with Terminus and database health ping             |
 | **Metrics**          | `src/metrics/`           | Telemetry & observability        | `/metrics` Prometheus endpoint with request count & latency histogram |
-| **Prisma**           | `src/prisma/`            | Relational persistence           | Database connection lifecycle and query execution                  |
-| **Common**           | `src/common/`            | Shared infrastructure            | Domain exceptions, error filter, file storage, logging, pipes      |
+| **Prisma**           | `src/prisma/`            | Relational persistence           | Database connection lifecycle and query execution                     |
+| **Common**           | `src/common/`            | Shared infrastructure            | Domain exceptions, error filter, file storage, logging, pipes         |
 
 ---
 
@@ -98,6 +98,7 @@ http://localhost:3007/docs
 It provides complete interactive documentation of request bodies, response schemas, and authentication headers.
 
 ### Health & Metrics Endpoints
+
 - **Liveness & Readiness**: `GET /health` returns JSON health status of database connectivity and service readiness.
 - **Prometheus Telemetry**: `GET /metrics` exports Prometheus metrics, including runtime process stats, `http_requests_total` counter, and `http_request_duration_seconds` latency histogram.
 
@@ -139,11 +140,15 @@ npm test
 ```
 
 #### One-Liner Verification
+
 Execute the entire install, build, and test verification in a single command:
+
 ```bash
 npm ci && npm run build && npm test
 ```
+
 Or using the included `Makefile`:
+
 ```bash
 make verify
 ```
@@ -155,39 +160,52 @@ make verify
 #### Part A: Install, Build & Test (Zero External Dependencies Required)
 
 ##### 1. Clone the repository
+
 ```bash
 git clone https://github.com/habeshacoder/amped_nestjs_backend.git
 cd amped_nestjs_backend
 ```
 
 ##### 2. Configure Node version
+
 Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
+
 ```bash
 nvm use
 ```
 
 ##### 3. Install dependencies
+
 Install dependencies reproducibly using the committed `package-lock.json`. This automatically generates the Prisma Client via the `postinstall` hook:
+
 ```bash
 npm ci
 ```
 
 ##### 4. Build the application
+
 Compile the TypeScript application into the `dist/` directory. The `prebuild` hook guarantees Prisma artifacts are up to date:
+
 ```bash
 npm run build
 ```
 
 ##### 5. Run the automated test suite
+
 Execute the complete test suite across all modules, controllers, services, guards, and filters with coverage threshold enforcement (`>= 70%` global coverage across statements, branches, lines, and functions):
+
 ```bash
 npm test
 ```
+
 To run tests with coverage reporting explicitly:
+
 ```bash
 npm run test:cov
 ```
+
 To run tests in watch mode during development:
+
 ```bash
 npm run test:watch
 ```
@@ -199,42 +217,56 @@ npm run test:watch
 Configuring environment variables and starting PostgreSQL is **only** required when running the live HTTP server or executing end-to-end integration tests.
 
 ##### 1. Configure Environment Variables
+
 Copy `.env.example` to `.env` and adjust secrets if needed:
+
 ```bash
 cp .env.example .env
 ```
 
 ##### 2. Start Services via Docker Compose
+
 Start the local PostgreSQL container:
+
 ```bash
 docker compose up -d postgres
 ```
 
 ##### 3. Apply Database Migrations
+
 Deploy pending schema migrations to your local PostgreSQL instance:
+
 ```bash
 npm run migration:run
 ```
 
 ##### 4. Run End-to-End (E2E) Integration Tests
+
 Run the full HTTP and database integration test suite against the live PostgreSQL database:
+
 ```bash
 npm run test:e2e
 ```
 
 ##### 5. Start the Development Server
+
 Start the NestJS application with hot-reload enabled:
+
 ```bash
 npm run start:dev
 ```
+
 Or build and run the production server:
+
 ```bash
 npm run build
 npm run start:prod
 ```
+
 The API will be available at `http://localhost:3007` and interactive Swagger docs at `http://localhost:3007/docs`.
 
 ##### 6. Run via Docker (Optional)
+
 ```bash
 # Build multi-stage production container
 docker build -t amped-backend:latest .
@@ -271,12 +303,12 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 
 All tests are verified before every commit and in continuous integration.
 
-| Command                  | Description                                                                                           | Prerequisites / Needs                                                                    |
-| :----------------------- | :---------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| `npm test`               | Executes all unit test suites (services, controllers, guards, filters, pipes)                         | **No external services required** (all DB calls use in-memory Prisma mocks)              |
-| `npm run test:cov`       | Executes all unit tests with coverage reporting and threshold enforcement                             | **No external services required** (enforces `>=70%` stmts/branches/lines/funcs)           |
-| `npm run test:e2e`       | End-to-end and real Prisma integration tests (`test/*.e2e-spec.ts`)                                    | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI  |
-| `npm run test:e2e:local` | Runs full E2E suite against ephemeral PostgreSQL with mocked external payment gateway                 | **Docker required** (runs `docker-compose.test.yml` with tmpfs storage)                   |
+| Command                  | Description                                                                           | Prerequisites / Needs                                                                   |
+| :----------------------- | :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| `npm test`               | Executes all unit test suites (services, controllers, guards, filters, pipes)         | **No external services required** (all DB calls use in-memory Prisma mocks)             |
+| `npm run test:cov`       | Executes all unit tests with coverage reporting and threshold enforcement             | **No external services required** (enforces `>=70%` stmts/branches/lines/funcs)         |
+| `npm run test:e2e`       | End-to-end and real Prisma integration tests (`test/*.e2e-spec.ts`)                   | **Requires PostgreSQL** (`docker compose up -d postgres`); automatically deployed in CI |
+| `npm run test:e2e:local` | Runs full E2E suite against ephemeral PostgreSQL with mocked external payment gateway | **Docker required** (runs `docker-compose.test.yml` with tmpfs storage)                 |
 
 ### Test Commands
 
@@ -391,6 +423,9 @@ The repository uses automated GitHub Actions workflows:
 
 - **CI Pipeline (`.github/workflows/ci.yml`)**: Runs on every push and pull request. Validates formatting, linting, typechecking, unit tests across Node 20.x and 22.x, PostgreSQL-backed E2E tests, migration drift, production build, and Docker image build.
 - **Release Pipeline (`.github/workflows/release.yml`)**: Triggers on Git tags `v*.*.*`. Automatically publishes multi-arch container images to GitHub Container Registry (`ghcr.io/habeshacoder/amped_nestjs_backend`), generates GitHub Release notes, and executes gated deployment hooks.
+
+> [!IMPORTANT]
+> **Environment Variables & Secrets**: Environment variables must be supplied via the hosting platform's secret manager (e.g., AWS Secrets Manager, Vercel Environment Variables, Doppler, Kubernetes Secrets, or container runtime environment flags) instead of bundling a `.env` file into build artifacts. The packaging step (`npm run build-with-package`) strictly avoids copying `.env` into `dist/` to prevent shipping credentials or secrets into deployed bundles.
 
 ---
 
