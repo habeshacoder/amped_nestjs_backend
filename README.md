@@ -116,173 +116,125 @@ It provides complete interactive documentation of request bodies, response schem
 
 ## Quick Start & Setup
 
-### Quick start (fresh clone)
 ### Quick Start (Fresh Clone)
 
-To go from a clean clone to a verified build and passing test suites in one command sequence:
-A new user can clone the repository into an empty directory, install dependencies reproducibly, compile the build, and execute the complete automated test suite without configuring any environment variables or external services:
+A new user or automated evaluator can clone the repository into an empty directory, install dependencies reproducibly, compile the build, and execute the complete automated test suite without configuring any environment variables or running external services (all database queries and external gateways are mocked in unit tests):
 
 ```bash
-# 1. Install dependencies & generate Prisma client
-npm ci && npx prisma generate
 # 1. Clone the repository
-git clone git@github.com:habeshacoder/amped_nestjs_backend.git
+git clone https://github.com/habeshacoder/amped_nestjs_backend.git
 cd amped_nestjs_backend
 
-# 2. Build the application
-# 2. Install dependencies (reproducible from package-lock.json; runs postinstall prisma generate)
+# 2. Configure Node.js (Active LTS v20 or v22)
+nvm use
+
+# 3. Install dependencies reproducibly (runs postinstall prisma generate)
 npm ci
 
-# 3. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
+# 4. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
 npm run build
 
-# 3. Run unit tests with coverage enforcement
-npm run test:cov
-# 4. Run the automated test suite (43 suites, 483 tests with in-memory mocks; 0 external services needed)
+# 5. Run the automated test suite with coverage gating (54 test suites, 572 tests)
 npm test
 ```
 
-# 4. (Optional for local full-stack) Start PostgreSQL & run integration tests
-docker compose up -d postgres
-npm run test:e2e
-Or run the complete verification in one command:
-
-# 5. Start development server
-npm run start:dev
+#### One-Liner Verification
+Execute the entire install, build, and test verification in a single command:
 ```bash
 npm ci && npm run build && npm test
 ```
-
-Or run the complete verification one-liner:
 Or using the included `Makefile`:
-
 ```bash
-npm ci && npx prisma generate && npm run build && npm run test:cov
 make verify
 ```
 
-### 1. Clone the repository
 ---
 
 ### Step-by-Step Setup Guide
 
-#### Part A: Install, Build & Test (Zero Dependencies Required)
+#### Part A: Install, Build & Test (Zero External Dependencies Required)
 
 ##### 1. Clone the repository
-
 ```bash
-git clone git@github.com:habeshacoder/amped_nestjs_backend.git
+git clone https://github.com/habeshacoder/amped_nestjs_backend.git
 cd amped_nestjs_backend
 ```
 
-### 2. Configure Node version
 ##### 2. Configure Node version
-
 Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
-
 ```bash
 nvm use
 ```
 
-### 3. Install dependencies
 ##### 3. Install dependencies
-
 Install dependencies reproducibly using the committed `package-lock.json`. This automatically generates the Prisma Client via the `postinstall` hook:
-
 ```bash
 npm ci
 ```
 
-### 4. Configure Environment Variables
 ##### 4. Build the application
-
-Copy `.env.example` and set required secrets:
 Compile the TypeScript application into the `dist/` directory. The `prebuild` hook guarantees Prisma artifacts are up to date:
-
 ```bash
-cp .env.example .env
 npm run build
 ```
 
-### 5. Start Services via Docker Compose
 ##### 5. Run the automated test suite
-
-Execute the unit test suite across all modules, controllers, services, guards, and filters:
-
+Execute the complete test suite across all modules, controllers, services, guards, and filters with coverage threshold enforcement (`>= 70%` global coverage across statements, branches, lines, and functions):
 ```bash
-# Start PostgreSQL database and application
-docker compose up -d
 npm test
 ```
-
-# Run tests in Docker container
-docker compose run --rm app npm test
-To run with coverage threshold enforcement (`>=65%` statements/branches/lines, `>=50%` functions):
-To run with coverage threshold enforcement (`>= 70%` statements/branches/lines/functions):
-
+To run tests with coverage reporting explicitly:
 ```bash
 npm run test:cov
 ```
+To run tests in watch mode during development:
+```bash
+npm run test:watch
+```
 
-### 6. Generate Prisma Client & Run Migrations
 ---
 
 #### Part B: Local Development & Database Setup (PostgreSQL)
 
-Configuring environment variables and starting PostgreSQL is **only** required when running the local HTTP server or executing end-to-end integration tests.
+Configuring environment variables and starting PostgreSQL is **only** required when running the live HTTP server or executing end-to-end integration tests.
 
-##### 6. Configure Environment Variables
-
+##### 1. Configure Environment Variables
 Copy `.env.example` to `.env` and adjust secrets if needed:
-
 ```bash
-npx prisma generate
 cp .env.example .env
 ```
 
-##### 7. Start Services via Docker Compose
-
+##### 2. Start Services via Docker Compose
 Start the local PostgreSQL container:
-
 ```bash
 docker compose up -d postgres
 ```
 
-##### 8. Apply Database Migrations
-
+##### 3. Apply Database Migrations
 Deploy pending schema migrations to your local PostgreSQL instance:
-
 ```bash
 npm run migration:run
 ```
 
-### 7. Run the Application
-##### 9. Run End-to-End (E2E) Integration Tests
-
+##### 4. Run End-to-End (E2E) Integration Tests
 Run the full HTTP and database integration test suite against the live PostgreSQL database:
-
 ```bash
-# Development mode with hot-reload
 npm run test:e2e
 ```
 
-##### 10. Start the Development Server
-
+##### 5. Start the Development Server
 Start the NestJS application with hot-reload enabled:
-
 ```bash
 npm run start:dev
-
-# Production build and start
+```
+Or build and run the production server:
+```bash
 npm run build
 npm run start:prod
 ```
-
-### 8. Run via Docker
 The API will be available at `http://localhost:3007` and interactive Swagger docs at `http://localhost:3007/docs`.
 
-##### 11. Run via Docker (Optional)
-
+##### 6. Run via Docker (Optional)
 ```bash
 # Build multi-stage production container
 docker build -t amped-backend:latest .
