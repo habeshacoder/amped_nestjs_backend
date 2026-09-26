@@ -135,7 +135,7 @@ npm ci
 # 4. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
 npm run build
 
-# 5. Run the automated test suite with coverage gating (54 test suites, 572 tests)
+# 5. Run the automated test suite with coverage gating (56 test suites, 614 tests)
 npm test
 ```
 
@@ -301,7 +301,7 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 
 ## Testing Guide
 
-All tests are verified before every commit and in continuous integration.
+All tests are verified before every commit and in continuous integration. For the complete before/after verification log and buyer-readiness assessment, refer to [AUDIT.md](AUDIT.md).
 
 | Command                  | Description                                                                           | Prerequisites / Needs                                                                   |
 | :----------------------- | :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
