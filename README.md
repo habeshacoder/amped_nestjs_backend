@@ -333,6 +333,18 @@ docker run -p 3007:3007 --env-file .env amped-backend:latest
 
 ---
 
+## Architecture & Robustness
+
+AMPED includes production-grade reliability, security, and observability patterns:
+
+- **Rate Limiting & Abuse Prevention**: Global throttling is configured via `@nestjs/throttler` (default: 100 req/60s). High-risk authentication routes (`/auth/*`) enforce strict rate limiting (10 req/60s) via `@Throttle({ default: { limit: 10, ttl: 60000 } })` to prevent brute force and credential stuffing attacks.
+- **Fail-Fast Environment Validation**: Handled by Joi in `src/config/env.validation.ts`. The application validates all required variables (`DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET` >= 16 chars) at module bootstrap, failing fast with informative error messages before serving traffic.
+- **Distributed Request Correlation**: Built into Pino logging via `src/common/logger/pino-logger.config.ts`. Every request receives an `x-request-id` header (reusing client-sent headers or generating UUIDv4). All logs correlate with `requestId`, and the header is propagated on HTTP responses.
+- **Graceful Shutdown**: `app.enableShutdownHooks()` handles OS process termination signals (`SIGINT`, `SIGTERM`). `PrismaService` implements `OnModuleDestroy` to execute `await this.$disconnect()`, releasing pooled connections safely.
+- **Active Health Probes**: `GET /health` uses `@nestjs/terminus` and `PrismaHealthIndicator` to execute an active `SELECT 1` ping against PostgreSQL, returning `200 OK` only when the database is fully reachable.
+
+---
+
 ## Testing Guide
 
 All tests are verified before every commit and in continuous integration.

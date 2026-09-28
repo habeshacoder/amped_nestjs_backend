@@ -104,4 +104,12 @@ describe('AuthController', () => {
     expect(authService.findAll).toHaveBeenCalled();
     expect(result).toEqual([{ id: 'user-1' }]);
   });
+
+  it('should configure rate limiting (throttling) on AuthController endpoints', () => {
+    const ttl = Reflect.getMetadata('THROTTLER:TTLdefault', AuthController);
+    const limit = Reflect.getMetadata('THROTTLER:LIMITdefault', AuthController);
+
+    expect(ttl).toBe(60000);
+    expect(limit).toBe(10);
+  });
 });

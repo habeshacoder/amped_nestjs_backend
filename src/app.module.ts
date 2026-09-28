@@ -29,67 +29,19 @@ import { CommonModule } from './common/common.module';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { randomUUID } from 'crypto';
-import { IncomingMessage } from 'http';
-import * as Joi from 'joi';
+import { envValidationSchema } from './config/env.validation';
+import { createPinoHttpConfig } from './common/logger/pino-logger.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid('development', 'test', 'production')
-          .default('development'),
-        PORT: Joi.number().default(3007),
-        DATABASE_URL: Joi.string().required(),
-        JWT_SECRET: Joi.string().min(16).required(),
-        JWT_REFRESH_SECRET: Joi.string().min(16).required(),
-        CHAPA_SECRET_KEY: Joi.string().allow('').optional().default(''),
-        CHAPA_WEBHOOK_HASH_KEY: Joi.string().allow('').optional().default(''),
-        CHAPA_WEBHOOK_URL: Joi.string().allow('').optional().default(''),
-        SHADOW_DATABASE_URL: Joi.string().allow('').optional().default(''),
-        SENTRY_DSN: Joi.string().allow('').optional().default(''),
-        CORS_ORIGIN: Joi.string().allow('').optional().default('*'),
-        THROTTLE_TTL: Joi.number().default(60000),
-        THROTTLE_LIMIT: Joi.number().default(100),
-      }),
+      validationSchema: envValidationSchema,
     }),
     LoggerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const nodeEnv = config.get<string>('NODE_ENV') || 'development';
-        const isProd = nodeEnv === 'production';
-        const isTest = nodeEnv === 'test';
-        return {
-          pinoHttp: {
-            level: isTest ? 'silent' : isProd ? 'info' : 'debug',
-            transport:
-              isProd || isTest
-                ? undefined
-                : {
-                    target: 'pino-pretty',
-                    options: {
-                      singleLine: true,
-                      colorize: true,
-                    },
-                  },
-            genReqId: (req: IncomingMessage) =>
-              (req.headers['x-request-id'] as string) || randomUUID(),
-            redact: {
-              paths: [
-                'req.headers.authorization',
-                'req.headers.cookie',
-                'req.body.password',
-                'req.body.token',
-                'res.headers["set-cookie"]',
-              ],
-              censor: '***REDACTED***',
-            },
-          },
-        };
-      },
+      useFactory: (config: ConfigService) => createPinoHttpConfig(config),
     }),
     AuthModule,
     UserModule,
