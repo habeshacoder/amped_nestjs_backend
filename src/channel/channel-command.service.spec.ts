@@ -336,6 +336,15 @@ describe('ChannelCommandService', () => {
       expect(result).toEqual({ id: 1, image: 'new.jpg' });
       expect(fileStorage.deleteFile).toHaveBeenCalledWith('channel', 'old.jpg');
     });
+
+    it('should rethrow error when database operation fails', async () => {
+      prisma.channelImage.findFirst.mockRejectedValue(new Error('DB failure'));
+
+      const file = { filename: 'new.jpg' } as any;
+      await expect(service.uploadChannelProfile(file, 1)).rejects.toThrow(
+        'DB failure',
+      );
+    });
   });
 
   describe('uploadChannelCover', () => {
@@ -366,6 +375,17 @@ describe('ChannelCommandService', () => {
       const result = await service.uploadChannelCover(file, 1);
       expect(result).toEqual({ id: 2, image: 'new_cover.jpg' });
     });
+
+    it('should rethrow error when cover upload database operation fails', async () => {
+      prisma.channelImage.findFirst.mockRejectedValue(
+        new Error('Cover DB error'),
+      );
+
+      const file = { filename: 'cover.jpg' } as any;
+      await expect(service.uploadChannelCover(file, 1)).rejects.toThrow(
+        'Cover DB error',
+      );
+    });
   });
 
   describe('uploadChannelImage', () => {
@@ -381,6 +401,17 @@ describe('ChannelCommandService', () => {
       expect(prisma.channelImage.create).toHaveBeenCalledWith({
         data: { image: 'img1.png', channel_id: 1 },
       });
+    });
+
+    it('should handle error when individual image creation fails', async () => {
+      prisma.channelImage.create.mockRejectedValue(
+        new Error('Image insert fail'),
+      );
+
+      const files = [{ filename: 'bad.png' }] as any;
+      await expect(service.uploadChannelImage(files, 1)).rejects.toThrow(
+        'Image insert fail',
+      );
     });
   });
 
@@ -412,6 +443,17 @@ describe('ChannelCommandService', () => {
       const result = await service.uploadChannelPreview(file, 1);
       expect(result).toEqual({ id: 5, preview: 'new.mp3' });
       expect(fileStorage.deleteFile).toHaveBeenCalledWith('channel', 'old.mp3');
+    });
+
+    it('should rethrow error when preview upload database operation fails', async () => {
+      prisma.previewChannel.findFirst.mockRejectedValue(
+        new Error('Preview error'),
+      );
+
+      const file = { filename: 'preview.mp3' } as any;
+      await expect(service.uploadChannelPreview(file, 1)).rejects.toThrow(
+        'Preview error',
+      );
     });
   });
 });
