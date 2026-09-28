@@ -8,6 +8,9 @@ import {
   mockChapaService,
   prisma,
   TEST_FIXTURE_PASSWORD,
+  INVALID_TEST_PASSWORD,
+  TEST_ALT_PASSWORD,
+  INVALID_SHORT_PASSWORD,
 } from './setup-e2e';
 import { ChapaService } from 'chapa-nestjs';
 
@@ -82,7 +85,7 @@ describe('App End-to-End Tests (Real Database)', () => {
     it('POST /auth/signup should reject invalid input with 400', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ email: 'invalid-email', password: '123' })
+        .send({ email: 'invalid-email', password: INVALID_SHORT_PASSWORD })
         .expect(400)
         .expect((res) => {
           expect(res.body.statusCode).toBe(400);
@@ -126,7 +129,7 @@ describe('App End-to-End Tests (Real Database)', () => {
     it('POST /auth/signin should reject wrong password with 403', () => {
       return request(app.getHttpServer())
         .post('/auth/signin')
-        .send({ email: testUser.email, password: 'WrongPassword999!' })
+        .send({ email: testUser.email, password: INVALID_TEST_PASSWORD })
         .expect(403);
     });
 
@@ -135,7 +138,7 @@ describe('App End-to-End Tests (Real Database)', () => {
         .post('/auth/signin')
         .send({
           email: 'nonexistent@example.com',
-          password: 'SomePassword123!',
+          password: TEST_ALT_PASSWORD,
         })
         .expect(403);
     });

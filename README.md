@@ -378,6 +378,7 @@ All end-to-end test suites (`test/*.e2e-spec.ts`) run completely offline without
 
 - **Chapa Payment Gateway**: Replaced with an in-memory test double (`mockChapaService` via NestJS `.overrideProvider(ChapaService)`) in test suites exercising payment-adjacent flows (e.g. `seller-profiles.e2e-spec.ts`, `subscribed-users.e2e-spec.ts`, `app.e2e-spec.ts`).
 - **Database Isolation**: Uses an ephemeral PostgreSQL container with `tmpfs` RAM storage defined in `docker-compose.test.yml`, preventing any state bleed or local database contamination.
+- **Environment Configuration**: For local E2E test runs, copy `.env.example` to `.env.test` (`cp .env.example .env.test`). The test runner and `npm run test:e2e:local` boot cleanly without missing-env errors using non-secret test fixtures (`TEST_USER_PASSWORD`, `TEST_NEW_PASSWORD`).
 
 #### One-command isolated execution:
 

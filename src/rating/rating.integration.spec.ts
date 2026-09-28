@@ -1,4 +1,8 @@
-import { prisma, cleanDatabase } from '../../test/setup-e2e';
+import {
+  prisma,
+  cleanDatabase,
+  TEST_DB_HASHED_PASSWORD,
+} from '../../test/setup-e2e';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 describe('Rating Integration Tests (Real Prisma)', () => {
@@ -16,7 +20,7 @@ describe('Rating Integration Tests (Real Prisma)', () => {
       data: {
         username: 'rating_tester_' + Date.now(),
         email: `rating_tester_${Date.now()}@example.com`,
-        password: 'hashed_password_123',
+        password: TEST_DB_HASHED_PASSWORD,
       },
     });
     testUserId = user.id;
@@ -26,7 +30,7 @@ describe('Rating Integration Tests (Real Prisma)', () => {
       data: {
         username: 'rating_tester_2_' + Date.now(),
         email: `rating_tester_2_${Date.now()}@example.com`,
-        password: 'hashed_password_123',
+        password: TEST_DB_HASHED_PASSWORD,
       },
     });
     secondUserId = user2.id;

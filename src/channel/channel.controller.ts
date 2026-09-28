@@ -30,7 +30,7 @@ import {
 } from '../common/utils/file-upload.utils';
 import { ChannelService } from './channel.service';
 import { Response } from 'express';
-import { ChannelDto } from './dto';
+import { ChannelDto, PaginateChannelsDto, ChannelUploadDto } from './dto';
 import { join } from 'path';
 import { Throttle } from '@nestjs/throttler';
 
@@ -73,10 +73,10 @@ export class ChannelController {
     return this.channelService.findAll();
   }
   @Get('/paginate_channels')
-  paginateChannels(@Query('take') take: string, @Query('page') page: string) {
+  paginateChannels(@Query() query: PaginateChannelsDto) {
     return this.channelService.paginateChannels({
-      take: Number(take),
-      page: Number(page),
+      take: query?.take !== undefined ? Number(query.take) : undefined,
+      page: query?.page !== undefined ? Number(query.page) : undefined,
     });
   }
 
@@ -240,9 +240,9 @@ export class ChannelController {
   )
   uploadFile(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Body('id') id: string,
+    @Body() body: ChannelUploadDto,
   ) {
-    return this.channelService.uploadChannelImage(files, +id);
+    return this.channelService.uploadChannelImage(files, +body.id);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -276,9 +276,9 @@ export class ChannelController {
   @HttpCode(HttpStatus.CREATED)
   createChannelPreview(
     @UploadedFile() file: Express.Multer.File,
-    @Body('id') id: string,
+    @Body() body: ChannelUploadDto,
   ) {
-    return this.channelService.uploadChannelPreview(file, +id);
+    return this.channelService.uploadChannelPreview(file, +body.id);
   }
 
   @HttpCode(HttpStatus.OK)

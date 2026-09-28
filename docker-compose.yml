@@ -5,6 +5,8 @@ services:
     image: postgres:16-alpine
     container_name: amped_postgres
     restart: unless-stopped
+    # NOTE: Default credentials below are STRICTLY for local development.
+    # Production deployments must inject strong credentials via environment variables or secret manager.
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -32,6 +34,7 @@ services:
       - NODE_ENV=development
       - PORT=3007
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-amped_db}?schema=public
+      # Development-only placeholder secrets: override in production via secret manager / environment
       - JWT_SECRET=${JWT_SECRET:-supersecrettestjwtkey1234567890}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-supersecrettestjwtrefreshkey1234567890}
     depends_on:

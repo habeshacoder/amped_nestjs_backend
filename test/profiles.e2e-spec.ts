@@ -8,6 +8,7 @@ import {
   prisma,
   TEST_FIXTURE_PASSWORD,
   TEST_NEW_PASSWORD,
+  INVALID_TEST_PASSWORD,
 } from './setup-e2e';
 
 describe('Profiles End-to-End Tests (Real Database)', () => {
@@ -239,9 +240,9 @@ describe('Profiles End-to-End Tests (Real Database)', () => {
         .patch('/profiles/update_password')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          oldPassword: 'WrongPassword1!',
-          newPassword: 'NewPass123!',
-          newPasswordConfirm: 'NewPass123!',
+          oldPassword: INVALID_TEST_PASSWORD,
+          newPassword: TEST_NEW_PASSWORD,
+          newPasswordConfirm: TEST_NEW_PASSWORD,
         })
         .expect(403);
 
@@ -254,8 +255,8 @@ describe('Profiles End-to-End Tests (Real Database)', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           oldPassword: testUser.password,
-          newPassword: 'NewPass123!',
-          newPasswordConfirm: 'NewPass123!',
+          newPassword: TEST_NEW_PASSWORD,
+          newPasswordConfirm: TEST_NEW_PASSWORD,
         })
         .expect(200);
 
@@ -266,7 +267,7 @@ describe('Profiles End-to-End Tests (Real Database)', () => {
         .post('/auth/signin')
         .send({
           email: testUser.email,
-          password: 'NewPass123!',
+          password: TEST_NEW_PASSWORD,
         })
         .expect(200);
     });

@@ -72,8 +72,8 @@ describe('UserController', () => {
     it('should exclude password and refresh_token from response', async () => {
       prisma.user.findUnique.mockResolvedValue({
         ...mockUser,
-        password: 'super_secret_argon2_hash',
-        refresh_token: 'secret_jwt_refresh_token',
+        password: 'mock_hashed_password',
+        refresh_token: 'mock_refresh_token',
       });
 
       const result = await controller.getMe(mockUser);
@@ -87,8 +87,8 @@ describe('UserController', () => {
       prisma.user.findMany.mockResolvedValue([
         {
           ...mockUser,
-          password: 'hashed_password_123',
-          refresh_token: 'refresh_token_123',
+          password: 'mock_hashed_password',
+          refresh_token: 'mock_refresh_token',
         },
       ]);
 

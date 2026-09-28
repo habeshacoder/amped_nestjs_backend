@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
-import { cleanDatabase, prisma } from './setup-e2e';
+import { cleanDatabase, prisma, TEST_DB_HASHED_PASSWORD } from './setup-e2e';
 import { Genere, Parent, Type, Catagory, ReportType } from '@prisma/client';
 
 describe('Search End-to-End Tests (Real Database)', () => {
@@ -32,7 +32,7 @@ describe('Search End-to-End Tests (Real Database)', () => {
       data: {
         email: 'search_test_user@example.com',
         username: 'searchable_user',
-        password: 'hashed_password',
+        password: TEST_DB_HASHED_PASSWORD,
       },
     });
 

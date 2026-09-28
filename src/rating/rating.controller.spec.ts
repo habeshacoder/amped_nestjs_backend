@@ -163,7 +163,10 @@ describe('RatingController', () => {
     it('should call service.noOfMaterialRating with query params', async () => {
       service.noOfMaterialRating.mockResolvedValue(5);
 
-      const result = await controller.noOfMaterialRating('5', '10');
+      const result = await controller.noOfMaterialRating({
+        rating: 5,
+        material_id: 10,
+      });
       expect(service.noOfMaterialRating).toHaveBeenCalledWith({
         rating: 5,
         material_id: 10,
@@ -176,7 +179,10 @@ describe('RatingController', () => {
     it('should call service.noOfChannelRating with query params', async () => {
       service.noOfChannelRating.mockResolvedValue(3);
 
-      const result = await controller.noOfChannelRating('4', '20');
+      const result = await controller.noOfChannelRating({
+        rating: 4,
+        channel_id: 20,
+      });
       expect(service.noOfChannelRating).toHaveBeenCalledWith({
         rating: 4,
         channel_id: 20,

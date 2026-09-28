@@ -13,7 +13,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RatingService } from './rating.service';
-import { RatingDto } from './dto';
+import {
+  RatingDto,
+  MaterialRatingQueryDto,
+  ChannelRatingQueryDto,
+} from './dto';
 import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/guard';
 import { UpdateRatingDto } from './dto/update-rating.dto';
@@ -81,24 +85,22 @@ export class RatingController {
   }
 
   @Get('rating/material_rating')
-  noOfMaterialRating(
-    @Query('rating') rating: string,
-    @Query('material_id') material_id: string,
-  ) {
+  noOfMaterialRating(@Query() query: MaterialRatingQueryDto) {
     return this.ratingService.noOfMaterialRating({
-      rating: Number(rating),
-      material_id: Number(material_id),
+      rating: query?.rating !== undefined ? Number(query.rating) : undefined,
+      material_id:
+        query?.material_id !== undefined
+          ? Number(query.material_id)
+          : undefined,
     });
   }
 
   @Get('rating/channel_rating')
-  noOfChannelRating(
-    @Query('rating') rating: string,
-    @Query('channel_id') channel_id: string,
-  ) {
+  noOfChannelRating(@Query() query: ChannelRatingQueryDto) {
     return this.ratingService.noOfChannelRating({
-      rating: Number(rating),
-      channel_id: Number(channel_id),
+      rating: query?.rating !== undefined ? Number(query.rating) : undefined,
+      channel_id:
+        query?.channel_id !== undefined ? Number(query.channel_id) : undefined,
     });
   }
 

@@ -88,7 +88,7 @@ describe('ChannelController', () => {
   });
 
   it('paginateChannels should call service.paginateChannels with numbers', async () => {
-    const result = await controller.paginateChannels('10', '1');
+    const result = await controller.paginateChannels({ take: 10, page: 1 });
     expect(service.paginateChannels).toHaveBeenCalledWith({
       take: 10,
       page: 1,
@@ -178,7 +178,7 @@ describe('ChannelController', () => {
 
   it('uploadFile should call service.uploadChannelImage', async () => {
     const files = [] as any;
-    const result = await controller.uploadFile(files, '1');
+    const result = await controller.uploadFile(files, { id: '1' });
     expect(service.uploadChannelImage).toHaveBeenCalledWith(files, 1);
     expect(result).toEqual([mockChannel]);
   });
@@ -196,7 +196,7 @@ describe('ChannelController', () => {
 
   it('createChannelPreview should call service.uploadChannelPreview', async () => {
     const file = {} as any;
-    const result = await controller.createChannelPreview(file, '1');
+    const result = await controller.createChannelPreview(file, { id: '1' });
     expect(service.uploadChannelPreview).toHaveBeenCalledWith(file, 1);
     expect(result).toEqual({ id: 1 });
   });

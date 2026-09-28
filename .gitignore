@@ -42,7 +42,6 @@ AGENT_TASK_amped_nestjs_backend.md
 .env*
 .env.*
 !.env.example
-!.env.test.example
 
 # temp directory
 .temp

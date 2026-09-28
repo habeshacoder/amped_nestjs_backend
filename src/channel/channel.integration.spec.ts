@@ -1,4 +1,8 @@
-import { prisma, cleanDatabase } from '../../test/setup-e2e';
+import {
+  prisma,
+  cleanDatabase,
+  TEST_DB_HASHED_PASSWORD,
+} from '../../test/setup-e2e';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 describe('Channel Integration Tests (Real Prisma)', () => {
@@ -13,7 +17,7 @@ describe('Channel Integration Tests (Real Prisma)', () => {
       data: {
         username: 'channel_tester_' + Date.now(),
         email: `channel_tester_${Date.now()}@example.com`,
-        password: 'hashed_password_123',
+        password: TEST_DB_HASHED_PASSWORD,
       },
     });
     testUserId = user.id;
