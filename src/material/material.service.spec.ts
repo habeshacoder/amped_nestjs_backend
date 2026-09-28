@@ -3,6 +3,7 @@ import { MaterialService } from './material.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Parent, Type } from '@prisma/client';
 import { MaterialQueryService } from './material-query.service';
+import { MaterialRepository } from './material.repository';
 import { MaterialStorageService } from './material-storage.service';
 import { FileStorageService } from '../common/services/file-storage.service';
 import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
@@ -49,6 +50,7 @@ describe('MaterialService', () => {
       providers: [
         MaterialService,
         MaterialQueryService,
+        MaterialRepository,
         MaterialStorageService,
         FileStorageService,
         EntityFileManagerService,

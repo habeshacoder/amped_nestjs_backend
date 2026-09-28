@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { PrismaService } from '../prisma/prisma.service';
 import { Catagory, Material, Parent, Prisma, Type, User } from '@prisma/client';
 import {
   ConflictError,
   DomainException,
-  NotFoundError,
 } from '../common/exceptions/domain-exceptions';
+import { computePagination } from '../common/utils/pagination.util';
 import { MATERIAL_INCLUDE } from './material-query.constants';
+import { MaterialRepository } from './material.repository';
 
 @Injectable()
 export class MaterialQueryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly materialRepo: MaterialRepository) {}
 
   async findAll() {
-    return await this.prisma.material.findMany({
+    return await this.materialRepo.findMany({
       include: {
         ...MATERIAL_INCLUDE,
         SellerProfile: true,
@@ -26,7 +26,7 @@ export class MaterialQueryService {
   }
 
   async getHomeItems(): Promise<Material[]> {
-    return await this.prisma.material.findMany({
+    return await this.materialRepo.findMany({
       take: 10,
       orderBy: {
         id: 'desc',
@@ -39,7 +39,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialByType(materialType: Type) {
-    const mat = await this.prisma.material.findMany({
+    const mat = await this.materialRepo.findMany({
       where: {
         type: materialType,
       },
@@ -51,7 +51,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialByParent(materialParent: Parent) {
-    const mat = await this.prisma.material.findMany({
+    const mat = await this.materialRepo.findMany({
       where: {
         parent: materialParent,
       },
@@ -61,7 +61,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialByCatagory(catagory: Catagory) {
-    const mat = await this.prisma.material.findMany({
+    const mat = await this.materialRepo.findMany({
       where: {
         catagory: catagory,
       },
@@ -72,7 +72,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialByPublicationYear(pub_year: string) {
-    const mat = await this.prisma.material.findMany({
+    const mat = await this.materialRepo.findMany({
       where: {
         first_published_at: pub_year,
       },
@@ -82,89 +82,22 @@ export class MaterialQueryService {
     return mat;
   }
 
-  private computePagination(
-    count: number,
-    take: number,
-    page: number,
-    baseUrl?: string,
-  ) {
-    if (count === 0) {
-      if (page !== 0) {
-        throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
-      }
-      const meta: Record<string, any> = {
-        self: 0,
-        prev: null,
-        next: null,
-        last: 0,
-      };
-      if (baseUrl) {
-        meta.Num_Of_Materials = 0;
-        meta.Num_Of_Pages = 0;
-        meta.Per_Page = take;
-        meta.Materials_In_last_page = 0;
-        meta.Links = [
-          { first: `${baseUrl}?take=${take}&page=0` },
-          { self: `${baseUrl}?take=${take}&page=0` },
-          { prev: `${baseUrl}?take=${take}&page=null` },
-          { next: `${baseUrl}?take=${take}&page=null` },
-          { last: `${baseUrl}?take=${take}&page=0` },
-        ];
-      }
-      return { skip: 0, meta };
-    }
-
-    const totalPages = Math.ceil(count / take);
-    if (page < 0 || page >= totalPages) {
-      throw new NotFoundError('Page Not Found', 'PAGE_NOT_FOUND');
-    }
-
-    const previousPage = page === 0 ? null : page - 1;
-    const nextPage = page + 1 >= totalPages ? null : page + 1;
-    const lastPage = totalPages - 1;
-    let material_in_last_page = count % take;
-    if (material_in_last_page === 0) material_in_last_page = take;
-
-    const meta: Record<string, any> = {
-      self: page,
-      prev: previousPage,
-      next: nextPage,
-      last: lastPage,
-    };
-
-    if (baseUrl) {
-      meta.Num_Of_Materials = count;
-      meta.Num_Of_Pages = totalPages;
-      meta.Per_Page = take;
-      meta.Materials_In_last_page = material_in_last_page;
-      meta.Links = [
-        { first: `${baseUrl}?take=${take}&page=0` },
-        { self: `${baseUrl}?take=${take}&page=${page}` },
-        { prev: `${baseUrl}?take=${take}&page=${previousPage}` },
-        { next: `${baseUrl}?take=${take}&page=${nextPage}` },
-        { last: `${baseUrl}?take=${take}&page=${lastPage}` },
-      ];
-    }
-
-    return { skip: take * page, meta };
-  }
-
   async paginateMaterialByType(
     materialType: Type,
     params: { take?: number; page?: number },
   ) {
     const { take = 10, page = 0 } = params;
-    const numOfMaterial = await this.prisma.material.count({
+    const numOfMaterial = await this.materialRepo.count({
       where: { type: materialType },
     });
-    const { skip, meta } = this.computePagination(
+    const { skip, meta } = computePagination(
       numOfMaterial,
       take,
       page,
       'http://localhost:3007/material/materials_web',
     );
 
-    const materials = await this.prisma.material.findMany({
+    const materials = await this.materialRepo.findMany({
       take,
       skip,
       where: { type: materialType },
@@ -177,15 +110,15 @@ export class MaterialQueryService {
 
   async getMaterialsWeb(params: { take?: number; page?: number }) {
     const { take = 10, page = 0 } = params;
-    const numOfMaterial = await this.prisma.material.count();
-    const { skip, meta } = this.computePagination(
+    const numOfMaterial = await this.materialRepo.count();
+    const { skip, meta } = computePagination(
       numOfMaterial,
       take,
       page,
       'http://localhost:3007/material/materials_web',
     );
 
-    const materials = await this.prisma.material.findMany({
+    const materials = await this.materialRepo.findMany({
       take,
       skip,
       orderBy: { id: 'desc' },
@@ -199,7 +132,7 @@ export class MaterialQueryService {
 
     let lastMaterialId = 0;
 
-    const count = await this.prisma.material.findMany({
+    const count = await this.materialRepo.findMany({
       orderBy: { id: 'desc' },
     });
 
@@ -212,7 +145,7 @@ export class MaterialQueryService {
       id: Number(lastMaterialId),
     };
 
-    return await this.prisma.material.findMany({
+    return await this.materialRepo.findMany({
       cursor,
       take,
       orderBy: {
@@ -236,7 +169,7 @@ export class MaterialQueryService {
 
   async findOne(id: number) {
     try {
-      const material = await this.prisma.material.findUnique({
+      const material = await this.materialRepo.findUnique({
         where: {
           id: id,
         },
@@ -258,12 +191,12 @@ export class MaterialQueryService {
     params: { take?: number; page?: number },
   ) {
     const { take = 10, page = 0 } = params;
-    const numOfMaterial = await this.prisma.material.count({
+    const numOfMaterial = await this.materialRepo.count({
       where: { sellerProfile_id: seller_id },
     });
-    const { skip, meta } = this.computePagination(numOfMaterial, take, page);
+    const { skip, meta } = computePagination(numOfMaterial, take, page);
 
-    const sellerMaterials = await this.prisma.material.findMany({
+    const sellerMaterials = await this.materialRepo.findMany({
       take,
       skip,
       where: {
@@ -279,7 +212,7 @@ export class MaterialQueryService {
   }
 
   async findForSeller(id: number) {
-    const myMaterials = await this.prisma.material.findMany({
+    const myMaterials = await this.materialRepo.findMany({
       where: {
         sellerProfile_id: id,
       },
@@ -290,7 +223,7 @@ export class MaterialQueryService {
   }
 
   async getUserMaterial(user: User) {
-    const purchasedMaterials = await this.prisma.materialUser.findMany({
+    const purchasedMaterials = await this.materialRepo.findMaterialUsers({
       where: {
         user_id: user.id,
       },
@@ -299,7 +232,7 @@ export class MaterialQueryService {
     const userMaterials = [];
     for (let i = 0; i < purchasedMaterials.length; i++) {
       userMaterials.push(
-        await this.prisma.material.findMany({
+        await this.materialRepo.findMany({
           where: {
             id: purchasedMaterials[i].material_id,
           },
@@ -311,7 +244,7 @@ export class MaterialQueryService {
   }
 
   async isMaterialPurchased(user: User, material_id: number) {
-    const userMaterial = await this.prisma.materialUser.findFirst({
+    const userMaterial = await this.materialRepo.findFirstMaterialUser({
       where: {
         user_id: user.id,
         material_id: material_id,
@@ -322,7 +255,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialCoverName(id: number) {
-    const materialImage = await this.prisma.materialImage.findFirst({
+    const materialImage = await this.materialRepo.findFirstMaterialImage({
       where: {
         material_id: id,
       },
@@ -332,7 +265,7 @@ export class MaterialQueryService {
   }
 
   async getMaterialPreviewImages(materialId: number) {
-    const previewImages = await this.prisma.materialImage.findMany({
+    const previewImages = await this.materialRepo.findMaterialImages({
       where: {
         material_id: materialId,
         cover: false,
