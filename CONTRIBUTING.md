@@ -24,78 +24,110 @@ git checkout -b feat/my-new-feature
 
 ## 2. Commit Message Standards (Conventional Commits)
 
-All commit messages must adhere to the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+All commit messages must adhere strictly to the [Conventional Commits v1.0.0](https://www.conventionalcommits.org/) specification:
 
 ```
-<type>(<optional scope>): <short summary in lowercase imperative mood>
+<type>(<scope>): <short summary in lowercase imperative mood>
 
-[optional body]
+[optional body describing motivation and implementation details]
 
-[optional footer]
+[optional footer(s), e.g., Closes #123, BREAKING CHANGE: description]
 ```
 
 ### Allowed Types:
 
 - `feat`: A new feature or endpoint
-- `fix`: A bug fix
-- `test`: Adding or correcting tests
-- `docs`: Documentation changes only
-- `style`: Changes that do not affect code meaning (formatting, whitespace)
-- `refactor`: Code changes that neither fix a bug nor add a feature
-- `perf`: Code changes that improve performance
-- `ci`: Changes to CI configuration or scripts
-- `chore`: Maintenance tasks, dependency updates, configuration adjustments
+- `fix`: A bug fix or defect resolution
+- `test`: Adding missing tests or correcting existing test suites
+- `docs`: Documentation updates or additions only
+- `style`: Changes that do not affect code semantics (whitespace, formatting)
+- `refactor`: Code reorganization that neither fixes a bug nor adds a feature
+- `perf`: Performance optimizations
+- `ci`: Changes to CI/CD workflows, build configurations, or deployment automation
+- `chore`: Tooling, dependency maintenance, or housekeeping tasks
 
-### Examples:
+### Commit Rules:
 
-- `feat(channel): add pagination to channel material listings`
-- `fix(auth): await refresh token update during logout`
-- `test: add unit test suite for ChannelMaterialService`
-- `chore: enforce jest coverage threshold`
-
-### Rule: Tests Ship With The Change
-
-Every feature, fix, or refactoring commit **must include its corresponding tests in the exact same commit**. Never defer tests to a follow-up commit. Commits are validated with `commitlint` via husky git hooks before acceptance.
+1. **Imperative Mood**: Use lowercase imperative present tense for the header summary (e.g. `add pagination utility`, not `added` or `adds`).
+2. **Scoping**: Use clear module or functional scopes (e.g., `auth`, `channel`, `material`, `deps`, `setup`, `security`).
+3. **Focused Commits**: One logical change per commit.
+4. **Tests Ship With The Code**: Every feature, fix, or refactor commit **must include its corresponding tests in the exact same commit**. Never defer tests to a follow-up commit. Commits are enforced locally via `commitlint` and husky pre-commit git hooks.
 
 ---
 
-## 3. Local Quality Verification (Pre-Commit Checks)
+## 3. Standard Verification Gate
 
-Before opening a pull request, verify all local quality gates pass cleanly:
+Before committing code or submitting a pull request, run the canonical verification gate locally. Every command must exit `0`:
 
 ```bash
-# 1. Code formatting check
-npm run format:check
+# 1. Clean installation of pinned dependencies
+npm ci
 
-# 2. ESLint analysis
+# 2. Static analysis and code linting (zero errors tolerated)
 npm run lint
 
-# 3. TypeScript strict type checking
+# 3. TypeScript compilation without emit (strict type check)
 npm run typecheck
 
-# 4. Unit test suite & coverage gate
-npm run test:cov
+# 4. Complete unit test suite execution (all 62+ suites must pass)
+npm test
 
-# 5. E2E integration test suite
-npm run test:e2e
-
-# 6. Production build
+# 5. Production bundle compilation and Prisma generation
 npm run build
 ```
 
-Every PR must maintain or increase the Jest test coverage thresholds specified in `package.json`.
+#### One-Liner Verification:
+
+```bash
+npm ci && npm run lint && npm run typecheck && npm test && npm run build
+```
+
+In addition, before opening a PR, ensure code formatting and duplication pass:
+
+```bash
+npm run format:check   # Verifies Prettier styling
+npm run dup            # Verifies < 10% code duplication via jscpd
+npm run test:cov       # Verifies all coverage thresholds (>= 70%) are satisfied
+```
 
 ---
 
-## 4. Testing Guidelines
+## 4. How to Add Tests
 
-1. **Unit Tests**:
-   - Every new service or business logic method must include comprehensive unit tests.
-   - Use Jest mocks for external providers (e.g., `PrismaService`, `ConfigService`).
-   - Test both success and error/rejection paths (e.g., `ForbiddenException`, `NotFoundException`).
-2. **Deterministic Data**:
-   - Never depend on live external network connections or specific database row states in unit tests.
-   - Use realistic mock fixtures and avoid hardcoded real credentials or production secrets.
+### 1. Unit Tests (`src/**/*.spec.ts`)
+
+- **File Location & Naming**: Place spec files directly adjacent to the file being tested (e.g., `material.service.ts` → `material.service.spec.ts`).
+- **Isolation & Mocking**: Unit tests must execute in complete isolation without connecting to external networks or live databases. Mock all external dependencies (`PrismaService`, `ConfigService`, external APIs):
+  ```typescript
+  const prismaMock = {
+    material: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  };
+
+  const module: TestingModule = await Test.createTestingModule({
+    providers: [
+      MaterialService,
+      { provide: PrismaService, useValue: prismaMock },
+    ],
+  }).compile();
+  ```
+- **Error Path Testing**: Always test domain exceptions alongside happy paths:
+  - Assert that missing entities throw `NotFoundError`.
+  - Assert that duplicate entries throw `ConflictError`.
+  - Assert that invalid inputs or constraint violations throw `ValidationError`.
+- **Coverage Requirement**: Ensure new code satisfies the `>= 70%` statements, branches, lines, and functions threshold enforced by `package.json`.
+
+### 2. End-to-End Tests (`test/*.e2e-spec.ts`)
+
+- **Location**: All integration test suites live in the `test/` directory.
+- **Offline Hermetic Design**: Use `mockChapaService` via `.overrideProvider(ChapaService)` for payment flows. Run against ephemeral PostgreSQL via `docker-compose.test.yml`:
+  ```bash
+  npm run test:e2e:local
+  ```
+- **Dynamic Credentials**: Use non-secret environment variables (`TEST_FIXTURE_PASSWORD`, `TEST_NEW_PASSWORD`) rather than hardcoded literals.
 
 ---
 

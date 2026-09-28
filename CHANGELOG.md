@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-28
+
+### Added
+- **Architecture & Robustness Pass**:
+  - Implemented `OnModuleInit` (`$connect()`) and `OnModuleDestroy` (`$disconnect()`) on `PrismaService` with full unit test coverage for graceful process termination.
+  - Enabled process signal graceful shutdown via `app.enableShutdownHooks()` in `src/main.ts`.
+  - Added fail-fast environment configuration validation using Joi (`src/config/env.validation.ts`) with unit tests verifying boot rejection on missing/short secrets.
+  - Added distributed request correlation in Pino HTTP logs (`src/common/logger/pino-logger.config.ts`), propagating `x-request-id` response headers and logging `requestId`.
+  - Added dedicated unit tests for `@Throttle` metadata on `AuthController` (10 req/min).
+  - Documented complete Architecture & Robustness guide in `README.md`.
+- **Architectural Extraction & Code Cleanliness**:
+  - Extracted pure repository layer `MaterialRepository` (`src/material/material.repository.ts`) with dedicated unit tests.
+  - Extracted pure pagination calculation utility `calculatePagination` (`src/common/utils/pagination.util.ts`) with 100% test coverage.
+  - Standardized controller parameters, removing duplicate wrappers and redundant pagination logic.
+- **CI/CD Maturity & Release Automation**:
+  - Configured `build` job in `ci.yml` to depend strictly on all quality checks and unit/integration test suites (`needs: [lint, format, typecheck, test, duplication]`).
+  - Added multi-stage Docker build check job (`docker-build`) with Buildx and GitHub Actions layer caching.
+  - Added tagged release workflow (`.github/workflows/release.yml`) triggered on `v*` tags with GitHub Release note generation and automated GHCR Docker publishing.
+  - Pinned all workflow actions to immutable commit SHAs with semantic version tags.
+  - Enforced least-privilege top-level permissions (`contents: read`) and `concurrency:` cancellation across all workflows.
+  - Created `docs/DEPLOYMENT.md` detailing pipeline architecture, release automation, and secrets.
+- **Dependency Health & Overrides Rationalization**:
+  - Audited dependency overrides, pruned obsolete overrides, and documented remaining overrides in `docs/DEPENDENCIES.md`.
+- **Test Coverage Expansion**:
+  - Enforced strict `>= 70%` global coverage threshold across statements, branches, lines, and functions in `package.json`.
+  - Expanded unit test coverage to 62 test suites passing 646 tests.
+
+### Changed
+- **Error Handling Architecture**:
+  - Guaranteed `handlePrismaError` always throws typed `DomainException` instances (`NotFoundError`, `ConflictError`, `ValidationError`).
+  - Updated service catch blocks to let domain exceptions propagate cleanly to `AllExceptionsFilter`.
+  - Documented error handling conventions and Prisma error translation in `README.md`.
+- **Security & Hygiene Pass**:
+  - Replaced test fixture credentials with non-secret dummy variables (`TEST_FIXTURE_PASSWORD`, `TEST_NEW_PASSWORD`).
+  - Enforced DTO validation on all controller endpoints accepting payload bodies or queries.
+  - Cleaned `.env.example` and verified `.gitignore` excludes environment secrets.
+- **Documentation & Onboarding**:
+  - Updated `README.md` with complete Project Structure tree, Error Handling Conventions, and Testing Guide.
+  - Updated `CONTRIBUTING.md` with Conventional Commits, Standard Verification Gate, and test addition guide.
+
 ## [1.3.0] - 2026-09-23
 
 ### Added

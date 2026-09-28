@@ -13,6 +13,7 @@ AMPED is a high-performance backend REST API built with [NestJS](https://nestjs.
 ## Quick Start (Fresh Clone)
 
 ### Prerequisites
+
 - **Node.js**: `20.x` or `22.x` Active LTS (`.nvmrc` provided: `nvm use`)
 - **npm**: `>= 10.0.0`
 - **Docker**: `>= 24.0` (required for running `npm run test:e2e:local` ephemeral PostgreSQL)
@@ -52,6 +53,7 @@ npm run test:e2e:local
 ```
 
 #### One-Liner Verification
+
 ```bash
 npm ci && npm run build && npm test
 ```
@@ -132,6 +134,63 @@ graph TD
 | **Metrics**          | `src/metrics/`           | Telemetry & observability        | `/metrics` Prometheus endpoint with request count & latency histogram |
 | **Prisma**           | `src/prisma/`            | Relational persistence           | Database connection lifecycle and query execution                     |
 | **Common**           | `src/common/`            | Shared infrastructure            | Domain exceptions, error filter, file storage, logging, pipes         |
+
+---
+
+## Project Structure
+
+```
+amped_nestjs_backend/
+├── .github/                      # GitHub Actions workflows & PR validation
+│   └── workflows/
+│       ├── ci.yml                # Quality gates, matrix testing, build, & Docker checks
+│       ├── release.yml           # Tagged release automation & GHCR image publishing
+│       └── pr-title.yml          # Semantic PR title validation
+├── docs/                         # Architecture, deployment, & dependency documentation
+│   ├── DEPENDENCIES.md           # Dependency override rationales & audit policies
+│   ├── DEPLOYMENT.md             # Production deployment & CI/CD architecture guide
+│   └── IMPROVEMENT_LOG.md        # Comprehensive quality & architectural audit log
+├── prisma/                       # Database modeling & schema migrations
+│   ├── schema.prisma             # PostgreSQL schema definition
+│   └── migrations/               # Immutable timestamped SQL migration files
+├── src/                          # Application source code
+│   ├── auth/                     # Authentication, JWT strategies, refresh tokens & throttling
+│   ├── channel/                  # Creator channels (CQRS query/command services)
+│   ├── channel-material/         # Channel-scoped publishing & media uploads
+│   ├── channel-purchase/         # Subscription transactions & webhook verification
+│   ├── common/                   # Shared architectural utilities, decorators & filters
+│   │   ├── exceptions/           # Domain exception classes (NotFoundError, ConflictError, etc.)
+│   │   ├── filters/              # Global AllExceptionsFilter with error envelopes
+│   │   ├── logger/               # Pino structured logging with request-id correlation
+│   │   ├── pipes/                # File validation & DTO parsing pipes
+│   │   ├── services/             # BaseEntityStorageService & Prisma error helpers
+│   │   └── utils/                # Pagination calculation & range streaming utilities
+│   ├── config/                   # Fail-fast Joi environment validation schema
+│   ├── favorite/                 # Bookmarking & saved items
+│   ├── health/                   # Terminus database liveness & readiness probes
+│   ├── material/                 # Materials catalog, MaterialRepository, & queries
+│   ├── material-purchase/        # Content purchasing & payment verification
+│   ├── metrics/                  # Prometheus telemetry & HTTP latency histograms
+│   ├── profiles/                 # User profiles & avatar handling
+│   ├── rating/                   # Review & star rating services
+│   ├── replays/                  # Recorded audio & replay streaming
+│   ├── reports/                  # User content reporting & abuse flags
+│   ├── search/                   # Multi-entity catalog search
+│   ├── seller-profiles/          # Creator/publisher business profiles
+│   ├── social-links-channel/     # External channel links
+│   ├── social-links-profile/     # External profile links
+│   ├── subscribed-user/          # Active channel subscriptions
+│   ├── subscription-plan/        # Creator subscription pricing tiers
+│   ├── user/                     # User management & profile discovery
+│   ├── app.module.ts             # Root application module with guards & filters
+│   └── main.ts                   # Bootstrapper with graceful shutdown & helmet
+├── test/                         # End-to-end integration test suites (PostgreSQL-backed)
+├── docker-compose.yml            # Local development PostgreSQL service
+├── docker-compose.test.yml       # Ephemeral tmpfs PostgreSQL for isolated local E2E
+├── Dockerfile                    # Multi-stage production container build
+├── package.json                  # Dependencies, scripts, and Jest coverage gates (>=70%)
+└── tsconfig.json                 # TypeScript compiler configuration
+```
 
 ---
 
@@ -240,6 +299,7 @@ npm run test:e2e:local
 ```
 
 > **Note**: Requires Docker daemon running locally. When finished, tear down the test database container via:
+>
 > ```bash
 > npm run test:e2e:local:down
 > ```
@@ -345,7 +405,50 @@ AMPED includes production-grade reliability, security, and observability pattern
 
 ---
 
-## Testing Guide
+## Error Handling Conventions
+
+AMPED employs a dual-layered error architecture that maps lower-level database exceptions to structured domain errors and serializes them into predictable JSON envelopes:
+
+### 1. Semantic Domain Exception Hierarchy (`src/common/exceptions/domain-exceptions.ts`)
+
+Business logic throws semantic domain exceptions that extend NestJS `HttpException`. Each domain exception encapsulates a human-readable message, an HTTP status code, and a deterministic machine-readable `code`:
+
+| Exception | HTTP Status | Error Code | Common Use Cases |
+| :-------- | :---------- | :--------- | :--------------- |
+| `NotFoundError` | `404 Not Found` | `NOT_FOUND` | Missing entity, non-existent channel or material |
+| `ConflictError` | `409 Conflict` | `CONFLICT` | Unique constraint violation, duplicate username, active subscription |
+| `ValidationError` | `400 Bad Request` | `VALIDATION_ERROR` | Schema validation failure, out-of-bounds parameters, invalid state |
+| `ForbiddenError` | `403 Forbidden` | `FORBIDDEN` | Unauthorized entity modification, non-owner action |
+
+### 2. Prisma Database Error Translation (`handlePrismaError` & `withPrismaError`)
+
+Direct Prisma exceptions (`PrismaClientKnownRequestError`) are intercepted across all services using `handlePrismaError(error, context)` or `withPrismaError(operation, context)`. These utilities translate raw database error codes into appropriate domain exceptions:
+
+- **`P2002` (Unique constraint failed)**: Translated into `ConflictError` (e.g. `"${entityName} with this value already exists"`).
+- **`P2025` / `P2001` (Record not found)**: Translated into `NotFoundError` (e.g. `"${entityName} not found"`).
+- **`P2003` (Foreign key constraint violated)**: Translated into `ValidationError` (e.g. `"Referenced entity does not exist"`).
+- **`P2000` (Value exceeds column length)**: Translated into `ValidationError` (e.g. `"Provided value exceeds maximum database field length"`).
+- **Unhandled Database Errors**: Wrapped safely as `InternalServerErrorException` with sanitized messages to prevent database schema leakage.
+
+### 3. Global Exception Envelope (`AllExceptionsFilter`)
+
+All exceptions thrown across controllers, guards, and services are intercepted by `AllExceptionsFilter` (`src/common/filters/all-exceptions.filter.ts`) and formatted into a uniform JSON structure with distributed tracing correlation:
+
+```json
+{
+  "statusCode": 404,
+  "code": "NOT_FOUND",
+  "message": "Material with id 42 not found",
+  "error": "NotFoundError",
+  "path": "/materials/42",
+  "timestamp": "2026-09-28T20:30:00.000Z",
+  "requestId": "c9bf9e57-1685-4c89-bafb-ff5af830be8a"
+}
+```
+
+---
+
+## Testing (Unit / Coverage / E2E)
 
 All tests are verified before every commit and in continuous integration.
 
@@ -472,8 +575,7 @@ The repository uses automated GitHub Actions workflows:
 - **Release Pipeline (`.github/workflows/release.yml`)**: Triggers on Git tags `v*` (e.g. `v1.3.0`). Automatically publishes container images to GitHub Container Registry (`ghcr.io/habeshacoder/amped_nestjs_backend`), generates GitHub Release notes, and executes deployment webhooks.
 - For complete pipeline architecture, secrets configuration, and manual overrides, see the [Deployment Guide](docs/DEPLOYMENT.md).
 
-> [!IMPORTANT]
-> **Environment Variables & Secrets**: Environment variables must be supplied via the hosting platform's secret manager (e.g., AWS Secrets Manager, Vercel Environment Variables, Doppler, Kubernetes Secrets, or container runtime environment flags) instead of bundling a `.env` file into build artifacts. The packaging step (`npm run build-with-package`) strictly avoids copying `.env` into `dist/` to prevent shipping credentials or secrets into deployed bundles.
+> [!IMPORTANT] > **Environment Variables & Secrets**: Environment variables must be supplied via the hosting platform's secret manager (e.g., AWS Secrets Manager, Vercel Environment Variables, Doppler, Kubernetes Secrets, or container runtime environment flags) instead of bundling a `.env` file into build artifacts. The packaging step (`npm run build-with-package`) strictly avoids copying `.env` into `dist/` to prevent shipping credentials or secrets into deployed bundles.
 
 ---
 

@@ -30,10 +30,12 @@ Triggered whenever a semantic version tag matching `v*` (e.g., `v1.3.0`, `v1.3.1
 ### Pipeline Stages
 
 1. **GitHub Release (`release`)**:
+
    - Generates release notes and tags from commit log using `softprops/action-gh-release`.
    - Permissions: `contents: write`.
 
 2. **GHCR Docker Publishing (`docker-publish`)**:
+
    - Authenticates to GitHub Container Registry (`ghcr.io`) using `GITHUB_TOKEN`.
    - Extracts semantic version tags (`vX.Y.Z`, `vX.Y`, `latest`) via `docker/metadata-action`.
    - Builds multi-stage production image using Buildx and pushes to `ghcr.io/habeshacoder/amped_nestjs_backend`.
@@ -49,9 +51,9 @@ Triggered whenever a semantic version tag matching `v*` (e.g., `v1.3.0`, `v1.3.1
 
 To enable automated production deployments, configure these secrets in your repository settings (**Settings > Secrets and variables > Actions**):
 
-| Secret | Purpose | Default / Fallback |
-| :----- | :------ | :----------------- |
-| `GITHUB_TOKEN` | Automatically supplied by GitHub Actions for GHCR authentication and release creation | Injected by GitHub Actions |
+| Secret            | Purpose                                                                                     | Default / Fallback                                                                  |
+| :---------------- | :------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN`    | Automatically supplied by GitHub Actions for GHCR authentication and release creation       | Injected by GitHub Actions                                                          |
 | `DEPLOY_HOOK_URL` | Webhook URL triggered after image publish to instruct hosting platform to pull and redeploy | If unset, the deployment step skips cleanly (`exit 0`) without failing the pipeline |
 
 > **Note**: Never hardcode credentials into workflow files or source control. If `DEPLOY_HOOK_URL` is omitted, the release tag and GHCR container image are published successfully while leaving deployment triggering to manual approval.
