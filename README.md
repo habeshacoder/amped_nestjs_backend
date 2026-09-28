@@ -469,7 +469,8 @@ npm run build
 The repository uses automated GitHub Actions workflows:
 
 - **CI Pipeline (`.github/workflows/ci.yml`)**: Runs on every push and pull request. Validates formatting, linting, typechecking, unit tests across Node 20.x and 22.x, PostgreSQL-backed E2E tests, migration drift, production build, and Docker image build.
-- **Release Pipeline (`.github/workflows/release.yml`)**: Triggers on Git tags `v*.*.*`. Automatically publishes multi-arch container images to GitHub Container Registry (`ghcr.io/habeshacoder/amped_nestjs_backend`), generates GitHub Release notes, and executes gated deployment hooks.
+- **Release Pipeline (`.github/workflows/release.yml`)**: Triggers on Git tags `v*` (e.g. `v1.3.0`). Automatically publishes container images to GitHub Container Registry (`ghcr.io/habeshacoder/amped_nestjs_backend`), generates GitHub Release notes, and executes deployment webhooks.
+- For complete pipeline architecture, secrets configuration, and manual overrides, see the [Deployment Guide](docs/DEPLOYMENT.md).
 
 > [!IMPORTANT]
 > **Environment Variables & Secrets**: Environment variables must be supplied via the hosting platform's secret manager (e.g., AWS Secrets Manager, Vercel Environment Variables, Doppler, Kubernetes Secrets, or container runtime environment flags) instead of bundling a `.env` file into build artifacts. The packaging step (`npm run build-with-package`) strictly avoids copying `.env` into `dist/` to prevent shipping credentials or secrets into deployed bundles.
