@@ -69,7 +69,7 @@ export class ProfilesService {
         },
       });
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -120,7 +120,7 @@ export class ProfilesService {
         },
       });
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -154,7 +154,7 @@ export class ProfilesService {
 
       return { message: 'Profile Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -185,7 +185,7 @@ export class ProfilesService {
 
       return { message: 'Cover Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -246,7 +246,7 @@ export class ProfilesService {
 
       return { message: 'Profile deleted successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 }

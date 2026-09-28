@@ -32,7 +32,7 @@ export class SubscriptionPlanService {
           },
         });
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     }
 
@@ -148,7 +148,7 @@ export class SubscriptionPlanService {
           );
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

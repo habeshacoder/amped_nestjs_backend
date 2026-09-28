@@ -56,7 +56,7 @@ export class ChannelMaterialService {
       }
       return material;
     } catch (error) {
-      handlePrismaError(error);
+      throw handlePrismaError(error);
     }
   }
 
@@ -96,7 +96,7 @@ export class ChannelMaterialService {
 
         return newMaterial;
       } catch (error) {
-        handlePrismaError(error);
+        throw handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(
@@ -122,7 +122,7 @@ export class ChannelMaterialService {
         });
         return { message: 'Material deleted successfully' };
       } catch (error) {
-        handlePrismaError(error);
+        throw handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(

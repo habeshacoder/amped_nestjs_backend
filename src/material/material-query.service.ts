@@ -249,7 +249,7 @@ export class MaterialQueryService {
         return { message: 'Material Not Found' };
       }
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 

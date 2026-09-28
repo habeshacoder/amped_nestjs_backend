@@ -130,7 +130,7 @@ export class ChannelQueryService {
           },
         });
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ValidationError(
@@ -156,7 +156,7 @@ export class ChannelQueryService {
           },
         });
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ValidationError(

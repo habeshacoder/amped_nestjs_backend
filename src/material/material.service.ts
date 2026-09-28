@@ -48,7 +48,7 @@ export class MaterialService {
 
       return material;
     } catch (error) {
-      handlePrismaError(error);
+      throw handlePrismaError(error);
     }
   }
 
@@ -89,7 +89,7 @@ export class MaterialService {
         },
       });
     } catch (error) {
-      handlePrismaError(error);
+      throw handlePrismaError(error);
     }
   }
 
@@ -111,7 +111,7 @@ export class MaterialService {
       });
       return { message: 'Material deleted successfully' };
     } catch (error) {
-      handlePrismaError(error);
+      throw handlePrismaError(error);
     }
   }
 

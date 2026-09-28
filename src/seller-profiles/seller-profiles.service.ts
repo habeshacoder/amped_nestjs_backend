@@ -61,7 +61,7 @@ export class SellerProfilesService {
 
       return sProfile;
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -93,7 +93,7 @@ export class SellerProfilesService {
         }
         return profile;
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ValidationError(
@@ -137,7 +137,7 @@ export class SellerProfilesService {
         },
       });
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -174,7 +174,7 @@ export class SellerProfilesService {
 
       return { message: 'Profile Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -211,7 +211,7 @@ export class SellerProfilesService {
 
       return { message: 'Cover Image Uploaded Successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -242,7 +242,7 @@ export class SellerProfilesService {
 
       return { message: 'Seller Profile deleted successfully' };
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -275,7 +275,7 @@ export class SellerProfilesService {
 
       return updated;
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -308,7 +308,7 @@ export class SellerProfilesService {
 
       return updated;
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 }

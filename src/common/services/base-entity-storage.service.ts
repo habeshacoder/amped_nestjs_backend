@@ -26,7 +26,7 @@ export abstract class BaseEntityStorageService {
    * @throws ConflictError when a unique constraint violation (P2002) occurs
    */
   protected handlePrismaError(error: unknown): never {
-    handlePrismaError(error);
+    throw handlePrismaError(error);
   }
 
   /**
@@ -39,7 +39,7 @@ export abstract class BaseEntityStorageService {
     try {
       return await this.fileManager.createFile(this.config, images, id);
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -57,7 +57,7 @@ export abstract class BaseEntityStorageService {
         id,
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -76,7 +76,7 @@ export abstract class BaseEntityStorageService {
         'profile',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -95,7 +95,7 @@ export abstract class BaseEntityStorageService {
         'cover',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -114,7 +114,7 @@ export abstract class BaseEntityStorageService {
         'preview',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -132,7 +132,7 @@ export abstract class BaseEntityStorageService {
         id,
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -146,7 +146,7 @@ export abstract class BaseEntityStorageService {
     try {
       return await this.fileManager.uploadMainFile(this.config, file, id);
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -174,7 +174,7 @@ export abstract class BaseEntityStorageService {
         'profile',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -202,7 +202,7 @@ export abstract class BaseEntityStorageService {
         'cover',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -229,7 +229,7 @@ export abstract class BaseEntityStorageService {
         id,
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -257,7 +257,7 @@ export abstract class BaseEntityStorageService {
         'preview',
       );
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 

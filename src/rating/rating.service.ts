@@ -41,7 +41,7 @@ export class RatingService {
 
           return rate;
         } catch (error) {
-          handlePrismaError(error);
+          throw handlePrismaError(error);
         }
       } else {
         throw new ValidationError('Please input material or channel.');
@@ -171,7 +171,7 @@ export class RatingService {
         return default_rating;
       }
     } catch (error) {
-      handlePrismaError(error);
+      throw handlePrismaError(error);
     }
   }
 
@@ -206,7 +206,7 @@ export class RatingService {
           return default_rating;
         }
       } catch (error) {
-        handlePrismaError(error);
+        throw handlePrismaError(error);
       }
     } else {
       return 0;
@@ -270,7 +270,7 @@ export class RatingService {
 
         return rating;
       } catch (error) {
-        handlePrismaError(error);
+        throw handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(
@@ -296,7 +296,7 @@ export class RatingService {
 
         return { message: 'Rate deleted successfully' };
       } catch (error) {
-        handlePrismaError(error);
+        throw handlePrismaError(error);
       }
     } else {
       throw new NotFoundError(

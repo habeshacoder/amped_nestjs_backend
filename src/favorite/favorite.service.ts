@@ -47,7 +47,7 @@ export class FavoriteService {
         return { message: 'Material already added in Favorite' };
       }
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 
@@ -108,7 +108,7 @@ export class FavoriteService {
           );
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

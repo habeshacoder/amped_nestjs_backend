@@ -46,7 +46,7 @@ export class SubscribedUserService {
           return subscribedUser;
         }
       } catch (error) {
-        this.handlePrismaError(error, 'ForbiddenException');
+        throw this.handlePrismaError(error, 'ForbiddenException');
       }
     } else {
       throw new ForbiddenException(
@@ -105,7 +105,7 @@ export class SubscribedUserService {
           );
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(

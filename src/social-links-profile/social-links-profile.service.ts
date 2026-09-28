@@ -35,7 +35,7 @@ export class SocialLinksProfileService {
         return link;
       }
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
     return 'This action adds a new socialLinksProfile';
   }
@@ -92,7 +92,7 @@ export class SocialLinksProfileService {
         );
       }
     } catch (error) {
-      this.handlePrismaError(error);
+      throw this.handlePrismaError(error);
     }
   }
 

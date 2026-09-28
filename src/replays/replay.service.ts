@@ -40,7 +40,7 @@ export class ReplayService {
           return replay;
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(
@@ -145,7 +145,7 @@ export class ReplayService {
           );
         }
       } catch (error) {
-        this.handlePrismaError(error);
+        throw this.handlePrismaError(error);
       }
     } else {
       throw new ForbiddenException(
