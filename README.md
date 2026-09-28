@@ -10,6 +10,54 @@ AMPED is a high-performance backend REST API built with [NestJS](https://nestjs.
 
 ---
 
+## Quick Start (Fresh Clone)
+
+### Prerequisites
+- **Node.js**: `20.x` or `22.x` Active LTS (`.nvmrc` provided: `nvm use`)
+- **npm**: `>= 10.0.0`
+- **Docker**: `>= 24.0` (required for running `npm run test:e2e:local` ephemeral PostgreSQL)
+- **PostgreSQL**: `>= 14.0` (required for local development server; unit tests run isolated with mocks)
+
+### Setup & Verification Commands
+
+```bash
+# 1. Clone the repository & enter directory
+git clone https://github.com/habeshacoder/amped_nestjs_backend.git
+cd amped_nestjs_backend
+
+# 2. Configure Node.js (Active LTS v20 or v22)
+nvm use
+
+# 3. Copy environment configuration
+cp .env.example .env
+cp .env.example .env.test
+
+# 4. Install dependencies reproducibly (runs postinstall → prisma generate)
+npm ci
+
+# 5. Generate Prisma client (also runs automatically via postinstall & prebuild hooks)
+npx prisma generate
+
+# 6. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
+npm run build
+
+# 7. Run the automated test suite with coverage gating (54 test suites, 572 tests)
+npm test
+
+# 8. Run tests with explicit coverage report and threshold enforcement (≥ 70%)
+npm run test:cov
+
+# 9. Run E2E integration tests (requires Docker daemon for ephemeral PostgreSQL)
+npm run test:e2e:local
+```
+
+#### One-Liner Verification
+```bash
+npm ci && npm run build && npm test
+```
+
+---
+
 ## Architecture Diagram
 
 ```mermaid
@@ -115,49 +163,9 @@ It provides complete interactive documentation of request bodies, response schem
 
 ---
 
-## Quick Start & Setup
+## Detailed Setup & Development Guide
 
-### Quick Start (Fresh Clone)
-
-A new user or automated evaluator can clone the repository into an empty directory, install dependencies reproducibly, compile the build, and execute the complete automated test suite without configuring any environment variables or running external services (all database queries and external gateways are mocked in unit tests):
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/habeshacoder/amped_nestjs_backend.git
-cd amped_nestjs_backend
-
-# 2. Configure Node.js (Active LTS v20 or v22)
-nvm use
-
-# 3. Install dependencies reproducibly (runs postinstall prisma generate)
-npm ci
-
-# 4. Build the application (cleans dist/, regenerates Prisma client, compiles TypeScript)
-npm run build
-
-# 5. Run the automated test suite with coverage gating (54 test suites, 572 tests)
-npm test
-```
-
-#### One-Liner Verification
-
-Execute the entire install, build, and test verification in a single command:
-
-```bash
-npm ci && npm run build && npm test
-```
-
-Or using the included `Makefile`:
-
-```bash
-make verify
-```
-
----
-
-### Step-by-Step Setup Guide
-
-#### Part A: Install, Build & Test (Zero External Dependencies Required)
+### Part A: Install, Build & Test (Zero External Dependencies Required)
 
 ##### 1. Clone the repository
 
@@ -174,7 +182,16 @@ Ensure you are using Node.js `>= 20.0.0` (v20 or v22 LTS):
 nvm use
 ```
 
-##### 3. Install dependencies
+##### 3. Copy environment configuration
+
+Copy the template configuration files for local and test environments:
+
+```bash
+cp .env.example .env
+cp .env.example .env.test
+```
+
+##### 4. Install dependencies
 
 Install dependencies reproducibly using the committed `package-lock.json`. This automatically generates the Prisma Client via the `postinstall` hook:
 
@@ -182,7 +199,15 @@ Install dependencies reproducibly using the committed `package-lock.json`. This 
 npm ci
 ```
 
-##### 4. Build the application
+##### 5. Generate Prisma client (optional — runs automatically)
+
+The Prisma client is auto-generated during `npm ci` (postinstall) and `npm run build` (prebuild). To regenerate manually:
+
+```bash
+npx prisma generate
+```
+
+##### 6. Build the application
 
 Compile the TypeScript application into the `dist/` directory. The `prebuild` hook guarantees Prisma artifacts are up to date:
 
@@ -190,7 +215,7 @@ Compile the TypeScript application into the `dist/` directory. The `prebuild` ho
 npm run build
 ```
 
-##### 5. Run the automated test suite
+##### 7. Run the automated test suite
 
 Execute the complete test suite across all modules, controllers, services, guards, and filters with coverage threshold enforcement (`>= 70%` global coverage across statements, branches, lines, and functions):
 
@@ -198,17 +223,26 @@ Execute the complete test suite across all modules, controllers, services, guard
 npm test
 ```
 
-To run tests with coverage reporting explicitly:
+##### 8. Run tests with coverage reporting
+
+Run the test suite and output a detailed statement, branch, function, and line coverage report:
 
 ```bash
 npm run test:cov
 ```
 
-To run tests in watch mode during development:
+##### 9. Run local E2E integration tests (Docker)
+
+Spin up an ephemeral PostgreSQL test database container in Docker, deploy migrations, and execute the full E2E test suite:
 
 ```bash
-npm run test:watch
+npm run test:e2e:local
 ```
+
+> **Note**: Requires Docker daemon running locally. When finished, tear down the test database container via:
+> ```bash
+> npm run test:e2e:local:down
+> ```
 
 ---
 
