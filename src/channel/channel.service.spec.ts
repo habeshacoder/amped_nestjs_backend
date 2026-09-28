@@ -4,6 +4,7 @@ import { ChannelQueryService } from './channel-query.service';
 import { ChannelCommandService } from './channel-command.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
 
 describe('ChannelService', () => {
   let service: ChannelService;
@@ -24,6 +25,7 @@ describe('ChannelService', () => {
         ChannelQueryService,
         ChannelCommandService,
         FileStorageService,
+        EntityFileManagerService,
         {
           provide: PrismaService,
           useValue: {

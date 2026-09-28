@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChannelCommandService } from './channel-command.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FileStorageService } from '../common/services/file-storage.service';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
 import {
   ConflictError,
   NotFoundError,
@@ -61,6 +62,7 @@ describe('ChannelCommandService', () => {
       providers: [
         ChannelCommandService,
         FileStorageService,
+        EntityFileManagerService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();

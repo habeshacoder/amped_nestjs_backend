@@ -14,7 +14,6 @@ import {
   Query,
   Header,
   Headers,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { MaterialService } from './material.service';
 import {
@@ -30,10 +29,11 @@ import { GetUser } from '../auth/decorator';
 import { streamByteRange } from '../common/utils/range-stream.util';
 import { Response } from 'express';
 import {
-  MaterialFilesUploadInterceptor,
-  SingleFileUploadInterceptor,
+  IdParam,
+  MaterialFilesUploadPost,
+  MaterialFileUploadPatch,
+  UploadedSingleFile,
   createMaterialFilesValidationPipe,
-  createSingleFileValidationPipe,
 } from '../common/decorators/entity-upload.decorator';
 import {
   EntityFilesUploadPayload,
@@ -51,12 +51,9 @@ export class MaterialController {
     return this.materialService.create(materialDto);
   }
 
-  @UseGuards(JwtGuard)
-  @Post('files/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @MaterialFilesUploadInterceptor('material')
+  @MaterialFilesUploadPost('files/:id')
   createFile(
-    @Param('id', ParseIntPipe) id: number,
+    @IdParam() id: number,
     @UploadedFiles(createMaterialFilesValidationPipe())
     files: EntityFilesUploadPayload,
   ) {
@@ -112,7 +109,7 @@ export class MaterialController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@IdParam() id: number) {
     return this.materialService.findOne(id);
   }
 
@@ -147,13 +144,13 @@ export class MaterialController {
   }
 
   @Get('/seller/:id')
-  findForSeller(@Param('id', ParseIntPipe) id: number) {
+  findForSeller(@IdParam() id: number) {
     return this.materialService.findForSeller(id);
   }
 
   @Get('/paginated_seller_materials/:seller_id')
   getPaginatedSellerMaterials(
-    @Param('seller_id', ParseIntPipe) seller_id: number,
+    @IdParam('seller_id') seller_id: number,
     @Query() query: PaginationQueryDto,
   ) {
     return this.materialService.paginateSellerMaterials(seller_id, {
@@ -164,143 +161,105 @@ export class MaterialController {
 
   @UseGuards(JwtGuard)
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() materialDto: UpdateMaterialDto,
-  ) {
+  update(@IdParam() id: number, @Body() materialDto: UpdateMaterialDto) {
     return this.materialService.update(id, materialDto as MaterialDto);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('updateMainMaterial/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @SingleFileUploadInterceptor('material', 'material')
+  @MaterialFileUploadPatch('updateMainMaterial/:id', 'material')
   updateMaterial(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      createSingleFileValidationPipe('material', {
-        maxSizeBytes: 200 * 1024 * 1024,
-      }),
-    )
+    @IdParam() id: number,
+    @UploadedSingleFile('material', {
+      maxSizeBytes: 200 * 1024 * 1024,
+    })
     files: SingleFileUploadPayload,
   ) {
     return this.materialService.updateMaterial(files, id);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('updateMaterialProfile/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @SingleFileUploadInterceptor('profile', 'material')
+  @MaterialFileUploadPatch('updateMaterialProfile/:id', 'profile')
   updateMaterialProfile(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      createSingleFileValidationPipe('profile', {
-        allowedMimeTypes: ['image/*'],
-      }),
-    )
+    @IdParam() id: number,
+    @UploadedSingleFile('profile', {
+      allowedMimeTypes: ['image/*'],
+    })
     files: SingleFileUploadPayload,
   ) {
     return this.materialService.updateMaterialProfile(files, id);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('updateMaterialCover/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @SingleFileUploadInterceptor('cover', 'material')
+  @MaterialFileUploadPatch('updateMaterialCover/:id', 'cover')
   updateMaterialCover(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      createSingleFileValidationPipe('cover', {
-        allowedMimeTypes: ['image/*'],
-      }),
-    )
+    @IdParam() id: number,
+    @UploadedSingleFile('cover', {
+      allowedMimeTypes: ['image/*'],
+    })
     files: SingleFileUploadPayload,
   ) {
     return this.materialService.updateMaterialCover(files, id);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('updateMaterialImage/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @SingleFileUploadInterceptor('images', 'material', 10)
+  @MaterialFileUploadPatch('updateMaterialImage/:id', 'images', 10)
   updateMaterialImage(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      createSingleFileValidationPipe('images', {
-        allowedMimeTypes: ['image/*'],
-      }),
-    )
+    @IdParam() id: number,
+    @UploadedSingleFile('images', {
+      allowedMimeTypes: ['image/*'],
+    })
     files: SingleFileUploadPayload,
   ) {
     return this.materialService.updateMaterialImage(files, id);
   }
 
-  @UseGuards(JwtGuard)
-  @Patch('updateMaterialPreview/:id')
-  @HttpCode(HttpStatus.CREATED)
-  @SingleFileUploadInterceptor('preview', 'material')
+  @MaterialFileUploadPatch('updateMaterialPreview/:id', 'preview')
   updateMaterialPreview(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles(
-      createSingleFileValidationPipe('preview', {
-        maxSizeBytes: 50 * 1024 * 1024,
-      }),
-    )
+    @IdParam() id: number,
+    @UploadedSingleFile('preview', {
+      maxSizeBytes: 50 * 1024 * 1024,
+    })
     files: SingleFileUploadPayload,
   ) {
     return this.materialService.updateMaterialPreview(files, id);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@IdParam() id: number) {
     return this.materialService.remove(id);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material/:fileName')
   getMaterial(@Param('fileName') fileName: string, @Res() res: Response) {
     return res.sendFile(join(process.cwd(), 'uploads/material/' + fileName));
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('/material/:id')
-  findMaterial(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+  findMaterial(@IdParam() id: number, @Res() res: Response) {
     return this.materialService.showMaterial(id, res);
   }
 
   @UseGuards(JwtGuard)
-  @HttpCode(HttpStatus.OK)
   @Get('/purchased/user-materials')
   getPurchasedMaterial(@GetUser() user: User) {
     return this.materialService.getUserMaterial(user);
   }
 
   @UseGuards(JwtGuard)
-  @HttpCode(HttpStatus.OK)
   @Get('/user-purchase/:material_id')
   checkUserPurchasedMaterial(
-    @Param('material_id', ParseIntPipe) material_id: number,
+    @IdParam('material_id') material_id: number,
     @GetUser() user: User,
   ) {
     return this.materialService.isMaterialPurchased(user, material_id);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_profile/:id')
-  findMaterialProfile(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  findMaterialProfile(@IdParam() id: number, @Res() res: Response) {
     return this.materialService.showMaterialProfile(id, res);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_cover-name/:id')
-  getMaterialCoverImageName(@Param('id', ParseIntPipe) id: number) {
+  getMaterialCoverImageName(@IdParam() id: number) {
     return this.materialService.getMaterialCoverName(id);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_profile-image/:imageName')
   getMaterialImage(
     @Param('imageName') imageName: string,
@@ -309,38 +268,23 @@ export class MaterialController {
     return res.sendFile(join(process.cwd(), 'uploads/material/' + imageName));
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_cover/:id')
-  findMaterialCover(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  findMaterialCover(@IdParam() id: number, @Res() res: Response) {
     return this.materialService.showMaterialCover(id, res);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_image/:id')
-  findMaterialImage(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  findMaterialImage(@IdParam() id: number, @Res() res: Response) {
     return this.materialService.showMaterialImage(id, res);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_preview/:id')
-  findMaterialPreview(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
+  findMaterialPreview(@IdParam() id: number, @Res() res: Response) {
     return this.materialService.showMaterialPreview(id, res);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get('material_preview-images/:material_id')
-  getMaterialPreviewImages(
-    @Param('material_id', ParseIntPipe) material_id: number,
-  ) {
+  getMaterialPreviewImages(@IdParam('material_id') material_id: number) {
     return this.materialService.getMaterialPreviewImages(material_id);
   }
 }

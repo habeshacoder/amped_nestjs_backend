@@ -7,7 +7,7 @@ import { ChannelMaterialQueryService } from './channel-material-query.service';
 import { ChannelMaterialStorageService } from './channel-material-storage.service';
 import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { UploadedImages } from '../common/services/file-storage.service';
-import { handlePrismaError } from '../common/services/prisma-error.util';
+import { withPrismaErrorHandling } from '../common/utils/with-prisma-error.util';
 
 @Injectable()
 export class ChannelMaterialService {
@@ -20,7 +20,7 @@ export class ChannelMaterialService {
   ) {}
 
   async create(materialDto: ChannelMaterialDto) {
-    try {
+    return await withPrismaErrorHandling(async () => {
       const material = await this.prisma.channelMaterial.create({
         data: {
           parent: materialDto.parent,
@@ -55,9 +55,7 @@ export class ChannelMaterialService {
         }
       }
       return material;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    });
   }
 
   async update(id: number, materialDto: ChannelMaterialDto) {
@@ -68,8 +66,8 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      try {
-        const newMaterial = await this.prisma.channelMaterial.update({
+      return await withPrismaErrorHandling(() =>
+        this.prisma.channelMaterial.update({
           where: {
             id: id,
           },
@@ -92,12 +90,8 @@ export class ChannelMaterialService {
             continues_from: materialDto.continues_from,
             sellerProfile_id: materialDto.sellerProfile_id,
           },
-        });
-
-        return newMaterial;
-      } catch (error) {
-        throw handlePrismaError(error);
-      }
+        }),
+      );
     } else {
       throw new NotFoundError(
         "Can't update while there is no material. Please create a material first.",
@@ -114,16 +108,14 @@ export class ChannelMaterialService {
     });
 
     if (material) {
-      try {
+      return await withPrismaErrorHandling(async () => {
         await this.prisma.channelMaterial.delete({
           where: {
             id: id,
           },
         });
         return { message: 'Material deleted successfully' };
-      } catch (error) {
-        throw handlePrismaError(error);
-      }
+      });
     } else {
       throw new NotFoundError(
         "Can't delete while there is no material. Please create a material first.",

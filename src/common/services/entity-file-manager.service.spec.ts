@@ -352,4 +352,95 @@ describe('EntityFileManagerService', () => {
       );
     });
   });
+
+  describe('updateEntityFieldImage', () => {
+    it('should update existing image record and delete old file on disk', async () => {
+      channelParentDelegate.findFirst.mockResolvedValue({ id: 1 });
+      channelImageDelegate.findFirst.mockResolvedValue({
+        id: 10,
+        image: 'old.png',
+      });
+      channelImageDelegate.update.mockResolvedValue({
+        id: 10,
+        image: 'new.png',
+      });
+      jest.spyOn(fileStorage, 'deleteFile').mockResolvedValue(true);
+
+      const result = await service.updateEntityFieldImage(
+        channelParentDelegate,
+        channelImageDelegate,
+        1,
+        { profile: [{ path: 'uploads/channel/new.png' }] },
+        'profile',
+      );
+
+      expect(result).toEqual({
+        message: 'Channel Profile Image Uploaded Successfully',
+      });
+      expect(channelImageDelegate.update).toHaveBeenCalledWith({
+        where: { id: 10 },
+        data: { image: 'new.png' },
+      });
+      expect(fileStorage.deleteFile).toHaveBeenCalledWith('channel', 'old.png');
+    });
+
+    it('should create a new record if image does not exist yet', async () => {
+      channelParentDelegate.findFirst.mockResolvedValue({ id: 1 });
+      channelImageDelegate.findFirst.mockResolvedValue(null);
+      channelImageDelegate.create.mockResolvedValue({
+        id: 11,
+        image: 'cover.jpg',
+      });
+
+      const result = await service.updateEntityFieldImage(
+        channelParentDelegate,
+        channelImageDelegate,
+        1,
+        { cover: [{ path: 'uploads/channel/cover.jpg' }] },
+        'cover',
+      );
+
+      expect(result).toEqual({
+        message: 'Channel Cover Image Uploaded Successfully',
+      });
+      expect(channelImageDelegate.create).toHaveBeenCalledWith({
+        data: {
+          image: 'cover.jpg',
+          cover: true,
+          channel_id: 1,
+        },
+      });
+    });
+
+    it('should throw NotFoundError if parent entity does not exist', async () => {
+      channelParentDelegate.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.updateEntityFieldImage(
+          channelParentDelegate,
+          channelImageDelegate,
+          999,
+          { profile: [{ path: 'uploads/channel/avatar.png' }] },
+          'profile',
+        ),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should return success message if no file for field is provided', async () => {
+      channelParentDelegate.findFirst.mockResolvedValue({ id: 1 });
+
+      const result = await service.updateEntityFieldImage(
+        channelParentDelegate,
+        channelImageDelegate,
+        1,
+        {},
+        'profile',
+      );
+
+      expect(result).toEqual({
+        message: 'Channel Profile Image Uploaded Successfully',
+      });
+      expect(channelImageDelegate.findFirst).not.toHaveBeenCalled();
+    });
+  });
 });

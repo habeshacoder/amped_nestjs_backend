@@ -1,9 +1,21 @@
-import { applyDecorators, UseInterceptors } from '@nestjs/common';
+import {
+  applyDecorators,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { diskStorage } from 'multer';
 import { editFileName } from '../utils/file-upload.utils';
 import { FileFieldsValidationPipe } from '../pipes/file-fields-validation.pipe';
+import { JwtGuard } from '../../auth/guard/jwt.guard';
 
 export const MATERIAL_FILE_FIELDS = [
   { name: 'material', maxCount: 1 },
@@ -55,14 +67,13 @@ function normalizeDestination(destination: string): string {
   return `./uploads/${cleaned}/`;
 }
 
-/**
- * Creates a FileFieldsInterceptor decorator configured for material/channel-material multi-field uploads
- * with rate limiting (20 req / min) and size limits.
- */
-export function MaterialFilesUploadInterceptor(destinationFolder: string) {
+function buildFileFieldsUploadInterceptor(
+  fields: { name: string; maxCount: number }[],
+  destinationFolder: string,
+) {
   return applyDecorators(
     UseInterceptors(
-      FileFieldsInterceptor(MATERIAL_FILE_FIELDS, {
+      FileFieldsInterceptor(fields, {
         storage: diskStorage({
           destination: normalizeDestination(destinationFolder),
           filename: editFileName,
@@ -77,6 +88,17 @@ export function MaterialFilesUploadInterceptor(destinationFolder: string) {
 }
 
 /**
+ * Creates a FileFieldsInterceptor decorator configured for material/channel-material multi-field uploads
+ * with rate limiting (20 req / min) and size limits.
+ */
+export function MaterialFilesUploadInterceptor(destinationFolder: string) {
+  return buildFileFieldsUploadInterceptor(
+    MATERIAL_FILE_FIELDS,
+    destinationFolder,
+  );
+}
+
+/**
  * Creates a FileFieldsInterceptor decorator configured for a single file/field upload
  * with rate limiting (20 req / min) and size limits.
  */
@@ -85,21 +107,56 @@ export function SingleFileUploadInterceptor(
   destinationFolder: string,
   maxCount = 1,
 ) {
-  return applyDecorators(
-    UseInterceptors(
-      FileFieldsInterceptor([{ name: fieldName, maxCount }], {
-        storage: diskStorage({
-          destination: normalizeDestination(destinationFolder),
-          filename: editFileName,
-        }),
-        limits: {
-          fileSize: 200 * 1024 * 1024,
-        },
-      }),
-    ),
-    Throttle({ default: { limit: 20, ttl: 60000 } }),
+  return buildFileFieldsUploadInterceptor(
+    [{ name: fieldName, maxCount }],
+    destinationFolder,
   );
 }
+
+/**
+ * Composite route decorator reducing boilerplate for material file upload PATCH endpoints.
+ */
+export function MaterialFileUploadPatch(
+  path: string,
+  fieldName: string,
+  maxCount = 1,
+) {
+  return applyDecorators(
+    UseGuards(JwtGuard),
+    Patch(path),
+    HttpCode(HttpStatus.CREATED),
+    SingleFileUploadInterceptor(fieldName, 'material', maxCount),
+  );
+}
+
+/**
+ * Composite route decorator reducing boilerplate for material multi-file upload POST endpoints.
+ */
+export function MaterialFilesUploadPost(path: string, folder = 'material') {
+  return applyDecorators(
+    UseGuards(JwtGuard),
+    Post(path),
+    HttpCode(HttpStatus.CREATED),
+    MaterialFilesUploadInterceptor(folder),
+  );
+}
+
+/**
+ * Convenience parameter decorator combining @UploadedFiles with single file validation pipe.
+ */
+export const UploadedSingleFile = (
+  fieldName: string,
+  options?: {
+    required?: boolean;
+    maxSizeBytes?: number;
+    allowedMimeTypes?: string[];
+  },
+) => UploadedFiles(createSingleFileValidationPipe(fieldName, options));
+
+/**
+ * Convenience parameter decorator for integer entity IDs.
+ */
+export const IdParam = (paramName = 'id') => Param(paramName, ParseIntPipe);
 
 /**
  * Factory for creating standard multi-file validation pipe for material entities.

@@ -14,6 +14,7 @@ import {
   PreviewDelegateSlim,
   Prisma,
 } from './entity-file-manager.types';
+import { withPrismaErrorHandling } from '../utils/with-prisma-error.util';
 
 export * from './entity-file-manager.types';
 
@@ -125,6 +126,82 @@ export class EntityFileManagerService {
       handlers.creator,
       handlers.updater,
     );
+  }
+
+  /**
+   * Generic create-or-update image/cover logic for entities like Channel that manage
+   * dedicated primary/cover records rather than embedding columns on the parent entity.
+   */
+  async updateEntityFieldImage(
+    parentDelegate: { findFirst: (args: any) => Promise<any> },
+    imageDelegate: {
+      findFirst: (args: any) => Promise<any>;
+      create: (args: any) => Promise<any>;
+      update: (args: any) => Promise<any>;
+    },
+    entityId: number,
+    files: UploadedImages,
+    field: 'profile' | 'cover',
+    options?: {
+      entityLabel?: string;
+      subDirectory?: string;
+      foreignKey?: string;
+      notFoundMessage?: string;
+      notFoundCode?: string;
+    },
+  ): Promise<{ message: string }> {
+    const entityLabel = options?.entityLabel || 'Channel';
+    const notFoundMessage =
+      options?.notFoundMessage ||
+      `Can't update while there is no ${entityLabel.toLowerCase()}. Please create a ${entityLabel.toLowerCase()} first.`;
+    const notFoundCode =
+      options?.notFoundCode || `${entityLabel.toUpperCase()}_NOT_FOUND`;
+
+    const parent = await parentDelegate.findFirst({
+      where: { id: entityId },
+    });
+    if (!parent) {
+      throw new NotFoundError(notFoundMessage, notFoundCode);
+    }
+
+    const isProfile = field === 'profile';
+    const fieldCapitalized = isProfile ? 'Profile' : 'Cover';
+    const successMessage = `${entityLabel} ${fieldCapitalized} Image Uploaded Successfully`;
+
+    const fileName = this.fileStorage.extractFieldFileName(files, field);
+    if (!fileName) {
+      return { message: successMessage };
+    }
+
+    const foreignKey = options?.foreignKey || 'channel_id';
+    const flagKey = isProfile ? 'primary' : 'cover';
+    const subDir = options?.subDirectory || 'channel';
+
+    const chImage = await imageDelegate.findFirst({
+      where: { [foreignKey]: entityId, [flagKey]: true },
+    });
+
+    return await withPrismaErrorHandling(async () => {
+      if (chImage) {
+        await imageDelegate.update({
+          where: { id: chImage.id },
+          data: { image: fileName },
+        });
+        if (chImage.image && chImage.image !== 'null') {
+          await this.fileStorage.deleteFile(subDir, chImage.image);
+        }
+      } else {
+        await imageDelegate.create({
+          data: {
+            image: fileName,
+            [flagKey]: true,
+            [foreignKey]: entityId,
+          },
+        });
+      }
+
+      return { message: successMessage };
+    });
   }
 
   /**

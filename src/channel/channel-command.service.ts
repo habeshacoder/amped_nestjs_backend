@@ -9,7 +9,8 @@ import {
   ConflictError,
   NotFoundError,
 } from '../common/exceptions/domain-exceptions';
-import { handlePrismaError } from '../common/services/prisma-error.util';
+import { EntityFileManagerService } from '../common/services/entity-file-manager.service';
+import { withPrismaErrorHandling } from '../common/utils/with-prisma-error.util';
 
 @Injectable()
 export class ChannelCommandService {
@@ -18,6 +19,7 @@ export class ChannelCommandService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileStorage: FileStorageService,
+    private readonly fileManager: EntityFileManagerService,
   ) {}
 
   async create(images: UploadedImages, channelDto: ChannelDto) {
@@ -28,7 +30,7 @@ export class ChannelCommandService {
     const coverName = this.fileStorage.extractFieldFileName(images, 'cover');
     const seller = parseInt(channelDto.sellerProfile_id, 10);
 
-    try {
+    return await withPrismaErrorHandling(async () => {
       const channel = await this.prisma.channel.create({
         data: {
           name: channelDto.name,
@@ -58,9 +60,7 @@ export class ChannelCommandService {
       }
 
       return channel;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    });
   }
 
   async update(id: number, channelDto: ChannelDto) {
@@ -72,116 +72,41 @@ export class ChannelCommandService {
       );
     }
 
-    try {
-      return await this.prisma.channel.update({
+    return await withPrismaErrorHandling(() =>
+      this.prisma.channel.update({
         where: { id },
         data: {
           name: channelDto.name,
           description: channelDto.description,
         },
-      });
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+      }),
+    );
   }
 
   async updateChannelProfileImage(
     profileImage: UploadedImages,
     channel_id: number,
   ) {
-    const channel = await this.prisma.channel.findFirst({
-      where: { id: channel_id },
-    });
-    if (!channel) {
-      throw new NotFoundError(
-        "Can't update while there is no channel. Please create a channel first.",
-        'CHANNEL_NOT_FOUND',
-      );
-    }
-
-    const fileName = this.fileStorage.extractFieldFileName(
+    return this.fileManager.updateEntityFieldImage(
+      this.prisma.channel,
+      this.prisma.channelImage,
+      channel_id,
       profileImage,
       'profile',
     );
-    if (!fileName) {
-      return { message: 'Channel Profile Image Uploaded Successfully' };
-    }
-
-    const chImage = await this.prisma.channelImage.findFirst({
-      where: { channel_id, primary: true },
-    });
-
-    try {
-      if (chImage) {
-        await this.prisma.channelImage.update({
-          where: { id: chImage.id },
-          data: { image: fileName },
-        });
-        if (chImage.image && chImage.image !== 'null') {
-          await this.fileStorage.deleteFile('channel', chImage.image);
-        }
-      } else {
-        await this.prisma.channelImage.create({
-          data: {
-            image: fileName,
-            primary: true,
-            channel_id,
-          },
-        });
-      }
-
-      return { message: 'Channel Profile Image Uploaded Successfully' };
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
   }
 
   async updateChannelCoverImage(
     coverImage: UploadedImages,
     channel_id: number,
   ) {
-    const channel = await this.prisma.channel.findFirst({
-      where: { id: channel_id },
-    });
-    if (!channel) {
-      throw new NotFoundError(
-        "Can't update while there is no channel. Please create a channel first.",
-        'CHANNEL_NOT_FOUND',
-      );
-    }
-
-    const fileName = this.fileStorage.extractFieldFileName(coverImage, 'cover');
-    if (!fileName) {
-      return { message: 'Channel Cover Image Uploaded Successfully' };
-    }
-
-    const chImage = await this.prisma.channelImage.findFirst({
-      where: { channel_id, cover: true },
-    });
-
-    try {
-      if (chImage) {
-        await this.prisma.channelImage.update({
-          where: { id: chImage.id },
-          data: { image: fileName },
-        });
-        if (chImage.image && chImage.image !== 'null') {
-          await this.fileStorage.deleteFile('channel', chImage.image);
-        }
-      } else {
-        await this.prisma.channelImage.create({
-          data: {
-            image: fileName,
-            cover: true,
-            channel_id,
-          },
-        });
-      }
-
-      return { message: 'Channel Cover Image Uploaded Successfully' };
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    return this.fileManager.updateEntityFieldImage(
+      this.prisma.channel,
+      this.prisma.channelImage,
+      channel_id,
+      coverImage,
+      'cover',
+    );
   }
 
   async remove(id: number) {
@@ -197,7 +122,7 @@ export class ChannelCommandService {
       );
     }
 
-    try {
+    return await withPrismaErrorHandling(async () => {
       const deleted = await this.prisma.channel.delete({ where: { id } });
 
       for (const img of channel.channel_image) {
@@ -212,79 +137,54 @@ export class ChannelCommandService {
       }
 
       return { message: 'Channel Deleted Successfully' };
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    });
+  }
+
+  private async uploadSingleChannelImage(
+    file: Express.Multer.File,
+    id: number,
+    field: 'profile' | 'cover',
+  ) {
+    const fileName = this.fileStorage.extractFileName(
+      file?.filename || file?.path,
+    );
+    const isProfile = field === 'profile';
+    const flagKey = isProfile ? 'primary' : 'cover';
+
+    const channelImage = await this.prisma.channelImage.findFirst({
+      where: { channel_id: id, [flagKey]: true },
+    });
+
+    return await withPrismaErrorHandling(async () => {
+      if (!channelImage) {
+        return await this.prisma.channelImage.create({
+          data: {
+            image: fileName,
+            [flagKey]: true,
+            channel_id: id,
+          },
+        });
+      }
+
+      const updated = await this.prisma.channelImage.update({
+        where: { id: channelImage.id },
+        data: { image: fileName },
+      });
+
+      if (channelImage.image && channelImage.image !== 'null') {
+        await this.fileStorage.deleteFile('channel', channelImage.image);
+      }
+
+      return updated;
+    });
   }
 
   async uploadChannelProfile(file: Express.Multer.File, id: number) {
-    const fileName = this.fileStorage.extractFileName(
-      file?.filename || file?.path,
-    );
-
-    const channelImage = await this.prisma.channelImage.findFirst({
-      where: { channel_id: id, primary: true },
-    });
-
-    try {
-      if (!channelImage) {
-        return await this.prisma.channelImage.create({
-          data: {
-            image: fileName,
-            primary: true,
-            channel_id: id,
-          },
-        });
-      }
-
-      const updated = await this.prisma.channelImage.update({
-        where: { id: channelImage.id },
-        data: { image: fileName },
-      });
-
-      if (channelImage.image && channelImage.image !== 'null') {
-        await this.fileStorage.deleteFile('channel', channelImage.image);
-      }
-
-      return updated;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    return this.uploadSingleChannelImage(file, id, 'profile');
   }
 
   async uploadChannelCover(file: Express.Multer.File, id: number) {
-    const fileName = this.fileStorage.extractFileName(
-      file?.filename || file?.path,
-    );
-
-    const channelImage = await this.prisma.channelImage.findFirst({
-      where: { channel_id: id, cover: true },
-    });
-
-    try {
-      if (!channelImage) {
-        return await this.prisma.channelImage.create({
-          data: {
-            image: fileName,
-            cover: true,
-            channel_id: id,
-          },
-        });
-      }
-
-      const updated = await this.prisma.channelImage.update({
-        where: { id: channelImage.id },
-        data: { image: fileName },
-      });
-
-      if (channelImage.image && channelImage.image !== 'null') {
-        await this.fileStorage.deleteFile('channel', channelImage.image);
-      }
-
-      return updated;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    return this.uploadSingleChannelImage(file, id, 'cover');
   }
 
   async uploadChannelImage(files: Array<Express.Multer.File>, id: number) {
@@ -293,18 +193,16 @@ export class ChannelCommandService {
       const fileName = this.fileStorage.extractFileName(
         file?.filename || file?.path,
       );
-      try {
-        const newChannelImage = await this.prisma.channelImage.create({
+      const newChannelImage = await withPrismaErrorHandling(() =>
+        this.prisma.channelImage.create({
           data: {
             image: fileName,
             channel_id: id,
           },
-        });
-        if (newChannelImage) {
-          uploadedImages.push(newChannelImage);
-        }
-      } catch (error) {
-        throw handlePrismaError(error);
+        }),
+      );
+      if (newChannelImage) {
+        uploadedImages.push(newChannelImage);
       }
     }
     return uploadedImages;
@@ -319,7 +217,7 @@ export class ChannelCommandService {
       where: { channel_id: id },
     });
 
-    try {
+    return await withPrismaErrorHandling(async () => {
       if (!preview) {
         return await this.prisma.previewChannel.create({
           data: {
@@ -339,8 +237,6 @@ export class ChannelCommandService {
       }
 
       return updated;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    });
   }
 }

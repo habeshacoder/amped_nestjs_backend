@@ -8,7 +8,7 @@ import { MaterialQueryService } from './material-query.service';
 import { MaterialStorageService } from './material-storage.service';
 import { NotFoundError } from '../common/exceptions/domain-exceptions';
 import { UploadedImages } from '../common/services/file-storage.service';
-import { handlePrismaError } from '../common/services/prisma-error.util';
+import { withPrismaErrorHandling } from '../common/utils/with-prisma-error.util';
 
 @Injectable()
 export class MaterialService {
@@ -21,8 +21,8 @@ export class MaterialService {
   ) {}
 
   async create(materialDto: MaterialDto) {
-    try {
-      const material = await this.prisma.material.create({
+    return await withPrismaErrorHandling(() =>
+      this.prisma.material.create({
         data: {
           parent: materialDto.parent,
           type: materialDto.type,
@@ -44,12 +44,8 @@ export class MaterialService {
           continues_from: materialDto.continues_from,
           sellerProfile_id: materialDto.sellerProfile_id,
         },
-      });
-
-      return material;
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+      }),
+    );
   }
 
   async update(id: number, materialDto: MaterialDto) {
@@ -64,8 +60,8 @@ export class MaterialService {
       );
     }
 
-    try {
-      return await this.prisma.material.update({
+    return await withPrismaErrorHandling(() =>
+      this.prisma.material.update({
         where: { id },
         data: {
           parent: materialDto.parent,
@@ -87,10 +83,8 @@ export class MaterialService {
           continues_from: materialDto.continues_from,
           sellerProfile_id: materialDto.sellerProfile_id,
         },
-      });
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+      }),
+    );
   }
 
   async remove(id: number) {
@@ -105,14 +99,12 @@ export class MaterialService {
       );
     }
 
-    try {
+    return await withPrismaErrorHandling(async () => {
       await this.prisma.material.delete({
         where: { id },
       });
       return { message: 'Material deleted successfully' };
-    } catch (error) {
-      throw handlePrismaError(error);
-    }
+    });
   }
 
   // Delegated Query Methods
